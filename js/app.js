@@ -3211,11 +3211,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // VUE TOP-DOWN 2D PHOTORÉALISTE STYLE SCIM BLUEPRINT DESIGNER
   // =========================================================================
   const FactoryConstructionGuide = {
-    currentStepIndex: 0,
-    steps: [],
-    currentViewMode: "step", // "step" ou "full"
+    singleState: { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null, calcKey: "" },
+    msState: { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null, calcKey: "" },
     validatedSteps: new Set(JSON.parse(localStorage.getItem("ficsit_guide_validated") || "[]")),
-    lastResults: null,
 
     // Rendu d'une dalle de fondation FICSIT 8m×8m biseautée
     renderFoundationTile(x, y, w, h, colLabel, rowLabel) {
@@ -3223,52 +3221,41 @@ document.addEventListener("DOMContentLoaded", () => {
       const qH = (h - 8) / 2;
       return `
         <g class="ficsit-foundation-tile" data-coord="${colLabel}${rowLabel}">
-          <!-- Dalle extérieure biseautée -->
           <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#141822" stroke="#252f3e" stroke-width="1.2" rx="2" />
-          <!-- 4 Panneaux métalliques intérieurs -->
           <rect x="${x + 3}" y="${y + 3}" width="${qW}" height="${qH}" rx="2" fill="#1b222e" stroke="#253040" stroke-width="0.8" />
           <rect x="${x + w/2 + 1}" y="${y + 3}" width="${qW}" height="${qH}" rx="2" fill="#1b222e" stroke="#253040" stroke-width="0.8" />
           <rect x="${x + 3}" y="${y + h/2 + 1}" width="${qW}" height="${qH}" rx="2" fill="#1b222e" stroke="#253040" stroke-width="0.8" />
           <rect x="${x + w/2 + 1}" y="${y + h/2 + 1}" width="${qW}" height="${qH}" rx="2" fill="#1b222e" stroke="#253040" stroke-width="0.8" />
-          <!-- Rivets / Boulons aux 4 coins -->
           <circle cx="${x + 5}" cy="${y + 5}" r="1.2" fill="#475569" />
           <circle cx="${x + w - 5}" cy="${y + 5}" r="1.2" fill="#475569" />
           <circle cx="${x + 5}" cy="${y + h - 5}" r="1.2" fill="#475569" />
           <circle cx="${x + w - 5}" cy="${y + h - 5}" r="1.2" fill="#475569" />
-          <!-- Coordonnée discrète -->
           <text x="${x + 6}" y="${y + h - 6}" fill="rgba(56, 189, 248, 0.18)" font-size="8" font-weight="bold" font-family="monospace">${colLabel}${rowLabel}</text>
         </g>
       `;
     },
 
-    // Rendu Sprite 2D Fonderie (Smelter) Top-Down avec Creuset en Fusion
+    // Rendu Sprite 2D Fonderie (Smelter) Top-Down
     renderSpriteSmelter(x, y, w, h, data, opacity = 1, isTargetStep = false) {
       const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 12px rgba(245, 158, 11, 0.75))"` : `filter="drop-shadow(0 4px 10px rgba(0,0,0,0.6))"`;
       const strokeCol = isTargetStep ? "#f59e0b" : "#3e4d62";
       return `
         <g class="ficsit-sprite-smelter" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
-          <title>🏭 Fonderie : ${data.recipeName || "Lingots"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})&#10;Emplacement : Dalle Fondations</title>
-          <!-- Corps principal de la machine -->
+          <title>🏭 ${data.building?.name || "Fonderie"} : ${data.recipeName || "Lingots"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})</title>
           <rect x="0" y="0" width="${w}" height="${h}" rx="5" fill="#171d27" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.2 : 1.4}" />
-          <!-- Gardes-corps latéraux FICSIT Orange -->
           <rect x="2" y="8" width="4" height="${h - 16}" rx="1" fill="#ea580c" />
           <rect x="${w - 6}" y="8" width="4" height="${h - 16}" rx="1" fill="#ea580c" />
-          <!-- Ailettes de dissipation thermique -->
           <line x1="8" y1="18" x2="14" y2="18" stroke="#475569" stroke-width="1.2" />
           <line x1="8" y1="24" x2="14" y2="24" stroke="#475569" stroke-width="1.2" />
           <line x1="${w - 14}" y1="18" x2="${w - 8}" y2="18" stroke="#475569" stroke-width="1.2" />
           <line x1="${w - 14}" y1="24" x2="${w - 8}" y2="24" stroke="#475569" stroke-width="1.2" />
-          <!-- Cavité & Foyer incandescent au centre (Molten Core) -->
           <rect x="${w/2 - 13}" y="${h/2 - 19}" width="26" height="38" rx="13" fill="#090d14" stroke="#ea580c" stroke-width="1.2" />
           <ellipse cx="${w/2}" cy="${h/2}" rx="9" ry="14" fill="url(#smelterCoreGlow)" />
           <ellipse cx="${w/2}" cy="${h/2}" rx="5" ry="8" fill="#ffffff" opacity="0.85" />
-          <!-- Port d'entrée Arrière (Bas) -->
           <rect x="${w/2 - 8}" y="${h - 4}" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#f97316" stroke-width="1" />
           <circle cx="${w/2}" cy="${h - 1}" r="2" fill="#38bdf8" />
-          <!-- Port de sortie Avant (Haut) -->
           <rect x="${w/2 - 8}" y="-1" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
           <circle cx="${w/2}" cy="1" r="2" fill="#22c55e" />
-          <!-- Étiquette FICSIT -->
           <rect x="8" y="4" width="${w - 16}" height="10" rx="2" fill="#0f172a" opacity="0.9" />
           <text x="${w/2}" y="12" fill="#f59e0b" font-size="7.5" font-weight="900" text-anchor="middle" font-family="sans-serif">FONDERIE</text>
           <text x="${w/2}" y="${h - 7}" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">${(data.recipeName || "Lingots").substring(0, 11)}</text>
@@ -3276,16 +3263,14 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    // Rendu Sprite 2D Constructeur (Constructor) Top-Down avec Treillis Orange & Pistons
+    // Rendu Sprite 2D Constructeur (Constructor) Top-Down
     renderSpriteConstructor(x, y, w, h, data, opacity = 1, isTargetStep = false) {
       const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 12px rgba(56, 189, 248, 0.75))"` : `filter="drop-shadow(0 4px 10px rgba(0,0,0,0.6))"`;
       const strokeCol = isTargetStep ? "#38bdf8" : "#3e4d62";
       return `
         <g class="ficsit-sprite-constructor" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
-          <title>⚙️ Constructeur : ${data.recipeName || "Pièces"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})&#10;Emplacement : Dalle Fondations</title>
-          <!-- Corps principal de la machine -->
+          <title>⚙️ Constructeur : ${data.recipeName || "Pièces"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})</title>
           <rect x="0" y="0" width="${w}" height="${h}" rx="5" fill="#161c26" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.2 : 1.4}" />
-          <!-- Cage en Treillis FICSIT Orange Gauche (Lattice Truss Frame) -->
           <rect x="2" y="6" width="10" height="${h - 12}" fill="#0f141d" stroke="#ea580c" stroke-width="1.2" rx="1" />
           <line x1="2" y1="6" x2="12" y2="18" stroke="#f97316" stroke-width="1.2" />
           <line x1="12" y1="6" x2="2" y2="18" stroke="#f97316" stroke-width="1.2" />
@@ -3293,9 +3278,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <line x1="12" y1="18" x2="2" y2="30" stroke="#f97316" stroke-width="1.2" />
           <line x1="2" y1="30" x2="12" y2="42" stroke="#f97316" stroke-width="1.2" />
           <line x1="12" y1="30" x2="2" y2="42" stroke="#f97316" stroke-width="1.2" />
-          <line x1="2" y1="42" x2="12" y2="54" stroke="#f97316" stroke-width="1.2" />
-          <line x1="12" y1="42" x2="2" y2="54" stroke="#f97316" stroke-width="1.2" />
-          <!-- Cage en Treillis FICSIT Orange Droite -->
           <rect x="${w - 12}" y="6" width="10" height="${h - 12}" fill="#0f141d" stroke="#ea580c" stroke-width="1.2" rx="1" />
           <line x1="${w - 12}" y1="6" x2="${w - 2}" y2="18" stroke="#f97316" stroke-width="1.2" />
           <line x1="${w - 2}" y1="6" x2="${w - 12}" y2="18" stroke="#f97316" stroke-width="1.2" />
@@ -3303,19 +3285,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <line x1="${w - 2}" y1="18" x2="${w - 12}" y2="30" stroke="#f97316" stroke-width="1.2" />
           <line x1="${w - 12}" y1="30" x2="${w - 2}" y2="42" stroke="#f97316" stroke-width="1.2" />
           <line x1="${w - 2}" y1="30" x2="${w - 12}" y2="42" stroke="#f97316" stroke-width="1.2" />
-          <line x1="${w - 12}" y1="42" x2="${w - 2}" y2="54" stroke="#f97316" stroke-width="1.2" />
-          <line x1="${w - 2}" y1="42" x2="${w - 12}" y2="54" stroke="#f97316" stroke-width="1.2" />
-          <!-- Piston / Presse Hydraulique Centrale -->
           <rect x="15" y="16" width="${w - 30}" height="${h - 32}" rx="3" fill="#0d1219" stroke="#334155" stroke-width="1" />
           <rect x="${w/2 - 6}" y="20" width="12" height="14" rx="2" fill="#3b82f6" opacity="0.8" />
           <line x1="${w/2}" y1="20" x2="${w/2}" y2="${h - 20}" stroke="#94a3b8" stroke-width="2.5" />
           <rect x="${w/2 - 10}" y="${h/2 - 6}" width="20" height="12" rx="2" fill="#1e293b" stroke="#64748b" stroke-width="1" />
-          <!-- Ports d'entrée (Bas) et sortie (Haut) -->
           <rect x="${w/2 - 8}" y="${h - 4}" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
           <circle cx="${w/2}" cy="${h - 1}" r="2" fill="#38bdf8" />
           <rect x="${w/2 - 8}" y="-1" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
           <circle cx="${w/2}" cy="1" r="2" fill="#22c55e" />
-          <!-- Header Nom Machine -->
           <rect x="14" y="4" width="${w - 28}" height="9" rx="2" fill="#0369a1" opacity="0.9" />
           <text x="${w/2}" y="11" fill="#ffffff" font-size="7" font-weight="900" text-anchor="middle" font-family="sans-serif">CONSTRUCTEUR</text>
           <text x="${w/2}" y="${h - 6}" fill="#93c5fd" font-size="6.5" font-weight="bold" text-anchor="middle">${(data.recipeName || "Pièces").substring(0, 11)}</text>
@@ -3323,51 +3300,43 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    // Rendu Sprite 2D Assembleuse (Assembler) Top-Down avec Dôme Vitré & Bras Robotiques
+    // Rendu Sprite 2D Assembleuse (Assembler) Top-Down
     renderSpriteAssembler(x, y, w, h, data, opacity = 1, isTargetStep = false) {
       const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 14px rgba(168, 85, 247, 0.8))"` : `filter="drop-shadow(0 4px 12px rgba(0,0,0,0.65))"`;
       const strokeCol = isTargetStep ? "#a855f7" : "#3e4d62";
+      const bldName = (data.building?.name || "Assembleuse").toUpperCase();
       return `
         <g class="ficsit-sprite-assembler" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
-          <title>🧩 Assembleuse : ${data.recipeName || "Assemblage"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})&#10;Double Entrée ➔ Sortie Unique</title>
-          <!-- Châssis Lourd Double Largeur -->
+          <title>🧩 ${data.building?.name || "Assembleuse"} : ${data.recipeName || "Assemblage"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})</title>
           <rect x="0" y="0" width="${w}" height="${h}" rx="6" fill="#131822" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.4 : 1.5}" />
-          <!-- Bras d'alimentation articulés latéraux (Orange & Rouge) -->
           <path d="M 0 24 L -6 24 L -6 44 L 0 44" stroke="#ea580c" stroke-width="2.5" fill="none" />
           <rect x="-9" y="30" width="4" height="8" rx="1" fill="#ef4444" />
           <path d="M ${w} 24 L ${w + 6} 24 L ${w + 6} 44 L ${w} 44" stroke="#ea580c" stroke-width="2.5" fill="none" />
           <rect x="${w + 5}" y="30" width="4" height="8" rx="1" fill="#ef4444" />
-          <!-- Dôme Central Vitré Translucide (Glass Canopy) -->
           <rect x="14" y="16" width="${w - 28}" height="${h - 32}" rx="8" fill="url(#assemblerGlassGlow)" stroke="#38bdf8" stroke-width="1.2" />
-          <!-- Reflet spéculaire sur la verrière -->
           <path d="M 20 22 L ${w - 30} 22" stroke="#ffffff" stroke-width="1" opacity="0.6" stroke-linecap="round" />
-          <!-- Mécanisme interne visible à travers la vitre -->
           <circle cx="${w/2 - 10}" cy="${h/2}" r="7" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,2" />
           <circle cx="${w/2 + 10}" cy="${h/2}" r="7" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,2" />
           <circle cx="${w/2}" cy="${h/2}" r="3" fill="#a855f7" />
-          <!-- Deux Ports d'Entrée Arrière (Bas gauche et bas droite) -->
           <rect x="${w/2 - 20}" y="${h - 4}" width="14" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
           <circle cx="${w/2 - 13}" cy="${h - 1}" r="2" fill="#38bdf8" />
           <rect x="${w/2 + 6}" y="${h - 4}" width="14" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
           <circle cx="${w/2 + 13}" cy="${h - 1}" r="2" fill="#38bdf8" />
-          <!-- Port de Sortie Avant Central (Haut) -->
           <rect x="${w/2 - 9}" y="-1" width="18" height="5" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
           <circle cx="${w/2}" cy="1" r="2.2" fill="#22c55e" />
-          <!-- Header Nom Machine -->
           <rect x="18" y="4" width="${w - 36}" height="10" rx="2" fill="#6b21a8" opacity="0.9" />
-          <text x="${w/2}" y="12" fill="#ffffff" font-size="7.5" font-weight="900" text-anchor="middle" font-family="sans-serif">ASSEMBLEUSE</text>
+          <text x="${w/2}" y="12" fill="#ffffff" font-size="7.5" font-weight="900" text-anchor="middle" font-family="sans-serif">${bldName.substring(0, 15)}</text>
           <text x="${w/2}" y="${h - 6}" fill="#d8b4fe" font-size="7" font-weight="bold" text-anchor="middle">${(data.recipeName || "Assemblage").substring(0, 14)}</text>
         </g>
       `;
     },
 
-    // Rendu Sprite 2D Répartiteur (Splitter) FICSIT Orange Octogonal
+    // Rendu Sprite 2D Répartiteur (Splitter)
     renderSpriteSplitter(x, y, size = 26) {
       return `
         <g class="ficsit-sprite-splitter" transform="translate(${x - size/2}, ${y - size/2})">
           <polygon points="7,0 ${size-7},0 ${size},7 ${size},${size-7} ${size-7},${size} 7,${size} 0,${size-7} 0,7" fill="#ea580c" stroke="#f97316" stroke-width="1.2" />
           <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 5}" fill="#1e293b" stroke="#64748b" stroke-width="1" />
-          <!-- Flèches de répartition 3 voies -->
           <polygon points="${size/2},4 ${size/2 - 2.5},8 ${size/2 + 2.5},8" fill="#38bdf8" />
           <polygon points="${size - 4},${size/2} ${size - 8},${size/2 - 2.5} ${size - 8},${size/2 + 2.5}" fill="#38bdf8" />
           <polygon points="4,${size/2} 8,${size/2 - 2.5} 8,${size/2 + 2.5}" fill="#38bdf8" />
@@ -3376,13 +3345,12 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    // Rendu Sprite 2D Groupeur (Merger) FICSIT Bleu-Acier Octogonal
+    // Rendu Sprite 2D Groupeur (Merger)
     renderSpriteMerger(x, y, size = 26) {
       return `
         <g class="ficsit-sprite-merger" transform="translate(${x - size/2}, ${y - size/2})">
           <polygon points="7,0 ${size-7},0 ${size},7 ${size},${size-7} ${size-7},${size} 7,${size} 0,${size-7} 0,7" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2" />
           <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 5}" fill="#1e293b" stroke="#64748b" stroke-width="1" />
-          <!-- Flèches de convergence -->
           <polygon points="${size/2},4 ${size/2 - 2.5},8 ${size/2 + 2.5},8" fill="#10b981" />
           <polygon points="${size - 8},${size/2} ${size - 4},${size/2 - 2.5} ${size - 4},${size/2 + 2.5}" fill="#10b981" />
           <polygon points="8,${size/2} 4,${size/2 - 2.5} 4,${size/2 + 2.5}" fill="#10b981" />
@@ -3401,190 +3369,15 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    // =========================================================================
-    // VISUELS D'IMPLANTATION TOP-DOWN SPÉCIFIQUES POUR CHAQUE ÉTAPE DU CHANTIER
-    // =========================================================================
-
-    // ÉTAPE 1 : VISUEL TOP-DOWN FONDATIONS & ZONAGE GÉODÉSIQUE
-    generateFoundationsStepSVG(results) {
-      const svgW = 680, svgH = 680, margin = 50;
-      const gridW = svgW - margin * 2, gridH = svgH - margin * 2;
-      const cols = 6, rows = 6;
-      const cellW = gridW / cols, cellH = gridH / rows;
-      const colLetters = ["A", "B", "C", "D", "E", "F"];
-
-      let foundationsSvg = "";
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          foundationsSvg += this.renderFoundationTile(margin + c * cellW, margin + r * cellH, cellW, cellH, colLetters[c], r + 1);
-        }
-      }
-
-      let axesSvg = "";
-      for (let c = 0; c < cols; c++) {
-        axesSvg += `
-          <text x="${margin + c * cellW + cellW/2}" y="${margin - 12}" fill="#38bdf8" font-size="11" font-weight="900" text-anchor="middle" font-family="monospace">${colLetters[c]} (8m)</text>
-          <text x="${margin + c * cellW + cellW/2}" y="${svgH - margin + 20}" fill="#64748b" font-size="9" text-anchor="middle" font-family="monospace">${c*8}m - ${(c+1)*8}m</text>
-        `;
-      }
-      for (let r = 0; r < rows; r++) {
-        axesSvg += `<text x="${margin - 16}" y="${margin + r * cellH + cellH/2 + 4}" fill="#38bdf8" font-size="11" font-weight="900" text-anchor="middle" font-family="monospace">${r + 1}</text>`;
-      }
-
-      return `
-        <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background: #060910; font-family: system-ui, sans-serif; user-select: none;">
-          <!-- Titre -->
-          <text x="${svgW/2}" y="24" fill="#38bdf8" font-size="13" font-weight="900" text-anchor="middle" letter-spacing="0.5">ÉTAPE 1 : DALLE DE FONDATIONS 6×6 (48m × 48m)</text>
-          <text x="${svgW/2}" y="38" fill="#94a3b8" font-size="9.5" text-anchor="middle">Implantation du sol industriel et repères d'axes géodésiques FICSIT</text>
-          
-          <!-- Boussole -->
-          <g transform="translate(${svgW - 40}, 30)">
-            <circle cx="0" cy="0" r="14" fill="#111827" stroke="#38bdf8" stroke-width="1.2" />
-            <polygon points="0,-11 -4,3 0,0 4,3" fill="#ef4444" />
-            <polygon points="0,11 -4,0 0,0 4,0" fill="#94a3b8" />
-            <text x="0" y="-14" fill="#ef4444" font-size="9" font-weight="900" text-anchor="middle">N</text>
-          </g>
-
-          <!-- Dalles et repères -->
-          <g>${foundationsSvg}${axesSvg}</g>
-
-          <!-- Zones d'implantation en surbrillance (Zonage fonctionnel FICSIT) -->
-          <!-- Zone 1 : Fonderies (Rangée 5) -->
-          <rect x="${margin + cellW + 4}" y="${margin + 4*cellH + 4}" width="${cellW * 4 - 8}" height="${cellH * 2 - 8}" rx="6" fill="rgba(245, 158, 11, 0.08)" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,4" />
-          <rect x="${margin + cellW + 10}" y="${margin + 4*cellH + 10}" width="190" height="18" rx="3" fill="#0f172a" stroke="#f59e0b" stroke-width="1" />
-          <text x="${margin + cellW + 105}" y="${margin + 4*cellH + 22}" fill="#f59e0b" font-size="9" font-weight="900" text-anchor="middle">ZONE 1 : MÉTALLURGIE (FONDERIES)</text>
-
-          <!-- Zone 2 : Constructeurs (Rangée 3) -->
-          <rect x="${margin + cellW + 4}" y="${margin + 2*cellH + 4}" width="${cellW * 4 - 8}" height="${cellH * 2 - 8}" rx="6" fill="rgba(56, 189, 248, 0.08)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4" />
-          <rect x="${margin + cellW + 10}" y="${margin + 2*cellH + 10}" width="200" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1" />
-          <text x="${margin + cellW + 110}" y="${margin + 2*cellH + 22}" fill="#38bdf8" font-size="9" font-weight="900" text-anchor="middle">ZONE 2 : USINAGE (CONSTRUCTEURS)</text>
-
-          <!-- Zone 3 : Assembleuses (Rangée 1-2) -->
-          <rect x="${margin + cellW + 4}" y="${margin + 4}" width="${cellW * 4 - 8}" height="${cellH * 2 - 8}" rx="6" fill="rgba(168, 85, 247, 0.08)" stroke="#a855f7" stroke-width="2" stroke-dasharray="6,4" />
-          <rect x="${margin + cellW + 10}" y="${margin + 10}" width="210" height="18" rx="3" fill="#0f172a" stroke="#a855f7" stroke-width="1" />
-          <text x="${margin + cellW + 115}" y="${margin + 22}" fill="#a855f7" font-size="9" font-weight="900" text-anchor="middle">ZONE 3 : ASSEMBLAGE & FINITION</text>
-
-          <!-- Zone 4 : Stockage (Nord-Est / Dalle F1) -->
-          <rect x="${margin + 5*cellW + 4}" y="${margin + 4}" width="${cellW - 8}" height="${cellH - 8}" rx="4" fill="rgba(16, 185, 129, 0.12)" stroke="#10b981" stroke-width="2" stroke-dasharray="4,3" />
-          <text x="${margin + 5*cellW + cellW/2}" y="${margin + cellH/2}" fill="#10b981" font-size="8.5" font-weight="900" text-anchor="middle">📦 STOCKAGE</text>
-
-          <!-- Cotation 48m -->
-          <line x1="${margin}" y1="${svgH - 12}" x2="${svgW - margin}" y2="${svgH - 12}" stroke="#38bdf8" stroke-width="2" />
-          <polygon points="${margin},${svgH - 12} ${margin + 8},${svgH - 16} ${margin + 8},${svgH - 8}" fill="#38bdf8" />
-          <polygon points="${svgW - margin},${svgH - 12} ${svgW - margin - 8},${svgH - 16} ${svgW - margin - 8},${svgH - 8}" fill="#38bdf8" />
-          <rect x="${svgW/2 - 75}" y="${svgH - 22}" width="150" height="20" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1" />
-          <text x="${svgW/2}" y="${svgH - 9}" fill="#a7f3d0" font-size="10" font-weight="900" text-anchor="middle">◄ 48m × 48m (36 Dalles) ►</text>
-        </svg>
-      `;
-    },
-
-    // ÉTAPE 2 : VISUEL TOP-DOWN ARRIVÉES BRUTES & RÉPARTITEURS MANIFOLD
-    generateRawLogisticsStepSVG(results) {
-      const svgW = 680, svgH = 680, margin = 50;
-      const gridW = svgW - margin * 2, gridH = svgH - margin * 2;
-      const cols = 6, rows = 6;
-      const cellW = gridW / cols, cellH = gridH / rows;
-      const colLetters = ["A", "B", "C", "D", "E", "F"];
-
-      let foundationsSvg = "";
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          foundationsSvg += this.renderFoundationTile(margin + c * cellW, margin + r * cellH, cellW, cellH, colLetters[c], r + 1);
-        }
-      }
-
-      let axesSvg = "";
-      for (let c = 0; c < cols; c++) {
-        axesSvg += `<text x="${margin + c * cellW + cellW/2}" y="${margin - 12}" fill="#38bdf8" font-size="11" font-weight="900" text-anchor="middle" font-family="monospace">${colLetters[c]} (8m)</text>`;
-      }
-      for (let r = 0; r < rows; r++) {
-        axesSvg += `<text x="${margin - 16}" y="${margin + r * cellH + cellH/2 + 4}" fill="#38bdf8" font-size="11" font-weight="900" text-anchor="middle" font-family="monospace">${r + 1}</text>`;
-      }
-
-      const rawEntries = Object.entries(results.rawResources || {});
-      const splitY = margin + 5 * cellH + cellH/2;
-
-      let splittersSvg = "";
-      let beltsSvg = "";
-      const splitPositions = [];
-
-      for (let i = 0; i < 4; i++) {
-        const cIdx = 1 + i; // B6, C6, D6, E6
-        const sx = margin + cIdx * cellW + cellW/2;
-        splitPositions.push(sx);
-        splittersSvg += this.renderSpriteSplitter(sx, splitY, 28);
-        // Flèches d'attente vers les fonderies
-        beltsSvg += this.renderCurvedConveyor(`M ${sx} ${splitY} L ${sx} ${splitY - 32}`, "#f59e0b", 10);
-        beltsSvg += `<polygon points="${sx},${splitY - 36} ${sx - 4},${splitY - 28} ${sx + 4},${splitY - 28}" fill="#f59e0b" />`;
-      }
-
-      // Ligne principale Manifold
-      if (splitPositions.length > 0) {
-        const firstX = splitPositions[0];
-        const lastX = splitPositions[splitPositions.length - 1];
-        // Entrée Sud
-        beltsSvg += this.renderCurvedConveyor(`M ${firstX} ${svgH - 10} L ${firstX} ${splitY}`, "#f59e0b", 14);
-        // Tronc transversal
-        beltsSvg += this.renderCurvedConveyor(`M ${firstX} ${splitY} L ${lastX} ${splitY}`, "#f59e0b", 12);
-      }
-
-      const rawLabels = rawEntries.map(([res, rate]) => `<span style="color: #f59e0b; font-weight: bold;">+${Math.round(rate*10)/10}/min ${ITEM_NAMES[res]||res}</span>`).join(" • ");
-
-      return `
-        <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background: #060910; font-family: system-ui, sans-serif; user-select: none;">
-          <text x="${svgW/2}" y="24" fill="#38bdf8" font-size="13" font-weight="900" text-anchor="middle" letter-spacing="0.5">ÉTAPE 2 : ARRIVÉES DE MINERAIS & MANIFOLD DE RÉPARTITEURS</text>
-          <text x="${svgW/2}" y="38" fill="#94a3b8" font-size="9.5" text-anchor="middle">Pose des répartiteurs FICSIT Orange en Ligne 6 (Dalles B6, C6, D6, E6)</text>
-          
-          <g>${foundationsSvg}${axesSvg}</g>
-
-          <!-- Zone Ligne 6 mise en valeur -->
-          <rect x="${margin + 4}" y="${margin + 5*cellH + 4}" width="${gridW - 8}" height="${cellH - 8}" rx="4" fill="rgba(245, 158, 11, 0.12)" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="6,3" />
-          <text x="${margin + 12}" y="${margin + 5*cellH + 18}" fill="#f59e0b" font-size="9" font-weight="900">ALIGNEMENT RÉPARTITEURS ENTRÉE</text>
-
-          <!-- Convoyeurs et Splitters -->
-          <g>${beltsSvg}${splittersSvg}</g>
-
-          <!-- Badge Débit Entrée -->
-          <g transform="translate(${splitPositions[0] - 80}, ${svgH - 46})">
-            <rect width="160" height="26" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.6))" />
-            <text x="80" y="17" fill="#fef08a" font-size="9.5" font-weight="900" text-anchor="middle">📥 ARRIVÉE MINERAI SUD</text>
-          </g>
-        </svg>
-      `;
-    },
-
-    // ÉTAPE 3 : VISUEL TOP-DOWN IMPLANTATION DES FONDERIES
-    generateSmeltersStepSVG(results, smelters) {
-      return this.generateTopDownFactoryBlueprintSVG(results, "step_smelters");
-    },
-
-    // ÉTAPE 4 : VISUEL TOP-DOWN IMPLANTATION DES CONSTRUCTEURS
-    generateConstructorsStepSVG(results, constructors) {
-      return this.generateTopDownFactoryBlueprintSVG(results, "step_constructors");
-    },
-
-    // ÉTAPE 5 : VISUEL TOP-DOWN IMPLANTATION DES ASSEMBLEUSES
-    generateAssemblersStepSVG(results, assemblers) {
-      return this.generateTopDownFactoryBlueprintSVG(results, "step_assemblers");
-    },
-
-    // ÉTAPE 6 : VISUEL TOP-DOWN RÉSEAU ÉLECTRIQUE & CÂBLAGE
-    generatePowerStepSVG(results) {
-      return this.generateTopDownFactoryBlueprintSVG(results, "step_power");
-    },
-
-    // ÉTAPE 7 : VISUEL TOP-DOWN EXPÉDITION & STOCKAGE FINAL
-    generateStorageStepSVG(results) {
-      return this.generateTopDownFactoryBlueprintSVG(results, "step_output_storage");
-    },
-
     // Générateur Principal du Plan Top-Down 2D Complet / Étape
-    generateTopDownFactoryBlueprintSVG(results, targetStepId = null) {
+    generateTopDownFactoryBlueprintSVG(results, targetStepId = null, activeState = null) {
       const steps = results.productionSteps || [];
       const totalMachines = steps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const targetItem = (results.targets && results.targets[0]) || { item: "Produit Fini", rate: 10 };
-      const targetName = ITEM_NAMES[targetItem.item] || targetItem.item;
-      const rawResources = results.rawResources || {};
+      const targetName = results.targets && results.targets.length === 1 
+        ? (ITEM_NAMES[targetItem.item] || targetItem.item)
+        : (results.targets || []).map(t => `${t.rate}/m ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
+      const factoryTitle = results.milestoneName || targetName;
 
       const svgW = 680;
       const svgH = 680;
@@ -3598,7 +3391,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const colLetters = ["A", "B", "C", "D", "E", "F"];
 
-      // 1. Grille des 36 Fondations (48m × 48m)
       let foundationsSvg = "";
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -3608,7 +3400,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Repères d'axes A-F et 1-6
       let axesSvg = "";
       for (let c = 0; c < cols; c++) {
         axesSvg += `
@@ -3622,7 +3413,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       }
 
-      // Boussole Nord
       const compassSvg = `
         <g transform="translate(${svgW - 40}, 30)">
           <circle cx="0" cy="0" r="14" fill="#111827" stroke="#38bdf8" stroke-width="1.2" />
@@ -3632,13 +3422,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </g>
       `;
 
-      // Groupement des machines par tier
       const smelters = steps.filter(s => s.building && (s.building.id === "smelter" || s.building.id === "foundry"));
-      const constructors = steps.filter(s => s.building && (s.building.id === "constructor" || s.building.id === "refinery"));
-      const assemblers = steps.filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "blender"));
+      const constructors = steps.filter(s => s.building && (s.building.id === "constructor"));
+      const assemblers = steps.filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "refinery" || s.building.id === "blender" || s.building.id === "packager"));
 
-      // Détermination de l'opacité selon l'étape ciblée
-      const isFull = !targetStepId || this.currentViewMode === "full";
+      const isFull = !targetStepId || (activeState && activeState.currentViewMode === "full");
       const getOpacity = (stepType) => {
         if (isFull) return 1;
         if (targetStepId === "step_foundations") return 0.2;
@@ -3656,15 +3444,12 @@ document.addEventListener("DOMContentLoaded", () => {
       let splittersSvg = "";
       let powerSvg = "";
 
-      // -------------------------------------------------------------
-      // 2. DISPOSITION DES FONDERIES (Ligne Sud / Rangée 5-6)
-      // -------------------------------------------------------------
       const smeltCount = smelters.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const displaySmelters = Math.min(smeltCount, 4);
       const smeltPositions = [];
 
       for (let i = 0; i < displaySmelters; i++) {
-        const cIdx = 1 + i; // Colonnes B, C, D, E
+        const cIdx = 1 + i;
         const mx = margin + cIdx * cellW + (cellW - 54) / 2;
         const my = margin + 4 * cellH + 6;
         smeltPositions.push({ x: mx, y: my, w: 54, h: 78, inX: mx + 27, inY: my + 78, outX: mx + 27, outY: my });
@@ -3672,31 +3457,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const isStep = targetStepId === "step_smelters";
         machinesSvg += this.renderSpriteSmelter(mx, my, 54, 78, smelters[i % smelters.length] || {}, getOpacity("smelter"), isStep);
 
-        // Répartiteur d'entrée en bas (Rangée 6)
         const splitY = margin + 5 * cellH + cellH/2;
         splittersSvg += this.renderSpriteSplitter(mx + 27, splitY, 24);
-        
-        // Convoyeur d'alimentation du Splitter vers la Fonderie
         beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${splitY} L ${mx + 27} ${my + 78}`, "#f59e0b", 10);
       }
 
-      // Ligne principale de minerai brut alimentant les splitters de fonderie
       if (smeltPositions.length > 0) {
         const firstSplitX = smeltPositions[0].inX;
         const lastSplitX = smeltPositions[smeltPositions.length - 1].inX;
         const splitY = margin + 5 * cellH + cellH/2;
-        
-        // Entrée depuis le bord Sud
         beltsSvg += this.renderCurvedConveyor(`M ${firstSplitX} ${svgH - 10} L ${firstSplitX} ${splitY}`, "#f59e0b", 12);
-        // Manifold transversal
         if (lastSplitX > firstSplitX) {
           beltsSvg += this.renderCurvedConveyor(`M ${firstSplitX} ${splitY} L ${lastSplitX} ${splitY}`, "#f59e0b", 10);
         }
       }
 
-      // -------------------------------------------------------------
-      // 3. DISPOSITION DES CONSTRUCTEURS (Ligne Centre / Rangée 3-4)
-      // -------------------------------------------------------------
       const constCount = constructors.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const displayConst = Math.min(constCount, 4);
       const constPositions = [];
@@ -3710,26 +3485,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const isStep = targetStepId === "step_constructors";
         machinesSvg += this.renderSpriteConstructor(mx, my, 54, 84, constructors[i % constructors.length] || {}, getOpacity("constructor"), isStep);
 
-        // Groupeur de sortie des fonderies / Répartiteur d'entrée des constructeurs
         const interSplitY = margin + 3 * cellH + cellH/2;
         splittersSvg += this.renderSpriteMerger(mx + 27, interSplitY, 24);
 
-        // Tapis reliant Fonderie ➔ Collecteur ➔ Constructeur
         if (i < smeltPositions.length) {
           beltsSvg += this.renderCurvedConveyor(`M ${smeltPositions[i].outX} ${smeltPositions[i].outY} L ${mx + 27} ${interSplitY}`, "#4ade80", 10);
+        } else if (smeltPositions.length === 0) {
+          beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${svgH - 10} L ${mx + 27} ${interSplitY}`, "#f59e0b", 10);
         }
         beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${interSplitY} L ${mx + 27} ${my + 84}`, "#38bdf8", 10);
       }
 
-      // -------------------------------------------------------------
-      // 4. DISPOSITION DES ASSEMBLEUSES (Ligne Nord / Rangée 1-2)
-      // -------------------------------------------------------------
       const assCount = assemblers.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
-      const displayAss = Math.min(Math.max(assCount, (constructors.length > 0 ? 1 : 0)), 2);
+      const displayAss = Math.min(assCount, 2);
       const assPositions = [];
 
       for (let i = 0; i < displayAss; i++) {
-        const cIdx = 1 + i * 2.5; // Occupent 2 colonnes
+        const cIdx = 1 + i * 2.5;
         const mx = margin + cIdx * cellW + 6;
         const my = margin + 6;
         const assW = cellW * 2 - 12;
@@ -3737,25 +3509,18 @@ document.addEventListener("DOMContentLoaded", () => {
         assPositions.push({ x: mx, y: my, w: assW, h: assH, inX1: mx + assW/2 - 13, inX2: mx + assW/2 + 13, inY: my + assH, outX: mx + assW/2, outY: my });
 
         const isStep = targetStepId === "step_assemblers";
-        machinesSvg += this.renderSpriteAssembler(mx, my, assW, assH, assemblers[i % (assemblers.length || 1)] || { recipeName: targetName }, getOpacity("assembler"), isStep);
+        machinesSvg += this.renderSpriteAssembler(mx, my, assW, assH, assemblers[i % assemblers.length] || {}, getOpacity("assembler"), isStep);
 
-        // Convoyeurs courbés venant des constructeurs vers la double entrée de l'assembleuse
         if (constPositions.length >= 2) {
           const c1 = constPositions[Math.min(i*2, constPositions.length - 1)];
           const c2 = constPositions[Math.min(i*2 + 1, constPositions.length - 1)];
-          
-          // Courbe 1 (Gauche)
           beltsSvg += this.renderCurvedConveyor(`M ${c1.outX} ${c1.outY} Q ${c1.outX} ${my + assH + 15}, ${mx + assW/2 - 13} ${my + assH}`, "#a855f7", 10);
-          // Courbe 2 (Droite)
           beltsSvg += this.renderCurvedConveyor(`M ${c2.outX} ${c2.outY} Q ${c2.outX} ${my + assH + 15}, ${mx + assW/2 + 13} ${my + assH}`, "#38bdf8", 10);
         } else if (constPositions.length === 1) {
           beltsSvg += this.renderCurvedConveyor(`M ${constPositions[0].outX} ${constPositions[0].outY} L ${mx + assW/2} ${my + assH}`, "#a855f7", 10);
         }
       }
 
-      // -------------------------------------------------------------
-      // 5. SORTIE FINALE & CONTENEUR INDUSTRIEL (Nord-Est / Colonne F)
-      // -------------------------------------------------------------
       const storageX = margin + 5 * cellW + 6;
       const storageY = margin + 12;
       const isStorageStep = targetStepId === "step_output_storage";
@@ -3765,31 +3530,27 @@ document.addEventListener("DOMContentLoaded", () => {
         <g transform="translate(${storageX}, ${storageY})" opacity="${getOpacity('storage')}" ${storageGlow} style="cursor: pointer;">
           <title>📦 Conteneur de Stockage Industriel&#10;🎯 Produit Fini : ${targetName}</title>
           <rect width="${cellW - 12}" height="68" rx="4" fill="#064e3b" stroke="${isStorageStep ? '#10b981' : '#047857'}" stroke-width="${isStorageStep ? 2 : 1.2}" />
-          <!-- Nervures Container -->
           <line x1="10" y1="8" x2="10" y2="60" stroke="#047857" stroke-width="2" />
           <line x1="22" y1="8" x2="22" y2="60" stroke="#047857" stroke-width="2" />
           <line x1="34" y1="8" x2="34" y2="60" stroke="#047857" stroke-width="2" />
           <line x1="${cellW - 22}" y1="8" x2="${cellW - 22}" y2="60" stroke="#047857" stroke-width="2" />
-          <!-- Header FICSIT Container -->
           <rect x="4" y="4" width="${cellW - 20}" height="12" rx="2" fill="#022c22" />
           <text x="${(cellW - 12)/2}" y="13" fill="#a7f3d0" font-size="7.5" font-weight="900" text-anchor="middle">STOCKAGE</text>
           <circle cx="12" cy="10" r="2.5" fill="#10b981" />
           <text x="${(cellW - 12)/2}" y="42" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">PRODUIT FINI</text>
-          <!-- Port d'entrée du container -->
           <rect x="-3" y="26" width="6" height="16" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
           <circle cx="0" cy="34" r="2" fill="#10b981" />
         </g>
       `;
 
-      // Tapis final reliant l'assembleuse au conteneur
       if (assPositions.length > 0) {
         const lastAss = assPositions[assPositions.length - 1];
         beltsSvg += this.renderCurvedConveyor(`M ${lastAss.outX} ${lastAss.outY} Q ${lastAss.outX} ${storageY + 34}, ${storageX} ${storageY + 34}`, "#10b981", 12);
+      } else if (constPositions.length > 0) {
+        const lastConst = constPositions[constPositions.length - 1];
+        beltsSvg += this.renderCurvedConveyor(`M ${lastConst.outX} ${lastConst.outY} Q ${lastConst.outX} ${storageY + 34}, ${storageX} ${storageY + 34}`, "#10b981", 12);
       }
 
-      // -------------------------------------------------------------
-      // 6. RÉSEAU ÉLECTRIQUE & PÔLES (Étape Power)
-      // -------------------------------------------------------------
       const isPowerStep = targetStepId === "step_power";
       const pole1X = margin + 1 * cellW;
       const pole1Y = margin + 3 * cellH;
@@ -3797,19 +3558,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const pole2Y = margin + 3 * cellH;
 
       powerSvg += `
-        <!-- Poteau Électrique Ouest -->
         <g transform="translate(${pole1X}, ${pole1Y})" opacity="${isPowerStep ? 1 : 0.4}">
           <circle cx="0" cy="0" r="10" fill="#111827" stroke="#f59e0b" stroke-width="1.8" />
           <circle cx="0" cy="0" r="4" fill="#f59e0b" filter="drop-shadow(0 0 6px #f59e0b)" />
           <text x="0" y="3.5" fill="#000" font-size="8" font-weight="900" text-anchor="middle">⚡</text>
         </g>
-        <!-- Poteau Électrique Est -->
         <g transform="translate(${pole2X}, ${pole2Y})" opacity="${isPowerStep ? 1 : 0.4}">
           <circle cx="0" cy="0" r="10" fill="#111827" stroke="#f59e0b" stroke-width="1.8" />
           <circle cx="0" cy="0" r="4" fill="#f59e0b" filter="drop-shadow(0 0 6px #f59e0b)" />
           <text x="0" y="3.5" fill="#000" font-size="8" font-weight="900" text-anchor="middle">⚡</text>
         </g>
-        <!-- Câbles d'alimentation vers machines -->
         <path d="M ${pole1X} ${pole1Y} Q ${margin + 3*cellW} ${margin + 3.2*cellH}, ${pole2X} ${pole2Y}" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="4,4" fill="none" opacity="${isPowerStep ? 1 : 0.35}" />
       `;
 
@@ -3825,10 +3583,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // Bannière d'en-tête du plan top-down
+      const curIdx = activeState ? activeState.currentStepIndex : 0;
+      const totalStepsCount = activeState && activeState.steps ? activeState.steps.length : 7;
+      const curTag = activeState && activeState.steps && activeState.steps[curIdx] ? activeState.steps[curIdx].tag : "";
+      
       const planTitle = isFull 
-        ? `PLAN D'IMPLANTATION TOP-DOWN COMPLET (6×6 DALLES • 48m × 48m)` 
-        : `PLAN D'IMPLANTATION : ÉTAPE ${this.currentStepIndex + 1}/${this.steps.length} (${(this.steps[this.currentStepIndex]?.tag || "").toUpperCase()})`;
+        ? `PLAN D'IMPLANTATION TOP-DOWN COMPLET : ${factoryTitle.toUpperCase()}` 
+        : `PLAN TOP-DOWN : ÉTAPE ${curIdx + 1}/${totalStepsCount} (${curTag.toUpperCase()})`;
 
       return `
         <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background: #060910; font-family: system-ui, sans-serif; user-select: none;">
@@ -3850,7 +3611,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <!-- Titre du plan -->
           <text x="${svgW/2}" y="24" fill="#38bdf8" font-size="12" font-weight="900" text-anchor="middle" letter-spacing="0.5">${planTitle}</text>
-          <text x="${svgW/2}" y="38" fill="#94a3b8" font-size="9" text-anchor="middle">Placement exact sur la grille mondiale (Vue du dessus SCIM)</text>
+          <text x="${svgW/2}" y="38" fill="#94a3b8" font-size="9" text-anchor="middle">${totalMachines} Machines • ${results.totalPowerMW || 0} MW • Grille 6×6 (48m × 48m)</text>
           
           <!-- Boussole -->
           ${compassSvg}
@@ -3881,32 +3642,34 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    generateSteps(results) {
-      this.lastResults = results;
+    generateSteps(results, isMs = false) {
       const steps = [];
-      const totalMachines = results.productionSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
-      const targetItem = results.targets[0] || { item: "Produit Fini", rate: 10 };
-      const targetName = results.targets.length === 1 ? (ITEM_NAMES[targetItem.item] || targetItem.item) : results.targets.map(t => `${t.rate}/m ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
+      const totalMachines = (results.productionSteps || []).reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+      const targetItem = (results.targets && results.targets[0]) || { item: "Produit Fini", rate: 10 };
+      const targetName = results.targets && results.targets.length === 1 
+        ? (ITEM_NAMES[targetItem.item] || targetItem.item)
+        : (results.targets || []).map(t => `${t.rate}/m ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
+      const factoryTitle = results.milestoneName || targetName;
       const rawResources = results.rawResources || {};
 
       // 1. Étape 1 : Fondations & Implantation Géodésique
       steps.push({
-        id: "step_foundations",
+        baseId: "step_foundations",
         tag: "1. FONDATIONS & SOL",
-        title: "1. Pose de la dalle de fondations 6×6 (48m × 48m)",
-        desc: "Installez une dalle de fondation plane de 48m × 48m (6×6 dalles de 8m×8m) alignée sur la grille mondiale (touche Ctrl enfoncée).",
+        title: `1. Pose de la dalle de fondations 6×6 pour : ${factoryTitle}`,
+        desc: `Installez une dalle de fondation plane de 48m × 48m (6×6 dalles de 8m×8m) alignée sur la grille mondiale (touche Ctrl enfoncée). Cette dalle accueillera l'ensemble du complexe de ${totalMachines} machines.`,
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <div>📐 <strong>Dimensions :</strong> 6 dalles (A-F) × 6 dalles (1-6) = 36 fondations (2304 m²).</div>
             <div>🧭 <strong>Alignement :</strong> Placer la dalle face au Nord avec accès logistique dégagé au Sud.</div>
-            <div>🧱 <strong>Type recommandé :</strong> Fondations béton 2m ou 4m pour cacher la tuyauterie et les convoyeurs.</div>
+            <div>🏭 <strong>Capacité :</strong> Prévue pour ${totalMachines} machines FICSIT compactées en flux tendu.</div>
             <div>📍 <strong>Repères de pose :</strong> Colonnes A à F de gauche à droite, Lignes 1 (Nord) à 6 (Sud).</div>
           </div>
         `,
         shopping: [
           { name: "Béton", qty: 216, icon: "🧱" }
         ],
-        svg: this.generateFoundationsStepSVG(results)
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_foundations", st)
       });
 
       // 2. Étape 2 : Arrivées Minerais & Manifolds d'entrée
@@ -3917,28 +3680,28 @@ document.addEventListener("DOMContentLoaded", () => {
         rawSplittersCount += Math.max(1, Math.ceil(rate / 60));
       });
       rawShopping.push({ name: "Plaque de fer (Tapis)", qty: 60, icon: "📦" });
-      rawShopping.push({ name: "Plaque de fer renf. (Répartiteurs)", qty: rawSplittersCount * 2, icon: "⚙️" });
+      rawShopping.push({ name: "Plaque de fer renf. (Répartiteurs)", qty: Math.max(rawSplittersCount * 2, 4), icon: "⚙️" });
 
       steps.push({
-        id: "step_raw_logistics",
+        baseId: "step_raw_logistics",
         tag: "2. ARRIVÉES BRUTES",
-        title: "2. Arrivées de minerais et pose des répartiteurs d'entrée",
-        desc: "Amenez les flux de matières premières brutes au bord Sud de la dalle (Ligne 6) et posez la ligne de Répartiteurs (Splitters) en manifold.",
+        title: `2. Arrivées de matières premières (${rawList.length} ressource(s))`,
+        desc: `Amenez les flux de matières premières brutes au bord Sud de la dalle (Ligne 6) et posez la ligne de Répartiteurs (Splitters) en manifold.`,
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
             ${rawList.map(([item, rate]) => {
               const belt = SatisfactoryFlowchart.getBeltTierInfo(rate);
               return `<div>📥 <strong>${ITEM_NAMES[item]||item} :</strong> <span style="color: #f59e0b; font-weight: bold;">${Math.round(rate*10)/10}/min</span> ➔ Tapis recommandé : <span style="color: ${belt.color}; font-weight: bold;">${belt.mk}</span>.</div>`;
-            }).join("")}
+            }).join("") || "<div>📥 <em>Alimentation par composants intermédiaires</em></div>"}
             <div>🔀 <strong>Logistique :</strong> Aligner 1 Répartiteur orange sur chaque axe de machine en Dalle B6, C6, D6, E6.</div>
           </div>
         `,
         shopping: rawShopping,
-        svg: this.generateRawLogisticsStepSVG(results)
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_raw_logistics", st)
       });
 
       // 3. Groupe Fonderies
-      const smelters = results.productionSteps.filter(s => s.building && (s.building.id === "smelter" || s.building.id === "foundry"));
+      const smelters = (results.productionSteps || []).filter(s => s.building && (s.building.id === "smelter" || s.building.id === "foundry"));
       if (smelters.length > 0) {
         const totalSmeltMachines = smelters.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
         const smelterBld = smelters[0].building;
@@ -3946,9 +3709,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const shopping = Object.entries(bldCost).map(([item, q]) => ({ name: ITEM_NAMES[item]||item, qty: q * totalSmeltMachines, icon: "🏭" }));
 
         steps.push({
-          id: "step_smelters",
+          baseId: "step_smelters",
           tag: "3. FONDERIES",
-          title: `3. Implantation des Fonderies (${totalSmeltMachines} machines)`,
+          title: `3. Implantation des Fonderies (${totalSmeltMachines} machine(s))`,
           desc: "Posez la rangée de fonderies sur les fondations de Rangée 5 (B5, C5, D5...). Reliez les entrées aux splitters Sud et les sorties aux collecteurs Nord.",
           details: `
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -3958,12 +3721,12 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `,
           shopping: shopping,
-          svg: this.generateSmeltersStepSVG(results, smelters)
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_smelters", st)
         });
       }
 
       // 4. Groupe Constructeurs
-      const constructors = results.productionSteps.filter(s => s.building && s.building.id === "constructor");
+      const constructors = (results.productionSteps || []).filter(s => s.building && s.building.id === "constructor");
       if (constructors.length > 0) {
         const totalConstMachines = constructors.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
         const constBld = constructors[0].building;
@@ -3971,9 +3734,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const shopping = Object.entries(bldCost).map(([item, q]) => ({ name: ITEM_NAMES[item]||item, qty: q * totalConstMachines, icon: "🏭" }));
 
         steps.push({
-          id: "step_constructors",
+          baseId: "step_constructors",
           tag: "4. CONSTRUCTEURS",
-          title: `4. Implantation des Constructeurs (${totalConstMachines} machines)`,
+          title: `4. Implantation des Constructeurs (${totalConstMachines} machine(s))`,
           desc: "Installez les constructeurs sur les dalles centrales de Rangée 3 (B3, C3, D3...). Connectez les lingots en entrée et regroupez les pièces usinées.",
           details: `
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -3983,12 +3746,12 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `,
           shopping: shopping,
-          svg: this.generateConstructorsStepSVG(results, constructors)
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_constructors", st)
         });
       }
 
-      // 5. Groupe Assembleuses / Façonneuses
-      const assemblers = results.productionSteps.filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "refinery" || s.building.id === "blender"));
+      // 5. Groupe Assembleuses / Façonneuses / Raffineries
+      const assemblers = (results.productionSteps || []).filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "refinery" || s.building.id === "blender" || s.building.id === "packager"));
       if (assemblers.length > 0) {
         const totalAssMachines = assemblers.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
         const assBld = assemblers[0].building;
@@ -3996,10 +3759,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const shopping = Object.entries(bldCost).map(([item, q]) => ({ name: ITEM_NAMES[item]||item, qty: q * totalAssMachines, icon: "🏭" }));
 
         steps.push({
-          id: "step_assemblers",
+          baseId: "step_assemblers",
           tag: "5. ASSEMBLAGE FINAL",
-          title: `5. Implantation des Assembleuses (${totalAssMachines} machines)`,
-          desc: "Positionnez les assembleuses finales sur les fondations Nord de Rangée 1-2 (B1-B2 & D1-D2). Raccordez les deux flux d'entrée via des convoyeurs courbés.",
+          title: `5. Implantation des Assembleuses (${totalAssMachines} machine(s))`,
+          desc: "Positionnez les assembleuses finales sur les fondations Nord de Rangée 1-2 (B1-B2 & D1-D2). Raccordez les flux d'entrée via des convoyeurs dédiés.",
           details: `
             <div style="display: flex; flex-direction: column; gap: 6px;">
               ${assemblers.map(s => `<div>⚙️ <strong>${s.recipeName} :</strong> ${s.physicalMachines || Math.ceil(s.machinesCount)}× ${s.building.name} (@${s.overclock||100}%) ➔ <span style="color: #a855f7; font-weight: bold;">+${Math.round(s.rateProduced*10)/10}/m ${ITEM_NAMES[s.itemId]||s.itemId}</span></div>`).join("")}
@@ -4008,16 +3771,16 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `,
           shopping: shopping,
-          svg: this.generateAssemblersStepSVG(results, assemblers)
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_assemblers", st)
         });
       }
 
       // 6. Étape Réseau Électrique
       const polesCount = Math.ceil(totalMachines / 3) + 2;
       steps.push({
-        id: "step_power",
+        baseId: "step_power",
         tag: "6. ÉLECTRICITÉ",
-        title: "6. Raccordement Électrique & Mise sous Tension",
+        title: `6. Raccordement Électrique & Mise sous Tension (${results.totalPowerMW || 0} MW)`,
         desc: "Posez les poteaux électriques aux intersections de fondations et câblez chaque machine vers le réseau général FICSIT.",
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -4031,14 +3794,14 @@ document.addEventListener("DOMContentLoaded", () => {
           { name: "Tige de fer", qty: polesCount * 2, icon: "🔩" },
           { name: "Béton", qty: polesCount * 1, icon: "🧱" }
         ],
-        svg: this.generatePowerStepSVG(results)
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_power", st)
       });
 
       // 7. Étape Sortie & Stockage Fini
       steps.push({
-        id: "step_output_storage",
+        baseId: "step_output_storage",
         tag: "7. EXPÉDITION",
-        title: "7. Sortie finale vers Stockage ou Broyeur A.W.E.S.O.M.E.",
+        title: `7. Sortie finale vers Stockage FICSIT (${targetName})`,
         desc: "Raccordez la sortie de l'usine au Conteneur de Stockage Industriel (Dalle F1) ou vers votre réseau logistique principal.",
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -4051,16 +3814,15 @@ document.addEventListener("DOMContentLoaded", () => {
           { name: "Plaque de fer renf.", qty: 10, icon: "📦" },
           { name: "Tige de fer", qty: 20, icon: "🔩" }
         ],
-        svg: this.generateStorageStepSVG(results)
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_output_storage", st)
       });
 
-      this.steps = steps;
       return steps;
     },
 
     renderCurrentStep(isMs = false) {
       const state = isMs ? this.msState : this.singleState;
-      if (!state || state.steps.length === 0) return;
+      if (!state || !state.steps || state.steps.length === 0) return;
       const step = state.steps[state.currentStepIndex];
       if (!step) return;
 
@@ -4086,7 +3848,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (detailsEl) detailsEl.innerHTML = step.details;
 
       if (shoppingEl) {
-        shoppingEl.innerHTML = step.shopping.map(s => `
+        shoppingEl.innerHTML = (step.shopping || []).map(s => `
           <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 4px; padding: 4px 8px; font-size: 11.5px; font-weight: bold; color: #a7f3d0; display: inline-flex; align-items: center; gap: 4px;">
             <span>${s.icon || "📦"}</span> ${s.qty}× ${s.name}
           </div>
@@ -4095,9 +3857,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (svgViewport) {
         if (state.currentViewMode === "full" && state.lastResults) {
-          svgViewport.innerHTML = this.generateTopDownFactoryBlueprintSVG(state.lastResults, null);
+          svgViewport.innerHTML = this.generateTopDownFactoryBlueprintSVG(state.lastResults, null, state);
         } else {
-          svgViewport.innerHTML = step.svg;
+          svgViewport.innerHTML = typeof step.svg === "function" ? step.svg(state) : step.svg;
         }
       }
 
@@ -4106,13 +3868,16 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleFullBtn.style.background = state.currentViewMode === "full" ? "rgba(56, 189, 248, 0.2)" : "transparent";
       }
 
-      // Progression
-      const pct = Math.round(((this.validatedSteps.size) / Math.max(state.steps.length, 1)) * 100);
+      // Progression par calcul
+      const calcKey = state.calcKey || "default";
+      const validatedCount = state.steps.filter(s => this.validatedSteps.has(`${calcKey}__${s.baseId}`)).length;
+      const pct = Math.round((validatedCount / Math.max(state.steps.length, 1)) * 100);
       if (progressFill) progressFill.style.width = `${pct}%`;
       if (progressPct) progressPct.innerText = `${pct}%`;
 
       // Bouton de validation
-      const isDone = this.validatedSteps.has(step.id);
+      const fullStepId = `${calcKey}__${step.baseId}`;
+      const isDone = this.validatedSteps.has(fullStepId);
       if (validateBtn) {
         validateBtn.innerText = isDone ? "✅ Étape Validée (Fait)" : "✓ Valider cette étape";
         validateBtn.style.background = isDone ? "#059669" : "#10b981";
@@ -4130,12 +3895,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (section) section.style.display = "block";
 
-      if (!this.singleState) this.singleState = { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null };
-      if (!this.msState) this.msState = { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null };
-
+      const calcKey = isMs ? ("ms_" + (results.milestoneName || "default")) : ("single_" + ((results.targets && results.targets[0]?.item) || "default"));
       const state = isMs ? this.msState : this.singleState;
+      state.calcKey = calcKey;
       state.lastResults = results;
-      state.steps = this.generateSteps(results);
+      state.steps = this.generateSteps(results, isMs);
       state.currentStepIndex = 0;
       state.currentViewMode = "step";
       this.renderCurrentStep(isMs);
@@ -4175,10 +3939,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (fullscreenBtn) {
         fullscreenBtn.onclick = () => {
           const targetItem = (results.targets && results.targets[0]) || { item: "Usine", rate: 10 };
-          const targetName = ITEM_NAMES[targetItem.item] || targetItem.item;
+          const targetName = results.milestoneName || (ITEM_NAMES[targetItem.item] || targetItem.item);
           const svgContent = state.currentViewMode === "full"
-            ? this.generateTopDownFactoryBlueprintSVG(results, null)
-            : (state.steps[state.currentStepIndex] ? state.steps[state.currentStepIndex].svg : this.generateTopDownFactoryBlueprintSVG(results, null));
+            ? this.generateTopDownFactoryBlueprintSVG(results, null, state)
+            : (state.steps[state.currentStepIndex] ? (typeof state.steps[state.currentStepIndex].svg === 'function' ? state.steps[state.currentStepIndex].svg(state) : state.steps[state.currentStepIndex].svg) : this.generateTopDownFactoryBlueprintSVG(results, null, state));
           openBlueprintModal(`📐 Plan d'Implantation Top-Down 2D : ${targetName}`, svgContent);
         };
       }
@@ -4187,17 +3951,20 @@ document.addEventListener("DOMContentLoaded", () => {
         validateBtn.onclick = () => {
           const step = state.steps[state.currentStepIndex];
           if (step) {
-            if (this.validatedSteps.has(step.id)) {
-              this.validatedSteps.delete(step.id);
+            const fullStepId = `${state.calcKey}__${step.baseId}`;
+            if (this.validatedSteps.has(fullStepId)) {
+              this.validatedSteps.delete(fullStepId);
               showToast(`↺ Étape remise en cours : ${step.title}`);
             } else {
-              this.validatedSteps.add(step.id);
+              this.validatedSteps.add(fullStepId);
               showToast(`✅ Étape validée : ${step.title}`);
               if (state.currentStepIndex < state.steps.length - 1) {
                 state.currentStepIndex++;
               }
             }
-            localStorage.setItem("ficsit_guide_validated", JSON.stringify(Array.from(this.validatedSteps)));
+            try {
+              localStorage.setItem("ficsit_guide_validated", JSON.stringify(Array.from(this.validatedSteps)));
+            } catch(e) {}
             this.renderCurrentStep(isMs);
           }
         };
