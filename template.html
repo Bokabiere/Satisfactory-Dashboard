@@ -937,9 +937,6 @@ body {
     <button class="nav-tab" data-tab="map">
       <span>🗺️</span> Carte des Ressources
     </button>
-    <button class="nav-tab" data-tab="save-import">
-      <span>💾</span> Import Sauvegarde (.sav)
-    </button>
   </nav>
 
   <!-- CONTENU PRINCIPAL -->
@@ -1558,99 +1555,6 @@ body {
             </div>
 
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. SECTION : CHARGEMENT DE SAUVEGARDE (.SAV) -->
-    <section id="view-save-import" class="tab-view">
-      <div class="card-panel">
-        <div class="panel-header">
-          <h2 class="panel-title"><i>💾</i> Synchronisation Automatique avec votre Sauvegarde (.sav)</h2>
-        </div>
-
-        <div style="background: linear-gradient(135deg, rgba(75, 179, 253, 0.12), rgba(46, 204, 113, 0.12)); border: 1px solid rgba(75, 179, 253, 0.35); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <span style="background: var(--ficsit-cyan); color: #000; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">SYNCHRONISATION 1-CLIC</span>
-            <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--text-primary); margin: 0;">Comment ça marche ?</h3>
-          </div>
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.6;">
-            Glissez votre fichier de sauvegarde <strong>.sav</strong> ci-dessous. Le tableau de bord lira votre session en toute sécurité dans votre navigateur (aucun fichier n'est envoyé sur internet) et cochera instantanément tous vos <strong>Jalons du HUB (Tiers 0 à 9)</strong> et vos <strong>Phases de l'Ascenseur Spatial</strong> déjà accomplis !
-          </p>
-        </div>
-
-        <div class="dropzone" id="save-dropzone" style="border: 2px dashed rgba(250, 149, 73, 0.6); background: rgba(0,0,0,0.35); border-radius: var(--radius-md); padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease;">
-          <div class="dropzone-icon" style="font-size: 48px; margin-bottom: 12px;">📁</div>
-          <div class="dropzone-title" style="font-family: var(--font-display); font-size: 18px; color: var(--text-primary); margin-bottom: 8px;">
-            Glissez-déposez votre fichier de sauvegarde (.sav) ici
-          </div>
-          <div class="dropzone-subtitle" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-            Emplacement standard de vos sauvegardes Satisfactory sur Windows :<br>
-            <code style="background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px; color: var(--ficsit-cyan); font-size: 12px; display: inline-block; margin-top: 6px;">%LOCALAPPDATA%\FactoryGame\Saved\SaveGames\</code>
-          </div>
-
-          <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-            <button type="button" class="btn-ficsit" id="btn-browse-save" style="font-size: 13px; padding: 8px 18px; font-weight: 700;">
-              <span>📂</span> Parcourir les Fichiers
-            </button>
-            <button type="button" class="btn-outline" id="btn-copy-save-path" style="font-size: 13px; padding: 8px 18px; border-color: rgba(75, 179, 253, 0.5); color: var(--ficsit-cyan);">
-              <span>📋</span> Copier le Dossier de Sauvegarde
-            </button>
-          </div>
-          <input type="file" id="save-file-input" accept=".sav" style="display: none;">
-        </div>
-
-        <!-- Sélecteur Rapide de Palier (1-Clic) -->
-        <div style="margin-top: 24px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-            <div>
-              <h3 style="font-family: var(--font-display); font-size: 15px; color: var(--ficsit-orange); margin: 0;">
-                ⚡ Définir ma Progression Actuelle en 1 Clic
-              </h3>
-              <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
-                Choisissez votre palier actuel pour cocher instantanément tous les jalons et phases correspondants :
-              </p>
-            </div>
-            <button type="button" class="btn-outline" id="btn-reset-all-progression" style="font-size: 11px; padding: 4px 10px; border-color: rgba(255, 94, 58, 0.4); color: #ff5e3a;">
-              ↺ Réinitialiser à zéro
-            </button>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
-            <button type="button" class="btn-outline btn-preset-tier" data-tier="0" style="padding: 10px; font-size: 12px; text-align: left;">
-              <strong style="color: var(--text-primary); display: block;">Palier 0 - Débutant</strong>
-              <span style="font-size: 11px; color: var(--text-muted);">Tutoriel HUB 1 à 6</span>
-            </button>
-            <button type="button" class="btn-outline btn-preset-tier" data-tier="2" style="padding: 10px; font-size: 12px; text-align: left; background: rgba(75, 179, 253, 0.15); border-color: var(--ficsit-cyan);">
-              <strong style="color: var(--ficsit-cyan); display: block;">Palier 1 & 2 - Usine Mk.1</strong>
-              <span style="font-size: 11px; color: var(--text-secondary);">Assembleuses, Rotors, Tapis Mk.2</span>
-            </button>
-            <button type="button" class="btn-outline btn-preset-tier" data-tier="4" style="padding: 10px; font-size: 12px; text-align: left;">
-              <strong style="color: var(--ficsit-amber); display: block;">Palier 3 & 4 - Charbon & Acier</strong>
-              <span style="font-size: 11px; color: var(--text-muted);">Phase 1 Validée (Énergie continue)</span>
-            </button>
-            <button type="button" class="btn-outline btn-preset-tier" data-tier="6" style="padding: 10px; font-size: 12px; text-align: left;">
-              <strong style="color: var(--ficsit-orange); display: block;">Palier 5 & 6 - Pétrole & Trains</strong>
-              <span style="font-size: 11px; color: var(--text-muted);">Phase 2 Validée (Plastique, Carburant)</span>
-            </button>
-            <button type="button" class="btn-outline btn-preset-tier" data-tier="8" style="padding: 10px; font-size: 12px; text-align: left;">
-              <strong style="color: var(--ficsit-green); display: block;">Palier 7 & 8 - Aluminium & Nucléaire</strong>
-              <span style="font-size: 11px; color: var(--text-muted);">Phase 3 Validée (Bauxite, Réacteur)</span>
-            </button>
-            <button type="button" class="btn-outline btn-preset-tier" data-tier="9" style="padding: 10px; font-size: 12px; text-align: left; background: rgba(168, 85, 247, 0.15); border-color: #a855f7;">
-              <strong style="color: #d8b4fe; display: block;">Palier 9 - Quantique 1.0</strong>
-              <span style="font-size: 11px; color: var(--text-muted);">Phase 4 Validée (Convertisseur alien)</span>
-            </button>
-            <button type="button" class="btn-ficsit btn-preset-tier" data-tier="100" style="padding: 10px; font-size: 12px; text-align: left; background: linear-gradient(135deg, #fa9549 0%, #ff5e3a 100%);">
-              <strong style="color: #000; display: block;">🏆 100% Tout Débloqué</strong>
-              <span style="font-size: 11px; color: #331500;">Tiers 0-9 & Toutes les Phases</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Rapport d'analyse de la sauvegarde -->
-        <div id="save-report-panel" style="display: none; margin-top: 24px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-          <!-- Rempli dynamiquement par app.js -->
         </div>
       </div>
     </section>
