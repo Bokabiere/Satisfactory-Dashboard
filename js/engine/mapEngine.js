@@ -98,6 +98,7 @@ class SatisfactoryMapEngine {
   }
 
   resize() {
+    if (!this.ctx) return;
     const parent = this.canvas.parentElement;
     if (!parent) return;
     const rect = parent.getBoundingClientRect();
@@ -339,6 +340,7 @@ class SatisfactoryMapEngine {
 
   render() {
     const ctx = this.ctx;
+    if (!ctx) return;
     ctx.clearRect(0, 0, this.width, this.height);
 
     // 1. Render Background & Terrain Map

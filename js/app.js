@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
           (m.buildings || []).forEach(b => unlockedBuildings.add(b));
         } else {
           if (nextMilestones.length < 5) {
-            nextMilestones.push({ tier: t.tier, name: m.name, cost: m.cost, buildings: m.buildings });
+            nextMilestones.push({ id: m.id, tier: t.tier, name: m.name, cost: m.cost, buildings: m.buildings });
           }
         }
       });
@@ -1065,6 +1065,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderMilestoneCalculationResults(optimizedResult);
     showToast(`Optimisation de l'usine de jalon réussie : ${opt.optimal.totalMachines} machines (-${opt.savings.machinesPct}%) !`);
+  }
+
+  function groupStepsIntoMk3Modules(productionSteps) {
+    if (!productionSteps || productionSteps.length === 0) return [];
+
+    const totalMachines = productionSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+    const modules = [];
+
+    function getBldList(steps) {
+      const counts = {};
+      steps.forEach(s => {
+        const name = s.building ? s.building.name : "Machine";
+        const c = s.physicalMachines || Math.ceil(s.machinesCount);
+        counts[name] = (counts[name] || 0) + c;
+      });
+      return Object.entries(counts).map(([name, count]) => ({ name, count }));
+    }
+
+    function getInputsStr(steps) {
+      const inSet = new Set();
+      steps.forEach(s => {
+        (s.inputs || []).forEach(inp => {
+          inSet.add(ITEM_NAMES[inp.item] || inp.item);
+        });
+      });
+      return Array.from(inSet).join(", ") || "Minerais Bruts";
+    }
+
+    function getOutputsStr(steps) {
+      return steps.map(s => `+${Math.round(s.rateProduced * 10) / 10}/m ${ITEM_NAMES[s.itemId] || s.itemId}`).join(", ");
+    }
+
+    if (totalMachines <= 18) {
+      const bldList = getBldList(productionSteps);
+      modules.push({
+        num: 1,
+        title: "Module Tout-en-Un Intégré Mk.3",
+        bldList,
+        machinesCount: totalMachines,
+        rawInputs: getInputsStr(productionSteps),
+        outputStr: getOutputsStr(productionSteps),
+        powerMW: productionSteps.reduce((sum, s) => sum + (s.powerMW || 0), 0),
+        steps: productionSteps
+      });
+    } else {
+      let currentSteps = [];
+      let currentCount = 0;
+      let mIdx = 1;
+
+      productionSteps.forEach(st => {
+        const count = st.physicalMachines || Math.ceil(st.machinesCount);
+        if (currentCount + count > 18 && currentSteps.length > 0) {
+          modules.push({
+            num: mIdx,
+            title: `Module #${mIdx} : Préparation [${currentSteps.map(s => s.recipeName || s.name || "Procédé").join(" + ")}]`,
+            bldList: getBldList(currentSteps),
+            machinesCount: currentCount,
+            rawInputs: getInputsStr(currentSteps),
+            outputStr: getOutputsStr(currentSteps),
+            powerMW: currentSteps.reduce((sum, s) => sum + (s.powerMW || 0), 0),
+            steps: [...currentSteps]
+          });
+          mIdx++;
+          currentSteps = [];
+          currentCount = 0;
+        }
+        currentSteps.push(st);
+        currentCount += count;
+      });
+
+      if (currentSteps.length > 0) {
+        modules.push({
+          num: mIdx,
+          title: `Module #${mIdx} : Assemblage & Finition`,
+          bldList: getBldList(currentSteps),
+          machinesCount: currentCount,
+          rawInputs: getInputsStr(currentSteps),
+          outputStr: getOutputsStr(currentSteps),
+          powerMW: currentSteps.reduce((sum, s) => sum + (s.powerMW || 0), 0),
+          steps: [...currentSteps]
+        });
+      }
+    }
+
+    return modules;
   }
 
   function renderMilestoneCalculationResults(results) {
