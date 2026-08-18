@@ -1,0 +1,1166 @@
+/* ==========================================================================
+   FICSIT INDUSTRIAL DESIGN SYSTEM - SATISFACTORY DASHBOARD
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Palette FICSIT */
+  --bg-main: #0e1217;
+  --bg-surface: #161c24;
+  --bg-surface-elevated: #1f2732;
+  --bg-card: #1a222d;
+  --bg-card-hover: #242f3e;
+  --border-subtle: #2d3848;
+  --border-strong: #3e4d62;
+
+  --ficsit-orange: #fa9549;
+  --ficsit-orange-glow: rgba(250, 149, 73, 0.25);
+  --ficsit-orange-dark: #b8621d;
+  --ficsit-amber: #f3c11b;
+  --ficsit-blue: #4bb3fd;
+  --ficsit-cyan: #3fe0d0;
+  --ficsit-green: #2ecc71;
+  --ficsit-red: #e74c3c;
+
+  --text-primary: #f0f4f8;
+  --text-secondary: #9aaec4;
+  --text-muted: #5e7188;
+
+  --font-display: 'Chakra Petch', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+  --shadow-ficsit: 0 0 15px rgba(250, 149, 73, 0.15);
+}
+
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(250, 149, 73, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(75, 179, 253, 0.02) 0%, transparent 40%);
+}
+
+/* En-tête FICSIT HUD */
+.hud-header {
+  background-color: var(--bg-surface);
+  border-bottom: 2px solid var(--ficsit-orange);
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ficsit-badge {
+  background: var(--ficsit-orange);
+  color: #0e1217;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.app-title span {
+  color: var(--ficsit-orange);
+}
+
+.quick-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ficsit-amber);
+}
+
+/* Barre d'onglets de navigation */
+.nav-tabs-bar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  padding: 0 24px;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.nav-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.nav-tab.active {
+  color: var(--ficsit-orange);
+  border-bottom-color: var(--ficsit-orange);
+  background: rgba(250, 149, 73, 0.05);
+}
+
+/* Conteneur principal */
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Sections & Vues */
+.tab-view {
+  display: none;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.tab-view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cartes & Panneaux */
+.card-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+}
+
+.panel-title i {
+  color: var(--ficsit-orange);
+}
+
+/* Formulaires & Contrôles */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.form-control, select.form-control {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: var(--ficsit-orange);
+  box-shadow: 0 0 0 2px var(--ficsit-orange-glow);
+}
+
+/* Boutons FICSIT */
+.btn-ficsit {
+  background: var(--ficsit-orange);
+  color: #0e1217;
+  border: none;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-ficsit:hover {
+  background: #ffaa66;
+  box-shadow: 0 0 12px var(--ficsit-orange-glow);
+  transform: translateY(-1px);
+}
+
+.btn-ficsit:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  color: var(--text-primary);
+  border-color: var(--ficsit-orange);
+  background: rgba(250, 149, 73, 0.08);
+}
+
+/* Grille de Jalons (Tiers) */
+.tier-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tier-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.tier-header {
+  background: var(--bg-surface-elevated);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.2s ease;
+}
+
+.tier-header:hover {
+  background: #27313f;
+}
+
+.tier-block.open .tier-header {
+  border-bottom-color: var(--border-subtle);
+}
+
+.tier-toggle-icon {
+  font-size: 14px;
+  color: var(--ficsit-orange);
+  transition: transform 0.2s ease;
+}
+
+.tier-block:not(.open) .tier-toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.tier-block:not(.open) .milestones-grid {
+  display: none;
+}
+
+.tier-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tier-badge {
+  background: var(--border-strong);
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.milestones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+/* Boutons Filtres Blueprints */
+.bp-filter-btn {
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.bp-filter-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--ficsit-orange);
+}
+
+.milestone-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.milestone-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.milestone-card.completed {
+  border-color: var(--ficsit-green);
+  background: rgba(46, 204, 113, 0.04);
+}
+
+.milestone-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.milestone-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.milestone-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--bg-card);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s ease;
+}
+
+.milestone-checkbox:checked {
+  background: var(--ficsit-green);
+  border-color: var(--ficsit-green);
+}
+
+.milestone-checkbox:checked::after {
+  content: "✔";
+  color: #0e1217;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.cost-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cost-tag {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cost-tag .cost-qty {
+  font-weight: 700;
+  color: var(--ficsit-amber);
+}
+
+.unlocked-buildings {
+  font-size: 12px;
+  color: var(--ficsit-cyan);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Ascenseur Spatial */
+.elevator-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.elevator-card.completed {
+  border-color: var(--ficsit-orange);
+  background: rgba(250, 149, 73, 0.05);
+}
+
+.elevator-info h4 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.elevator-info p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Vue Synthétique */
+.synthetic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.tech-summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.tech-summary-card h3 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--ficsit-orange);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+/* Tableau Calculateur de Production */
+.calc-results-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+@media (max-width: 960px) {
+  .calc-results-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.production-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.production-table th {
+  background: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-strong);
+}
+
+.production-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.production-table tr:hover td {
+  background: var(--bg-card-hover);
+}
+
+.machine-count-badge {
+  background: rgba(250, 149, 73, 0.15);
+  border: 1px solid var(--ficsit-orange);
+  color: var(--ficsit-orange);
+  font-family: var(--font-display);
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+/* Carte Sommaire des Ressources */
+.resource-summary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resource-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.resource-box h4 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resource-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+.resource-row:last-child {
+  border-bottom: none;
+}
+
+.resource-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ficsit-amber);
+}
+
+/* Checklist de Construction */
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+
+.checklist-item:hover {
+  background: var(--bg-card-hover);
+}
+
+.checklist-item.checked {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.checklist-item.checked .item-text {
+  color: var(--text-muted);
+}
+
+.item-text {
+  flex: 1;
+  font-size: 14px;
+}
+
+.item-qty {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ficsit-orange);
+}
+
+/* Zone de Drag & Drop pour .sav */
+.dropzone {
+  border: 2px dashed var(--border-strong);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--ficsit-orange);
+  background: rgba(250, 149, 73, 0.04);
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--ficsit-orange);
+}
+
+.dropzone-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.dropzone-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Notification Toast */
+.toast-msg {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--ficsit-orange);
+  color: var(--text-primary);
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* =========================================================================
+   FICHE DE CHANTIER OFFICIELLE FICSIT (IMPRESSION & PDF)
+   ========================================================================= */
+.ficsit-spec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--ficsit-orange);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+
+.ficsit-spec-badge {
+  background: var(--ficsit-orange);
+  color: #000;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+.spec-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.spec-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.spec-box-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ficsit-cyan);
+  margin-bottom: 8px;
+}
+
+.spec-checklist-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.spec-checklist-table th {
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.spec-checklist-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  
+  .nav-tabs-bar, .app-header, .no-print, .tab-view, #blueprint-img-modal {
+    display: none !important;
+  }
+
+  #ficsit-print-modal {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  #ficsit-print-modal > div {
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    background: #ffffff !important;
+  }
+
+  #print-sheet-content {
+    background: #ffffff !important;
+    color: #111827 !important;
+    padding: 0 !important;
+  }
+
+  .spec-box {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    color: #111827 !important;
+  }
+
+  .ficsit-spec-header {
+    border-bottom: 3px solid #fa9549 !important;
+  }
+
+  .spec-checklist-table th {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+  }
+
+  .spec-checklist-table td {
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #111827 !important;
+  }
+}
+
+/* ==========================================================================
+   CARTE INTERACTIVE DES RESSOURCES - STYLES FICSIT HUD
+   ========================================================================== */
+
+.map-view-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .map-view-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-viewport-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  position: relative;
+  height: 720px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.map-canvas-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #0a0e14;
+}
+
+#map-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-floating-controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.map-btn {
+  background: rgba(22, 28, 36, 0.9);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.map-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--ficsit-orange);
+  color: var(--ficsit-orange);
+}
+
+.map-btn.active {
+  background: var(--ficsit-orange);
+  color: #0e1217;
+  border-color: var(--ficsit-orange);
+}
+
+.map-hud-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(22, 28, 36, 0.85);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.pure { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
+.legend-dot.normal { background: #f1c40f; }
+.legend-dot.impure { background: #e74c3c; }
+
+/* Volet de Contrôles & Filtres */
+.map-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-panel-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.map-panel-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--ficsit-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resource-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.resource-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.resource-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.resource-chip.active {
+  background: rgba(250, 149, 73, 0.12);
+  border-color: var(--ficsit-orange);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.purity-filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.purity-chip {
+  flex: 1;
+  text-align: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.purity-chip.pure.active { border-color: #2ecc71; color: #2ecc71; background: rgba(46, 204, 113, 0.15); }
+.purity-chip.normal.active { border-color: #f1c40f; color: #f1c40f; background: rgba(241, 196, 15, 0.15); }
+.purity-chip.impure.active { border-color: #e74c3c; color: #e74c3c; background: rgba(231, 76, 60, 0.15); }
+
+/* Inspecteur de Gisement */
+.node-inspector-card {
+  background: var(--bg-card);
+  border: 1px solid var(--ficsit-orange);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  position: relative;
+}
+
+.node-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.node-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.node-yield-display {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  margin: 12px 0;
+}
+
+.node-yield-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ficsit-amber);
+}
+
+.node-yield-unit {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.somersloop-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(155, 89, 182, 0.1);
+  border: 1px solid #9b59b6;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: #e056fd;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 12px;
+  user-select: none;
+}
+

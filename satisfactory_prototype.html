@@ -1,0 +1,3076 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Satisfactory 3D - Textures FICSIT HD & Jalons</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #7bb5e6;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #fff;
+    }
+
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Viseur */
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+      z-index: 50;
+    }
+    #crosshair::before, #crosshair::after {
+      content: '';
+      position: absolute;
+      background: #ffffff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.8);
+    }
+    #crosshair::before { top: 7px; left: 0; width: 16px; height: 2px; }
+    #crosshair::after { top: 0; left: 7px; width: 2px; height: 16px; }
+
+    /* Interaction Prompt & Machine Live Inspector */
+    #interact-prompt {
+      position: fixed;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, 0);
+      background: rgba(14, 20, 32, 0.96);
+      border: 2px solid #00e5ff;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #fff;
+      pointer-events: none;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 280px;
+      z-index: 55;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px);
+    }
+    .m-inspect-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding-bottom: 5px;
+      font-weight: 800;
+      color: #ff9800;
+      font-size: 0.95rem;
+    }
+    .m-inspect-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+    .m-inspect-bar {
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 2px;
+      width: 100%;
+    }
+    .m-inspect-fill {
+      height: 100%;
+      transition: width 0.2s ease;
+    }
+
+    /* HUD */
+    #hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 22px;
+    }
+
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .panel {
+      background: rgba(14, 20, 32, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 152, 0, 0.45);
+      border-radius: 10px;
+      padding: 12px 18px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.65);
+      pointer-events: auto;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ff9800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      color: #90a4ae;
+      margin-bottom: 6px;
+    }
+
+    .resources-quickbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-width: 480px;
+      margin-top: 4px;
+    }
+
+    .res-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(255,255,255,0.08);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #e0e0e0;
+    }
+    .res-pill span.num { color: #ffb74d; }
+
+    .hud-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn-ficsit {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: #0b0f17;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      transition: all 0.2s;
+    }
+    .btn-ficsit:hover {
+      background: #ffa726;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 18px rgba(255,152,0,0.6);
+    }
+    .btn-milestone {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+    }
+    .btn-milestone:hover {
+      background: #38bdf8;
+      box-shadow: 0 4px 18px rgba(2,132,199,0.6);
+    }
+
+    .milestone-hud-tracker {
+      background: rgba(14, 20, 32, 0.94);
+      border: 2px solid #00e5ff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-width: 250px;
+      margin-top: 10px;
+    }
+    .m-tracker-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #00e5ff;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .m-item-progress {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #cfd8dc;
+      margin-bottom: 3px;
+    }
+
+    .power-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+      background: rgba(0,0,0,0.35);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 229, 255, 0.25);
+    }
+    .power-bar-bg {
+      flex: 1;
+      height: 8px;
+      background: #263238;
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100px;
+    }
+    .power-bar-fill {
+      height: 100%;
+      background: #00e5ff;
+      width: 40%;
+      transition: width 0.3s;
+    }
+
+    /* Hotbar */
+    .hud-bottom {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .instructions {
+      background: rgba(10, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: #cfd8dc;
+      display: flex;
+      gap: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .key-badge {
+      background: #37474f;
+      color: #ffb74d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.72rem;
+    }
+
+    .hotbar {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .hotbar-slot {
+      width: 72px;
+      height: 76px;
+      background: rgba(18, 25, 40, 0.94);
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .hotbar-slot:hover {
+      border-color: #ff9800;
+      transform: translateY(-4px);
+    }
+    .hotbar-slot.active {
+      border-color: #ff9800;
+      background: rgba(255, 152, 0, 0.25);
+      box-shadow: 0 0 18px rgba(255, 152, 0, 0.5);
+    }
+
+    .slot-num {
+      position: absolute;
+      top: 4px;
+      left: 6px;
+      font-size: 0.72rem;
+      color: #90a4ae;
+      font-weight: bold;
+    }
+
+    .slot-icon { font-size: 1.65rem; margin-bottom: 2px; }
+    .slot-name {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: #eceff1;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    /* Modals FICSIT */
+    .ficsit-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 12, 20, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 90;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .inv-window {
+      background: #141c2b;
+      border: 2px solid #ff9800;
+      border-radius: 14px;
+      width: 920px;
+      max-width: 95vw;
+      height: 620px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+      overflow: hidden;
+    }
+
+    .inv-header {
+      background: #1c273c;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid rgba(255, 152, 0, 0.3);
+    }
+
+    .inv-header h2 {
+      color: #ff9800;
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-close-inv {
+      background: #37474f;
+      color: #fff;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-close-inv:hover { background: #f44336; }
+
+    .inv-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .inv-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #00e5ff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      background: rgba(0,0,0,0.3);
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .inv-slot {
+      background: #1c273c;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      height: 85px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .inv-slot:hover {
+      border-color: #00e5ff;
+      transform: translateY(-2px);
+      background: #24334f;
+    }
+    .inv-slot-icon { font-size: 1.8rem; }
+    .inv-slot-count {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #ffb74d;
+      background: rgba(0,0,0,0.6);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    .inv-slot-name {
+      font-size: 0.62rem;
+      color: #b0bec5;
+      text-align: center;
+      margin-top: 2px;
+      padding: 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .craft-panel {
+      background: rgba(0,0,0,0.3);
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .recipe-card {
+      background: #1c273c;
+      border: 1px solid rgba(255, 152, 0, 0.3);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .recipe-card:hover {
+      border-color: #ff9800;
+      background: #223049;
+    }
+    .recipe-card.selected {
+      border-color: #00e5ff;
+      background: rgba(0, 229, 255, 0.15);
+      box-shadow: 0 0 12px rgba(0,229,255,0.3);
+    }
+    .recipe-card.completed {
+      border-color: #4caf50;
+      background: rgba(76, 175, 80, 0.15);
+    }
+
+    .recipe-info { display: flex; align-items: center; gap: 8px; }
+    .recipe-title { font-weight: 700; font-size: 0.85rem; color: #fff; }
+    .recipe-cost { font-size: 0.72rem; color: #90a4ae; margin-top: 2px; }
+
+    .btn-craft {
+      background: #ff9800;
+      color: #0b0f17;
+      border: none;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .btn-craft:hover:not(:disabled) {
+      background: #ffa726;
+      transform: scale(1.05);
+    }
+    .btn-craft:disabled {
+      background: #37474f;
+      color: #78909c;
+      cursor: not-allowed;
+    }
+
+    .btn-action {
+      background: #0284c7;
+      color: #fff;
+      border: 1px solid #38bdf8;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-action:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-launch-capsule {
+      background: linear-gradient(135deg, #ff9800, #e65100);
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 900;
+      border: 2px solid #ffb74d;
+      padding: 14px 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(255, 152, 0, 0.4);
+      width: 100%;
+      margin-top: 14px;
+    }
+    .btn-launch-capsule:hover:not(:disabled) {
+      transform: scale(1.03);
+      box-shadow: 0 0 30px rgba(255, 152, 0, 0.8);
+      background: linear-gradient(135deg, #ffa726, #f57c00);
+    }
+    .btn-launch-capsule:disabled {
+      background: #263238;
+      border-color: #37474f;
+      color: #78909c;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .inv-footer {
+      background: #1c273c;
+      padding: 10px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #90a4ae;
+    }
+
+    .btn-cheat {
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid #00e5ff;
+      color: #00e5ff;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-cheat:hover { background: #00e5ff; color: #0b0f17; }
+
+    #status-toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      border: 1px solid #4fc3f7;
+      padding: 8px 18px;
+      border-radius: 20px;
+      color: #e1f5fe;
+      font-size: 0.85rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 60;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div id="crosshair"></div>
+  <div id="interact-prompt">⚡ Clic Droit ou <span class="key-badge">E</span> pour interagir</div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-top">
+      <div class="panel">
+        <div class="brand-title">⚙️ FICSIT Usine HD</div>
+        <div class="brand-subtitle">Simulateur Satisfactory v2.9</div>
+        
+        <div class="resources-quickbar" id="hud-quickbar"></div>
+
+        <div class="hud-buttons">
+          <button class="btn-ficsit" onclick="toggleInventory(true)">
+            🎒 Sac à Dos (TAB)
+          </button>
+          <button class="btn-ficsit btn-milestone" onclick="toggleMilestoneModal(true)">
+            🚀 Jalons du HUB (M)
+          </button>
+          <button class="btn-ficsit" style="background:#059669; color:#fff;" onclick="saveGame(false)">
+            💾 Sauvegarder
+          </button>
+          <button class="btn-ficsit" style="background:#dc2626; color:#fff; font-size:0.75rem; padding:6px 10px;" onclick="resetGame()">
+            🔄 Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Tracker de Jalon Actif & Réseau Électrique -->
+      <div class="panel">
+        <div style="font-size: 0.85rem; color: #90a4ae; margin-bottom: 2px;">Réseau Électrique :</div>
+        <div class="power-stats">
+          <div style="font-size: 0.85rem; font-weight: bold; color: #00e5ff;" id="power-text">⚡ 30 MW / 10 MW</div>
+          <div class="power-bar-bg">
+            <div class="power-bar-fill" id="power-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-tracker" id="hud-milestone-tracker">
+          <div class="m-tracker-title">
+            <span id="tracker-m-name">🚀 Jalon : Logistique Mk.2</span>
+            <span style="color:#ffb74d;" id="tracker-m-status">En cours</span>
+          </div>
+          <div id="tracker-requirements-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="instructions">
+        <span><span class="key-badge">TAB</span> Sac à Dos</span>
+        <span><span class="key-badge">M</span> Jalons du HUB</span>
+        <span><span class="key-badge">Clic Droit / E</span> Configurer / Coffre</span>
+        <span><span class="key-badge">Clic G</span> Poser Bâtiment</span>
+        <span><span class="key-badge">ZQSD</span> Se Déplacer</span>
+      </div>
+
+      <div class="hotbar">
+        <div class="hotbar-slot active" data-id="1" onclick="selectSlot(1)">
+          <span class="slot-num">1</span>
+          <span class="slot-icon">🧱</span>
+          <span class="slot-name">Fondation</span>
+        </div>
+        <div class="hotbar-slot" data-id="2" onclick="selectSlot(2)">
+          <span class="slot-num">2</span>
+          <span class="slot-icon">⛏️</span>
+          <span class="slot-name">Foreuse</span>
+        </div>
+        <div class="hotbar-slot" data-id="3" onclick="selectSlot(3)">
+          <span class="slot-num">3</span>
+          <span class="slot-icon">➡️</span>
+          <span class="slot-name">Convoyeur</span>
+        </div>
+        <div class="hotbar-slot" data-id="4" onclick="selectSlot(4)">
+          <span class="slot-num">4</span>
+          <span class="slot-icon">🔥</span>
+          <span class="slot-name">Fonderie</span>
+        </div>
+        <div class="hotbar-slot" data-id="5" onclick="selectSlot(5)">
+          <span class="slot-num">5</span>
+          <span class="slot-icon">⚙️</span>
+          <span class="slot-name">Constructeur</span>
+        </div>
+        <div class="hotbar-slot" data-id="6" onclick="selectSlot(6)">
+          <span class="slot-num">6</span>
+          <span class="slot-icon">🏭</span>
+          <span class="slot-name">Assembleur</span>
+        </div>
+        <div class="hotbar-slot" data-id="7" onclick="selectSlot(7)">
+          <span class="slot-num">7</span>
+          <span class="slot-icon">📦</span>
+          <span class="slot-name">Stockage</span>
+        </div>
+        <div class="hotbar-slot" data-id="8" onclick="selectSlot(8)">
+          <span class="slot-num">8</span>
+          <span class="slot-icon">⚡</span>
+          <span class="slot-name">Poteau Élec</span>
+        </div>
+        <div class="hotbar-slot" data-id="9" onclick="selectSlot(9)">
+          <span class="slot-num">9</span>
+          <span class="slot-icon">🔀</span>
+          <span class="slot-name">Séparateur</span>
+        </div>
+        <div class="hotbar-slot" data-id="10" onclick="selectSlot(10)">
+          <span class="slot-num">0</span>
+          <span class="slot-icon">🔁</span>
+          <span class="slot-name">Groupeur</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL JALONS DU HUB FICSIT -->
+  <div id="milestone-modal" class="ficsit-modal">
+    <div class="inv-window" style="width: 960px; height: 640px;">
+      <div class="inv-header" style="background:#132035; border-bottom:2px solid #00e5ff;">
+        <h2>🚀 Terminal des Jalons du HUB FICSIT</h2>
+        <button class="btn-close-inv" onclick="toggleMilestoneModal(false)">✕</button>
+      </div>
+
+      <div class="inv-body" style="grid-template-columns: 1.1fr 0.9fr;">
+        <div>
+          <div class="inv-section-title">
+            <span>Paliers & Projets de Recherche</span>
+          </div>
+          <div class="craft-panel" id="milestones-list" style="max-height: 480px;"></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="inv-section-title">
+              <span>Capsule de Chargement FICSIT</span>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.35); padding: 16px; border-radius: 10px; border: 1px solid rgba(0, 229, 255, 0.25);">
+              <div style="font-size: 1.15rem; font-weight: bold; color: #00e5ff;" id="m-selected-title">Jalon Sélectionné</div>
+              <div style="font-size: 0.8rem; color: #90a4ae; margin-top: 4px;" id="m-selected-desc">Description du projet.</div>
+
+              <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 14px 0;">
+
+              <div style="font-size: 0.85rem; font-weight: bold; color: #ffb74d; margin-bottom: 8px;">Composants Requis :</div>
+              <div id="m-selected-reqs"></div>
+
+              <button class="btn-action" style="margin-top: 12px; width: 100%; justify-content: center;" onclick="depositIngredientsToActiveMilestone()">
+                📥 Remplir la Capsule (Depuis le sac à dos)
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <button class="btn-launch-capsule" id="btn-launch-ficsit" onclick="launchMilestoneCapsule()" disabled>
+              🚀 ENVOYER LA CAPSULE FICSIT
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="inv-footer">
+        <div>🌟 <em>Complétez les jalons pour débloquer de nouvelles technologies et optimiser vos usines.</em></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL INVENTAIRE JOUEUR -->
+  <div id="inventory-modal" class="ficsit-modal">
+    <div class="inv-window">
+      <div class="inv-header">
+        <h2>🎒 Sac à Dos & Établi FICSIT</h2>
+        <button class="btn-close-inv" onclick="toggleInventory(false)">✕</button>
+      </div>
+
+      <div class="inv-body">
+        <div>
+          <div class="inv-section-title">
+            <span>Composants & Ressources</span>
+            <span style="font-size: 0.8rem; color: #90a4ae;" id="inv-slot-usage">Slots : 8 / 15</span>
+          </div>
+          <div class="inv-grid" id="inventory-grid"></div>
+        </div>
+
+        <div>
+          <div class="inv-section-title">
+            <span>🛠️ Établi Manuel FICSIT</span>
+          </div>
+          <div class="craft-panel" id="craft-list"></div>
+        </div>
+      </div>
+
+      <div class="inv-footer">
+        <div>💡 <em>Ouvrez le Terminal des Jalons (Touche M) pour progresser dans l'arbre technologique !</em></div>
+        <button class="btn-cheat" onclick="cheatAddResources()">+50 Tout (Test)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIGURATION MACHINE -->
+  <div id="machine-modal" class="ficsit-modal">
+    <div class="inv-window" style="width: 780px; height: 520px;">
+      <div class="inv-header">
+        <h2 id="m-title">⚙️ Configuration de la Machine</h2>
+        <button class="btn-close-inv" onclick="closeMachineModal()">✕</button>
+      </div>
+
+      <div class="inv-body" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <div class="inv-section-title">
+            <span>Statut de la Machine</span>
+            <span id="m-status-badge" class="status-badge status-working">🟢 En Production</span>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 0.85rem; color: #90a4ae; margin-bottom: 6px;">Recette active :</div>
+            <div style="font-size: 1.15rem; font-weight: bold; color: #ff9800;" id="m-active-recipe">Plaques de Fer</div>
+            <div style="font-size: 0.8rem; color: #b0bec5; margin-top: 4px;" id="m-active-rate">Entrée: 30 lingots/min ➔ Sortie: 20 plaques/min</div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 14px 0;">
+
+            <!-- SECTION ENTREE DETAILIEE -->
+            <div style="background: rgba(2, 132, 199, 0.15); border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                <span style="color: #38bdf8; font-weight: bold;">📥 Arrivée en Entrée :</span>
+                <strong id="m-buffer-in" style="color: #38bdf8;">0 / 100</strong>
+              </div>
+              <div style="font-size: 0.78rem; color: #e0e0e0;" id="m-in-item-name">Minerai / Lingots</div>
+              <div style="height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                <div id="m-in-bar" style="height: 100%; width: 0%; background: #38bdf8; transition: width 0.3s;"></div>
+              </div>
+            </div>
+
+            <!-- SECTION SORTIE DETAILIEE -->
+            <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: 8px; padding: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                <span style="color: #4ade80; font-weight: bold;">📤 Stock en Sortie :</span>
+                <strong id="m-buffer-out" style="color: #4ade80;">0 / 100</strong>
+              </div>
+              <div style="font-size: 0.78rem; color: #e0e0e0;" id="m-out-item-name">Produit fini</div>
+              <div style="height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                <div id="m-out-bar" style="height: 100%; width: 0%; background: #22c55e; transition: width 0.3s;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="inv-section-title">
+            <span>Choisir la Recette</span>
+          </div>
+          <div class="craft-panel" id="machine-recipes-list"></div>
+        </div>
+      </div>
+
+      <div class="inv-footer">
+        <div>⚡ <em>La machine adaptera automatiquement les pièces qu'elle produit.</em></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL COFFRE DE STOCKAGE -->
+  <div id="storage-modal" class="ficsit-modal">
+    <div class="inv-window" style="width: 880px; height: 560px;">
+      <div class="inv-header">
+        <h2>📦 Conteneur de Stockage Mk.1</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="btn-action" onclick="transferAllToStorage()">📥 Tout Déposer</button>
+          <button class="btn-action" onclick="transferAllFromStorage()" style="background:#f57c00; border-color:#ff9800;">📤 Tout Récupérer</button>
+          <button class="btn-close-inv" onclick="closeStorageModal()">✕</button>
+        </div>
+      </div>
+
+      <div class="inv-body" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <div class="inv-section-title">
+            <span>📦 Contenu du Coffre</span>
+            <span style="font-size: 0.8rem; color: #ffb74d;" id="storage-count-text">0 objets</span>
+          </div>
+          <div class="inv-grid" id="storage-grid" style="min-height: 280px;"></div>
+        </div>
+
+        <div>
+          <div class="inv-section-title">
+            <span>🎒 Votre Sac à Dos</span>
+            <span style="font-size: 0.8rem; color: #90a4ae;">Cliquez pour déposer</span>
+          </div>
+          <div class="inv-grid" id="storage-player-grid" style="min-height: 280px;"></div>
+        </div>
+      </div>
+
+      <div class="inv-footer">
+        <div>💡 <em>Cliquez sur un composant pour le transférer entre votre sac à dos et le coffre.</em></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="status-toast">Bâtiment posé !</div>
+
+  <script>
+    /* ==========================================================================
+       SCENE THREE.JS & RENDU PROPRE
+       ========================================================================== */
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x7bb5e6);
+    scene.fog = new THREE.Fog(0x7bb5e6, 50, 260);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x7bb5e6, 1);
+    container.appendChild(renderer.domElement);
+
+    // Éclairage FICSIT
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambientLight);
+
+    const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x3f6212, 0.55);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xfffae6, 1.25);
+    dirLight.position.set(45, 75, 35);
+    scene.add(dirLight);
+
+    /* ==========================================================================
+       TEXTURES PROCEDURALES HAUTE FIDELITE SATISFACTORY
+       ========================================================================== */
+    function createTexture(width, height, drawFn) {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      drawFn(ctx, width, height);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    // 1. TERRAIN NATUREL SATISFACTORY (Herbe riche avec nuances minérales)
+    const groundTexture = createTexture(512, 512, (ctx, w, h) => {
+      ctx.fillStyle = '#416d38';
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 6000; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? '#528346' : '#33562c';
+        ctx.fillRect(Math.random() * w, Math.random() * h, 3, 3);
+      }
+      for (let i = 0; i < 30; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 12 + 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(101, 84, 63, 0.12)';
+        ctx.fill();
+      }
+    });
+    groundTexture.repeat.set(25, 25);
+
+    // 2. FONDATION BETON FICSIT (Plaques modulaires 2x2, bordure acier chanfreinée, rivets et coins jaunes)
+    const concreteTexture = createTexture(512, 512, (ctx, w, h) => {
+      ctx.fillStyle = '#94a1ab';
+      ctx.fillRect(0, 0, w, h);
+
+      // Grain du béton
+      for (let i = 0; i < 4000; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? '#a4b2bd' : '#859099';
+        ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+      }
+
+      // Cadre d'acier anthracite épais
+      ctx.strokeStyle = '#273549';
+      ctx.lineWidth = 18;
+      ctx.strokeRect(9, 9, w - 18, h - 18);
+
+      // Rainures modulaires en croix
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(w/2, 18); ctx.lineTo(w/2, h - 18);
+      ctx.moveTo(18, h/2); ctx.lineTo(w - 18, h/2);
+      ctx.stroke();
+
+      // Plaques d'angle jaunes de sécurité
+      const corners = [[32, 32], [w-32, 32], [32, h-32], [w-32, h-32]];
+      corners.forEach(([rx, ry]) => {
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(rx - 16, ry - 16, 32, 32);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rx - 16, ry - 16, 32, 32);
+
+        // Boulon hexagonal métallique
+        ctx.beginPath();
+        ctx.arc(rx, ry, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+      });
+    });
+
+    // 3. METAL INDUSTRIEL ORANGE FICSIT (Peinture orange MK.1, ouïes de ventilation, marquage et rayures de danger)
+    const ficsitMetalTexture = createTexture(512, 512, (ctx, w, h) => {
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(0, 0, w, h);
+
+      // Éclaircissement supérieur
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#f97316');
+      grad.addColorStop(1, '#c2410c');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Grille de ventilation industrielle anthracite
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(60, 75, w - 120, 115);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      for (let y = 85; y < 185; y += 12) {
+        ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(w - 70, y); ctx.stroke();
+      }
+
+      // Marquage technique FICSIT
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
+      ctx.fillText('FICSIT INDUSTRIES', 60, 48);
+
+      // Rayures de danger (Hazard Stripes Jaune/Noir)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, h - 85, w, 85);
+      ctx.clip();
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(0, h - 85, w, 85);
+      ctx.fillStyle = '#0f172a';
+      for (let i = -w; i < w * 2; i += 38) {
+        ctx.beginPath();
+        ctx.moveTo(i, h); ctx.lineTo(i + 24, h); ctx.lineTo(i + 24 + 85, h - 85); ctx.lineTo(i + 85, h - 85);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+
+      // Bords métalliques
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(4, 4, w - 8, h - 8);
+    });
+
+    // 4. TAPIS ROULANT / CONVOYEUR HD (Caoutchouc cranté à chevrons lumineux orange ambré)
+    const beltTexture = createTexture(256, 256, (ctx, w, h) => {
+      ctx.fillStyle = '#141416';
+      ctx.fillRect(0, 0, w, h);
+
+      // Crans de traction en caoutchouc
+      for (let y = 0; y < h; y += 6) {
+        ctx.fillStyle = y % 12 === 0 ? '#27272a' : '#0a0a0c';
+        ctx.fillRect(0, y, w, 3);
+      }
+
+      // Chevrons lumineux orange directionnels Satisfactory
+      ctx.strokeStyle = '#fb923c';
+      ctx.lineWidth = 10;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (let y = 30; y < h; y += 75) {
+        ctx.beginPath();
+        ctx.moveTo(w/2 - 45, y - 20); ctx.lineTo(w/2, y + 10); ctx.lineTo(w/2 + 45, y - 20);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(w/2 - 45, y - 20); ctx.lineTo(w/2, y + 10); ctx.lineTo(w/2 + 45, y - 20);
+        ctx.stroke();
+        ctx.strokeStyle = '#fb923c';
+        ctx.lineWidth = 10;
+      }
+    });
+    beltTexture.repeat.set(1, 2);
+
+    // 5. CONTENEUR DE FRET FICSIT (Tôle ondulée bleue avec logo)
+    const containerRibbedTexture = createTexture(256, 256, (ctx, w, h) => {
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(0, 0, w, h);
+      for (let x = 0; x < w; x += 16) {
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillRect(x, 0, 5, h);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.fillRect(x + 5, 0, 5, h);
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px "Segoe UI", sans-serif';
+      ctx.fillText('CONTAINER MK.1', 12, 35);
+    });
+
+    const darkMetalTexture = createTexture(128, 128, (ctx, w, h) => {
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(0, 0, w, h);
+    });
+
+    /* ==========================================================================
+       MATERIAUX THREE.JS
+       ========================================================================== */
+    const matConcrete = new THREE.MeshLambertMaterial({ map: concreteTexture });
+    const matFactoryOrange = new THREE.MeshLambertMaterial({ map: ficsitMetalTexture });
+    const matDarkMetal = new THREE.MeshLambertMaterial({ map: darkMetalTexture });
+    const matBelt = new THREE.MeshLambertMaterial({ map: beltTexture });
+    const matStorage = new THREE.MeshLambertMaterial({ map: containerRibbedTexture });
+    const matMoltenGlow = new THREE.MeshBasicMaterial({ color: 0xff4500 });
+    const matPowerGlow = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
+    const matHoloValid = new THREE.MeshBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.5 });
+
+    // Sol Vert Pelouse
+    const groundGeo = new THREE.PlaneGeometry(350, 350);
+    groundGeo.rotateX(-Math.PI / 2);
+    const groundMat = new THREE.MeshLambertMaterial({ map: groundTexture });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    scene.add(groundMesh);
+
+    // Grille de pose
+    const gridHelper = new THREE.GridHelper(350, 175, 0xff9800, 0x3d6335);
+    gridHelper.position.y = 0.02;
+    scene.add(gridHelper);
+
+    // Gisements de Minerais
+    const oreDeposits = [];
+    function createDeposit(x, z, type = 'iron') {
+      const group = new THREE.Group();
+      const baseGeo = new THREE.CylinderGeometry(3.2, 3.8, 0.6, 16);
+      const base = new THREE.Mesh(baseGeo, matDarkMetal);
+      group.add(base);
+
+      const color = type === 'iron' ? 0xd946ef : 0x06b6d4;
+      const rockColor = type === 'iron' ? 0xc2410c : 0x0284c7;
+
+      for (let i = 0; i < 6; i++) {
+        const rockGeo = new THREE.DodecahedronGeometry(1.2 + Math.random() * 0.5, 0);
+        const rockMat = new THREE.MeshLambertMaterial({ color: rockColor });
+        const rock = new THREE.Mesh(rockGeo, rockMat);
+        rock.position.set((Math.random() - 0.5) * 2.2, 0.7 + Math.random() * 0.4, (Math.random() - 0.5) * 2.2);
+        rock.rotation.set(Math.random(), Math.random(), Math.random());
+        group.add(rock);
+      }
+      group.position.set(x, 0.3, z);
+      scene.add(group);
+      oreDeposits.push({ x, z, type, mesh: group });
+    }
+
+    createDeposit(0, -10, 'iron');
+    createDeposit(18, -10, 'iron');
+    createDeposit(-18, -10, 'copper');
+    createDeposit(-18, 14, 'copper');
+
+    /* ==========================================================================
+       INVENTAIRE & JALONS FICSIT
+       ========================================================================== */
+    const inventory = {
+      iron_ore: { name: "Minerai de Fer", icon: "⛏️", count: 35, desc: "Minerai brut extrait des gisements." },
+      copper_ore: { name: "Minerai de Cuivre", icon: "🔶", count: 20, desc: "Minerai rouge conducteur." },
+      iron_ingot: { name: "Lingot de Fer", icon: "🟦", count: 20, desc: "Métal pur fondu à partir du fer." },
+      copper_ingot: { name: "Lingot de Cuivre", icon: "🟨", count: 15, desc: "Cuivre raffiné pour l'électricité." },
+      iron_plate: { name: "Plaque de Fer", icon: "🔩", count: 25, desc: "Composant pour la construction." },
+      iron_rod: { name: "Tige de Fer", icon: "⚙️", count: 20, desc: "Tige métallique de renfort." },
+      wire: { name: "Câble Électrique", icon: "🔌", count: 25, desc: "Câbles pour lignes et réseau." },
+      concrete: { name: "Béton FICSIT", icon: "🧱", count: 60, desc: "Matériau pour fondations solides." },
+      reinforced_plate: { name: "Plaque Renforcée", icon: "🛡️", count: 0, desc: "Plaque d'acier boulonnée haute résistance." },
+      rotor: { name: "Rotor", icon: "🚀", count: 0, desc: "Pièce mécanique avancée." },
+      modular_frame: { name: "Cadre Modulaire", icon: "🏗️", count: 0, desc: "Structure géométrique industrielle." },
+      motor: { name: "Moteur Électrique", icon: "⚡", count: 0, desc: "Moteur puissant combinant rotors et bobinages." }
+    };
+
+    const MILESTONES = [
+      {
+        id: 'tier1_logistics',
+        tier: 1,
+        name: 'Palier 1 : Logistique Avancée',
+        icon: '📦',
+        desc: 'Améliore la vitesse des chaînes de production et débloque le Convoyeur Rapide Mk.2.',
+        reqs: { iron_plate: 20, iron_rod: 15 },
+        filled: { iron_plate: 0, iron_rod: 0 },
+        unlocked: false,
+        rewards: 'Convoyeur Rapide Mk.2, Débit +50%'
+      },
+      {
+        id: 'tier2_power',
+        tier: 2,
+        name: 'Palier 2 : Électrification Avancée',
+        icon: '⚡',
+        desc: 'Permet une meilleure distribution d\'énergie et débloque les Pylônes Haute Tension.',
+        reqs: { wire: 30, iron_rod: 20, concrete: 25 },
+        filled: { wire: 0, iron_rod: 0, concrete: 0 },
+        unlocked: false,
+        rewards: 'Pylône Électrique Amélioré, Puissance +50 MW'
+      },
+      {
+        id: 'tier3_assembly',
+        tier: 3,
+        name: 'Palier 3 : Ingénierie Mécanique & Assemblage',
+        icon: '🏭',
+        desc: 'Débloque la production de masse de Plaques Renforcées, Rotors et Cadres Modulaires.',
+        reqs: { reinforced_plate: 10, rotor: 5, wire: 40 },
+        filled: { reinforced_plate: 0, rotor: 0, wire: 0 },
+        unlocked: false,
+        rewards: 'Assembleur Mk.1, Recettes Avancées'
+      },
+      {
+        id: 'tier4_space_elevator',
+        tier: 4,
+        name: 'Palier 4 : Ascenseur Orbital FICSIT',
+        icon: '🌌',
+        desc: 'Lancement du projet spatial pour exporter les ressources vers la station en orbite !',
+        reqs: { modular_frame: 10, motor: 5, concrete: 80 },
+        filled: { modular_frame: 0, motor: 0, concrete: 0 },
+        unlocked: false,
+        rewards: 'Ascenseur Spatial FICSIT Orbital'
+      }
+    ];
+
+    let activeMilestoneId = 'tier1_logistics';
+    let isInventoryOpen = false;
+    let isMilestoneModalOpen = false;
+    let selectedMachineForConfig = null;
+    let selectedStorageChest = null;
+
+    const MACHINE_RECIPES = {
+      smelter: [
+        { id: 'iron_ingot', name: 'Lingots de Fer', icon: '🟦', inType: 'iron_ore', inQty: 1, outType: 'iron_ingot', outQty: 1, rate: '1x Fer ➔ 1x Lingot Fer' },
+        { id: 'copper_ingot', name: 'Lingots de Cuivre', icon: '🟨', inType: 'copper_ore', inQty: 1, outType: 'copper_ingot', outQty: 1, rate: '1x Cuivre ➔ 1x Lingot Cuivre' }
+      ],
+      constructor: [
+        { id: 'iron_plate', name: 'Plaques de Fer', icon: '🔩', inType: 'iron_ingot', inQty: 2, outType: 'iron_plate', outQty: 1, rate: '2x Lingots Fer ➔ 1x Plaque' },
+        { id: 'iron_rod', name: 'Tiges de Fer', icon: '⚙️', inType: 'iron_ingot', inQty: 1, outType: 'iron_rod', outQty: 1, rate: '1x Lingot Fer ➔ 1x Tige' },
+        { id: 'wire', name: 'Câbles Cuivre', icon: '🔌', inType: 'copper_ingot', inQty: 1, outType: 'wire', outQty: 2, rate: '1x Lingot Cuivre ➔ 2x Câbles' }
+      ],
+      assembler: [
+        { id: 'reinforced_plate', name: 'Plaque Renforcée', icon: '🛡️', inTypeA: 'iron_plate', inQtyA: 2, inTypeB: 'iron_rod', inQtyB: 4, outType: 'reinforced_plate', outQty: 1, rate: '2x Plaques + 4x Tiges ➔ 1x Renforcée' },
+        { id: 'rotor_adv', name: 'Rotor Industriel', icon: '🚀', inTypeA: 'iron_rod', inQtyA: 3, inTypeB: 'wire', inQtyB: 6, outType: 'rotor', outQty: 1, rate: '3x Tiges + 6x Câbles ➔ 1x Rotor' },
+        { id: 'modular_frame', name: 'Cadre Modulaire', icon: '🏗️', inTypeA: 'reinforced_plate', inQtyA: 2, inTypeB: 'iron_rod', inQtyB: 6, outType: 'modular_frame', outQty: 1, rate: '2x Pl. Renforcées + 6x Tiges ➔ 1x Cadre' },
+        { id: 'motor', name: 'Moteur Électrique', icon: '⚡', inTypeA: 'rotor', inQtyA: 2, inTypeB: 'wire', inQtyB: 10, outType: 'motor', outQty: 1, rate: '2x Rotors + 10x Câbles ➔ 1x Moteur' }
+      ],
+      miner: [
+        { id: 'iron_ore', name: 'Extraction de Fer', icon: '⛏️', inType: null, inQty: 0, outType: 'iron_ore', outQty: 1, rate: '30 minerais/min' },
+        { id: 'copper_ore', name: 'Extraction de Cuivre', icon: '🔶', inType: null, inQty: 0, outType: 'copper_ore', outQty: 1, rate: '30 minerais/min' }
+      ]
+    };
+
+    const recipes = [
+      { id: 'smelt_iron', name: 'Lingot de Fer', icon: '🟦', inputs: { iron_ore: 1 }, outputs: { iron_ingot: 1 }, costText: '1x Minerai de Fer' },
+      { id: 'smelt_copper', name: 'Lingot de Cuivre', icon: '🟨', inputs: { copper_ore: 1 }, outputs: { copper_ingot: 1 }, costText: '1x Minerai de Cuivre' },
+      { id: 'craft_plate', name: 'Plaque de Fer', icon: '🔩', inputs: { iron_ingot: 2 }, outputs: { iron_plate: 1 }, costText: '2x Lingots de Fer' },
+      { id: 'craft_rod', name: 'Tige de Fer', icon: '⚙️', inputs: { iron_ingot: 1 }, outputs: { iron_rod: 1 }, costText: '1x Lingot de Fer' },
+      { id: 'craft_wire', name: 'Câble Électrique', icon: '🔌', inputs: { copper_ingot: 1 }, outputs: { wire: 2 }, costText: '1x Lingot Cuivre' },
+      { id: 'craft_reinf', name: 'Plaque Renforcée', icon: '🛡️', inputs: { iron_plate: 2, iron_rod: 4 }, outputs: { reinforced_plate: 1 }, costText: '2x Plaques + 4x Tiges' },
+      { id: 'craft_rotor', name: 'Rotor', icon: '🚀', inputs: { iron_rod: 3, wire: 6 }, outputs: { rotor: 1 }, costText: '3x Tiges + 6x Câbles' },
+      { id: 'craft_frame', name: 'Cadre Modulaire', icon: '🏗️', inputs: { reinforced_plate: 2, iron_rod: 6 }, outputs: { modular_frame: 1 }, costText: '2x Pl. Renforcées + 6x Tiges' },
+      { id: 'craft_motor', name: 'Moteur Électrique', icon: '⚡', inputs: { rotor: 2, wire: 10 }, outputs: { motor: 1 }, costText: '2x Rotors + 10x Câbles' }
+    ];
+
+    function updateInventoryUI() {
+      const hudQuickbar = document.getElementById('hud-quickbar');
+      hudQuickbar.innerHTML = `
+        <div class="res-pill">⛏️ Fer: <span class="num">${inventory.iron_ore.count}</span></div>
+        <div class="res-pill">🔶 Cuivre: <span class="num">${inventory.copper_ore.count}</span></div>
+        <div class="res-pill">🟦 Lingot Fer: <span class="num">${inventory.iron_ingot.count}</span></div>
+        <div class="res-pill">🟨 Lingot Cuivre: <span class="num">${inventory.copper_ingot.count}</span></div>
+        <div class="res-pill">🔩 Plaques: <span class="num">${inventory.iron_plate.count}</span></div>
+        <div class="res-pill">⚙️ Tiges: <span class="num">${inventory.iron_rod.count}</span></div>
+        <div class="res-pill">🔌 Câbles: <span class="num">${inventory.wire.count}</span></div>
+        <div class="res-pill">🧱 Béton: <span class="num">${inventory.concrete.count}</span></div>
+        <div class="res-pill">🚀 Rotors: <span class="num">${inventory.rotor.count}</span></div>
+      `;
+
+      const invGrid = document.getElementById('inventory-grid');
+      invGrid.innerHTML = '';
+
+      let usedSlots = 0;
+      for (const [key, item] of Object.entries(inventory)) {
+        if (item.count > 0) {
+          usedSlots++;
+          const slot = document.createElement('div');
+          slot.className = 'inv-slot';
+          slot.title = `${item.name}\n${item.desc}`;
+          slot.innerHTML = `
+            <div class="inv-slot-icon">${item.icon}</div>
+            <div class="inv-slot-name">${item.name}</div>
+            <div class="inv-slot-count">${item.count}</div>
+          `;
+          invGrid.appendChild(slot);
+        }
+      }
+
+      for (let i = usedSlots; i < 15; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.className = 'inv-slot';
+        emptySlot.style.opacity = '0.35';
+        emptySlot.innerHTML = `<div style="color:#546e7a; font-size:1.4rem;">+</div>`;
+        invGrid.appendChild(emptySlot);
+      }
+
+      document.getElementById('inv-slot-usage').innerText = `Slots : ${usedSlots} / 15`;
+
+      const craftList = document.getElementById('craft-list');
+      craftList.innerHTML = '';
+
+      recipes.forEach(r => {
+        let canCraft = true;
+        for (const [res, needed] of Object.entries(r.inputs)) {
+          if ((inventory[res]?.count || 0) < needed) canCraft = false;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+          <div class="recipe-info">
+            <span style="font-size: 1.5rem;">${r.icon}</span>
+            <div>
+              <div class="recipe-title">${r.name}</div>
+              <div class="recipe-cost">Coût : ${r.costText}</div>
+            </div>
+          </div>
+          <button class="btn-craft" ${canCraft ? '' : 'disabled'} onclick="craftItem('${r.id}')">Fabriquer</button>
+        `;
+        craftList.appendChild(card);
+      });
+
+      updateMilestoneTrackerUI();
+    }
+
+    function craftItem(recipeId) {
+      const r = recipes.find(rec => rec.id === recipeId);
+      if (!r) return;
+
+      for (const [res, needed] of Object.entries(r.inputs)) {
+        if ((inventory[res]?.count || 0) < needed) {
+          showToast('Composants insuffisants !');
+          return;
+        }
+      }
+
+      for (const [res, needed] of Object.entries(r.inputs)) {
+        inventory[res].count -= needed;
+      }
+      for (const [res, gain] of Object.entries(r.outputs)) {
+        inventory[res].count += gain;
+      }
+
+      playSound('produce');
+      showToast(`1x ${r.name} fabriqué !`);
+      updateInventoryUI();
+    }
+
+    function cheatAddResources() {
+      for (const key in inventory) {
+        inventory[key].count += 50;
+      }
+      playSound('build');
+      showToast('+50 composants ajoutés !');
+      updateInventoryUI();
+    }
+
+    function toggleInventory(forceState) {
+      isInventoryOpen = forceState !== undefined ? forceState : !isInventoryOpen;
+      const modal = document.getElementById('inventory-modal');
+
+      if (isInventoryOpen) {
+        closeMachineModal();
+        closeStorageModal();
+        toggleMilestoneModal(false);
+        modal.style.display = 'flex';
+        updateInventoryUI();
+        if (document.exitPointerLock) document.exitPointerLock();
+      } else {
+        modal.style.display = 'none';
+        if (!isMilestoneModalOpen && !selectedMachineForConfig && !selectedStorageChest) container.requestPointerLock();
+      }
+    }
+
+    function toggleMilestoneModal(forceState) {
+      isMilestoneModalOpen = forceState !== undefined ? forceState : !isMilestoneModalOpen;
+      const modal = document.getElementById('milestone-modal');
+
+      if (isMilestoneModalOpen) {
+        closeMachineModal();
+        closeStorageModal();
+        toggleInventory(false);
+        modal.style.display = 'flex';
+        updateMilestoneModalContent();
+        if (document.exitPointerLock) document.exitPointerLock();
+      } else {
+        modal.style.display = 'none';
+        if (!isInventoryOpen && !selectedMachineForConfig && !selectedStorageChest) container.requestPointerLock();
+      }
+    }
+
+    function updateMilestoneModalContent() {
+      const list = document.getElementById('milestones-list');
+      list.innerHTML = '';
+
+      MILESTONES.forEach(m => {
+        const isSel = m.id === activeMilestoneId;
+        const isDone = m.unlocked;
+
+        const card = document.createElement('div');
+        card.className = `recipe-card ${isSel ? 'selected' : ''} ${isDone ? 'completed' : ''}`;
+        card.onclick = () => {
+          activeMilestoneId = m.id;
+          updateMilestoneModalContent();
+          updateMilestoneTrackerUI();
+        };
+
+        card.innerHTML = `
+          <div class="recipe-info">
+            <span style="font-size: 1.8rem;">${m.icon}</span>
+            <div>
+              <div class="recipe-title">${m.name} ${isDone ? '<span style="color:#4caf50;">(TERMINÉ ✔)</span>' : ''}</div>
+              <div class="recipe-cost">Débloque : ${m.rewards}</div>
+            </div>
+          </div>
+          <span style="font-size:0.8rem; font-weight:bold; color:${isDone ? '#4caf50' : (isSel ? '#00e5ff' : '#90a4ae')};">
+            ${isDone ? 'Complété' : (isSel ? 'Actif' : 'Sélectionner')}
+          </span>
+        `;
+        list.appendChild(card);
+      });
+
+      const current = MILESTONES.find(m => m.id === activeMilestoneId) || MILESTONES[0];
+      document.getElementById('m-selected-title').innerText = current.name;
+      document.getElementById('m-selected-desc').innerText = current.desc;
+
+      const reqsContainer = document.getElementById('m-selected-reqs');
+      reqsContainer.innerHTML = '';
+
+      let allFilled = true;
+
+      for (const [res, needed] of Object.entries(current.reqs)) {
+        const currentFilled = current.filled[res] || 0;
+        const inBag = inventory[res]?.count || 0;
+        const itemDef = inventory[res] || { name: res, icon: '📦' };
+
+        if (currentFilled < needed) allFilled = false;
+
+        const row = document.createElement('div');
+        row.style.marginBottom = '8px';
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:2px;">
+            <span>${itemDef.icon} ${itemDef.name}</span>
+            <span style="font-weight:bold; color:${currentFilled >= needed ? '#4caf50' : '#ffb74d'};">${currentFilled} / ${needed} (Sac : ${inBag})</span>
+          </div>
+          <div style="height:6px; background:#263238; border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:${Math.min(100, Math.round((currentFilled/needed)*100))}%; background:${currentFilled >= needed ? '#4caf50' : '#ff9800'}; transition:width 0.3s;"></div>
+          </div>
+        `;
+        reqsContainer.appendChild(row);
+      }
+
+      const launchBtn = document.getElementById('btn-launch-ficsit');
+      if (current.unlocked) {
+        launchBtn.disabled = true;
+        launchBtn.innerHTML = '✔ JALON DÉJÀ COMPLÉTÉ';
+        launchBtn.style.background = '#2e7d32';
+      } else if (allFilled) {
+        launchBtn.disabled = false;
+        launchBtn.innerHTML = '🚀 ENVOYER LA CAPSULE FICSIT';
+        launchBtn.style.background = 'linear-gradient(135deg, #ff9800, #e65100)';
+      } else {
+        launchBtn.disabled = true;
+        launchBtn.innerHTML = '⏳ REMPLIR LA CAPSULE POUR LANCER';
+        launchBtn.style.background = '#263238';
+      }
+    }
+
+    function depositIngredientsToActiveMilestone() {
+      const current = MILESTONES.find(m => m.id === activeMilestoneId);
+      if (!current || current.unlocked) return;
+
+      let depositedAny = false;
+
+      for (const [res, needed] of Object.entries(current.reqs)) {
+        const currentFilled = current.filled[res] || 0;
+        const missing = needed - currentFilled;
+        const availableInBag = inventory[res]?.count || 0;
+
+        if (missing > 0 && availableInBag > 0) {
+          const toDeposit = Math.min(missing, availableInBag);
+          inventory[res].count -= toDeposit;
+          current.filled[res] = (current.filled[res] || 0) + toDeposit;
+          depositedAny = true;
+        }
+      }
+
+      if (depositedAny) {
+        playSound('produce');
+        showToast('Composants déposés dans la capsule !');
+        updateMilestoneModalContent();
+        updateInventoryUI();
+      } else {
+        showToast('Aucun composant requis disponible dans votre sac.');
+      }
+    }
+
+    function launchMilestoneCapsule() {
+      const current = MILESTONES.find(m => m.id === activeMilestoneId);
+      if (!current || current.unlocked) return;
+
+      current.unlocked = true;
+
+      playSound('build');
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 1.2);
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 1.2);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 1.2);
+
+      showToast(`🎉 JALON VALIDÉ : ${current.name} !`);
+
+      const nextM = MILESTONES.find(m => !m.unlocked);
+      if (nextM) activeMilestoneId = nextM.id;
+
+      updateMilestoneModalContent();
+      updateMilestoneTrackerUI();
+    }
+
+    function updateMilestoneTrackerUI() {
+      const current = MILESTONES.find(m => m.id === activeMilestoneId) || MILESTONES[0];
+      document.getElementById('tracker-m-name').innerText = current.name;
+      document.getElementById('tracker-m-status').innerText = current.unlocked ? 'Complété ✔' : 'En cours';
+      document.getElementById('tracker-m-status').style.color = current.unlocked ? '#4caf50' : '#ffb74d';
+
+      const trackerReqList = document.getElementById('tracker-requirements-list');
+      trackerReqList.innerHTML = '';
+
+      for (const [res, needed] of Object.entries(current.reqs)) {
+        const filled = current.filled[res] || 0;
+        const itemDef = inventory[res] || { name: res, icon: '📦' };
+
+        const itemRow = document.createElement('div');
+        itemRow.className = 'm-item-progress';
+        itemRow.innerHTML = `
+          <span>${itemDef.icon} ${itemDef.name} :</span>
+          <strong style="color:${filled >= needed ? '#4caf50' : '#ffb74d'};">${filled} / ${needed}</strong>
+        `;
+        trackerReqList.appendChild(itemRow);
+      }
+    }
+
+    function openMachineModal(building) {
+      selectedMachineForConfig = building;
+      closeStorageModal();
+      toggleMilestoneModal(false);
+      const modal = document.getElementById('machine-modal');
+      modal.style.display = 'flex';
+      if (document.exitPointerLock) document.exitPointerLock();
+
+      const typeName = building.type === 2 ? 'Foreuse Mk.1' : (building.type === 4 ? 'Fonderie Mk.1' : 'Constructeur Mk.1');
+      document.getElementById('m-title').innerHTML = `⚙️ Configuration : ${typeName}`;
+      updateMachineModalContent();
+    }
+
+    function closeMachineModal() {
+      selectedMachineForConfig = null;
+      document.getElementById('machine-modal').style.display = 'none';
+      if (!isInventoryOpen && !selectedStorageChest && !isMilestoneModalOpen) container.requestPointerLock();
+    }
+
+    function updateMachineModalContent() {
+      if (!selectedMachineForConfig) return;
+      const b = selectedMachineForConfig;
+
+      const category = b.type === 2 ? 'miner' : (b.type === 4 ? 'smelter' : (b.type === 5 ? 'constructor' : 'assembler'));
+      const availableRecipes = MACHINE_RECIPES[category] || [];
+      const currentRecipe = availableRecipes.find(r => r.id === b.selectedRecipeId) || availableRecipes[0];
+
+      document.getElementById('m-active-recipe').innerText = currentRecipe ? currentRecipe.name : 'Aucune';
+      document.getElementById('m-active-rate').innerText = currentRecipe ? currentRecipe.rate : '';
+
+      let inCount = 0;
+      let inItemName = "Aucune entrée requise (Extraction directe)";
+      let inPct = 100;
+
+      if (currentRecipe && currentRecipe.inTypeA && currentRecipe.inTypeB) {
+        const countA = b.inventory[currentRecipe.inTypeA] || 0;
+        const countB = b.inventory[currentRecipe.inTypeB] || 0;
+        const defA = inventory[currentRecipe.inTypeA] || { name: currentRecipe.inTypeA, icon: '📥' };
+        const defB = inventory[currentRecipe.inTypeB] || { name: currentRecipe.inTypeB, icon: '📥' };
+
+        inItemName = `A: ${defA.icon} ${defA.name} (${countA}/${currentRecipe.inQtyA}) | B: ${defB.icon} ${defB.name} (${countB}/${currentRecipe.inQtyB})`;
+        inCount = `${countA}+${countB}`;
+        inPct = Math.min(100, Math.round(((countA + countB) / 100) * 100));
+      } else if (currentRecipe && currentRecipe.inType) {
+        inCount = b.inventory[currentRecipe.inType] || 0;
+        const inDef = inventory[currentRecipe.inType] || { name: currentRecipe.inType, icon: '📥' };
+        inItemName = `${inDef.icon} ${inDef.name} (Besoin : ${currentRecipe.inQty})`;
+        inPct = Math.min(100, inCount);
+      }
+
+      const outCount = b.inventory[currentRecipe ? currentRec.outType : ''] || (currentRecipe ? (b.inventory[currentRecipe.outType] || 0) : 0);
+      const outDef = inventory[currentRecipe ? currentRecipe.outType : ''] || { name: currentRecipe ? currentRecipe.outType : 'Produit', icon: '📤' };
+      const outItemName = `${outDef.icon} ${outDef.name} (Production : +${currentRecipe ? currentRecipe.outQty : 1})`;
+
+      document.getElementById('m-buffer-in').innerText = currentRecipe && (currentRecipe.inType || currentRecipe.inTypeA) ? `${inCount} / 100` : 'Illimité';
+      document.getElementById('m-in-item-name').innerText = inItemName;
+      document.getElementById('m-in-bar').style.width = `${inPct}%`;
+
+      document.getElementById('m-buffer-out').innerText = `${outCount} / 100`;
+      document.getElementById('m-out-item-name').innerText = outItemName;
+      document.getElementById('m-out-bar').style.width = `${Math.min(100, outCount)}%`;
+
+      const list = document.getElementById('machine-recipes-list');
+      list.innerHTML = '';
+
+      availableRecipes.forEach(r => {
+        const isSel = r.id === (b.selectedRecipeId || availableRecipes[0].id);
+        const card = document.createElement('div');
+        card.className = `recipe-card ${isSel ? 'selected' : ''}`;
+        card.onclick = () => {
+          b.selectedRecipeId = r.id;
+          playSound('build');
+          showToast(`Recette changée : ${r.name}`);
+          updateMachineModalContent();
+        };
+        card.innerHTML = `
+          <div class="recipe-info">
+            <span style="font-size: 1.6rem;">${r.icon}</span>
+            <div>
+              <div class="recipe-title">${r.name}</div>
+              <div class="recipe-cost">${r.rate}</div>
+            </div>
+          </div>
+          ${isSel ? '<span style="color:#00e5ff; font-weight:bold; font-size:0.8rem;">ACTIF ✔</span>' : '<button class="btn-craft" style="background:#37474f; color:#fff;">Choisir</button>'}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function openStorageModal(chestBuilding) {
+      selectedStorageChest = chestBuilding;
+      closeMachineModal();
+      toggleMilestoneModal(false);
+      const modal = document.getElementById('storage-modal');
+      modal.style.display = 'flex';
+      if (document.exitPointerLock) document.exitPointerLock();
+      updateStorageModalContent();
+    }
+
+    function closeStorageModal() {
+      selectedStorageChest = null;
+      document.getElementById('storage-modal').style.display = 'none';
+      if (!isInventoryOpen && !selectedMachineForConfig && !isMilestoneModalOpen) container.requestPointerLock();
+    }
+
+    function updateStorageModalContent() {
+      if (!selectedStorageChest) return;
+      const b = selectedStorageChest;
+
+      const storageGrid = document.getElementById('storage-grid');
+      storageGrid.innerHTML = '';
+
+      let totalItems = 0;
+      let usedSlots = 0;
+
+      for (const [key, qty] of Object.entries(b.inventory)) {
+        if (qty > 0) {
+          usedSlots++;
+          totalItems += qty;
+          const itemDef = inventory[key] || { name: key, icon: '📦' };
+
+          const slot = document.createElement('div');
+          slot.className = 'inv-slot';
+          slot.title = `Cliquer pour récupérer 10x ${itemDef.name}`;
+          slot.onclick = () => transferFromChestToPlayer(key, 10);
+          slot.innerHTML = `
+            <div class="inv-slot-icon">${itemDef.icon}</div>
+            <div class="inv-slot-name">${itemDef.name}</div>
+            <div class="inv-slot-count">${qty}</div>
+          `;
+          storageGrid.appendChild(slot);
+        }
+      }
+
+      for (let i = usedSlots; i < 15; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.className = 'inv-slot';
+        emptySlot.style.opacity = '0.35';
+        emptySlot.innerHTML = `<div style="color:#546e7a; font-size:1.4rem;">+</div>`;
+        storageGrid.appendChild(emptySlot);
+      }
+
+      document.getElementById('storage-count-text').innerText = `${totalItems} objets au total (${usedSlots}/15 slots)`;
+
+      const playerGrid = document.getElementById('storage-player-grid');
+      playerGrid.innerHTML = '';
+
+      let playerUsedSlots = 0;
+      for (const [key, item] of Object.entries(inventory)) {
+        if (item.count > 0) {
+          playerUsedSlots++;
+          const slot = document.createElement('div');
+          slot.className = 'inv-slot';
+          slot.title = `Cliquer pour déposer 10x ${item.name}`;
+          slot.onclick = () => transferFromPlayerToChest(key, 10);
+          slot.innerHTML = `
+            <div class="inv-slot-icon">${item.icon}</div>
+            <div class="inv-slot-name">${item.name}</div>
+            <div class="inv-slot-count">${item.count}</div>
+          `;
+          playerGrid.appendChild(slot);
+        }
+      }
+
+      for (let i = playerUsedSlots; i < 15; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.className = 'inv-slot';
+        emptySlot.style.opacity = '0.35';
+        emptySlot.innerHTML = `<div style="color:#546e7a; font-size:1.4rem;">+</div>`;
+        playerGrid.appendChild(emptySlot);
+      }
+    }
+
+    function transferFromPlayerToChest(key, amount = 10) {
+      if (!selectedStorageChest) return;
+      const transferQty = Math.min(inventory[key].count, amount);
+      if (transferQty > 0) {
+        inventory[key].count -= transferQty;
+        selectedStorageChest.inventory[key] = (selectedStorageChest.inventory[key] || 0) + transferQty;
+        playSound('produce');
+        updateStorageModalContent();
+        updateInventoryUI();
+      }
+    }
+
+    function transferFromChestToPlayer(key, amount = 10) {
+      if (!selectedStorageChest) return;
+      const available = selectedStorageChest.inventory[key] || 0;
+      const transferQty = Math.min(available, amount);
+      if (transferQty > 0) {
+        selectedStorageChest.inventory[key] -= transferQty;
+        inventory[key].count += transferQty;
+        playSound('produce');
+        updateStorageModalContent();
+        updateInventoryUI();
+      }
+    }
+
+    function transferAllToStorage() {
+      if (!selectedStorageChest) return;
+      let transferred = false;
+      for (const key in inventory) {
+        if (inventory[key].count > 0) {
+          selectedStorageChest.inventory[key] = (selectedStorageChest.inventory[key] || 0) + inventory[key].count;
+          inventory[key].count = 0;
+          transferred = true;
+        }
+      }
+      if (transferred) {
+        playSound('build');
+        showToast('Sac à dos vidé dans le coffre !');
+        updateStorageModalContent();
+        updateInventoryUI();
+      }
+    }
+
+    function transferAllFromStorage() {
+      if (!selectedStorageChest) return;
+      let transferred = false;
+      for (const key in selectedStorageChest.inventory) {
+        const qty = selectedStorageChest.inventory[key];
+        if (qty > 0) {
+          inventory[key].count += qty;
+          selectedStorageChest.inventory[key] = 0;
+          transferred = true;
+        }
+      }
+      if (transferred) {
+        playSound('build');
+        showToast('Objets du coffre récupérés !');
+        updateStorageModalContent();
+        updateInventoryUI();
+      }
+    }
+
+    /* ==========================================================================
+       AUDIO SYNTHESIZER
+       ========================================================================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      if (type === 'build') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'dismantle') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (type === 'produce') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.08);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'mine') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      }
+    }
+
+    /* ==========================================================================
+       JOUEUR & CONTROLES
+       ========================================================================== */
+    const keys = {};
+    let isLocked = false;
+    const player = {
+      position: new THREE.Vector3(0, 3.2, 14),
+      velocity: new THREE.Vector3(),
+      rotation: new THREE.Euler(-0.15, 0, 0, 'YXZ'),
+      speed: 12,
+      sprintMult: 1.8,
+      canJump: true,
+      onGround: true
+    };
+
+    camera.position.copy(player.position);
+    camera.rotation.copy(player.rotation);
+
+    container.addEventListener('click', () => {
+      if (!isInventoryOpen && !selectedMachineForConfig && !selectedStorageChest && !isMilestoneModalOpen) {
+        container.requestPointerLock();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      keys[e.code] = true;
+      if (e.code === 'Tab' || e.code === 'KeyI') {
+        e.preventDefault();
+        toggleInventory();
+        return;
+      }
+      if (e.code === 'KeyM') {
+        e.preventDefault();
+        toggleMilestoneModal();
+        return;
+      }
+      if (isInventoryOpen || selectedMachineForConfig || selectedStorageChest || isMilestoneModalOpen) return;
+
+      if (e.code === 'KeyE') {
+        handleInteract();
+      }
+      if (e.code === 'KeyR') {
+        currentRotation = (currentRotation + Math.PI / 2) % (Math.PI * 2);
+        updateHologram();
+      }
+      if (e.code === 'KeyF') {
+        selectSlot(0);
+      }
+      if (e.key >= '0' && e.key <= '9') {
+        selectSlot(parseInt(e.key));
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      keys[e.code] = false;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isLocked || isInventoryOpen || selectedMachineForConfig || selectedStorageChest || isMilestoneModalOpen) return;
+      const sensitivity = 0.0022;
+      player.rotation.y -= e.movementX * sensitivity;
+      player.rotation.x -= e.movementY * sensitivity;
+      player.rotation.x = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, player.rotation.x));
+    });
+
+    window.addEventListener('wheel', (e) => {
+      if (isInventoryOpen || selectedMachineForConfig || selectedStorageChest || isMilestoneModalOpen) return;
+      // Molette Bas -> Outil suivant, Molette Haut -> Outil précédent
+      if (e.deltaY > 0) {
+        const nextTool = selectedTool >= 10 ? 1 : selectedTool + 1;
+        selectSlot(nextTool);
+      } else if (e.deltaY < 0) {
+        const prevTool = selectedTool <= 1 ? 10 : selectedTool - 1;
+        selectSlot(prevTool);
+      }
+    }, { passive: true });
+
+    document.addEventListener('pointerlockchange', () => {
+      isLocked = (document.pointerLockElement === container);
+    });
+
+    const raycaster = new THREE.Raycaster();
+    const centerVec = new THREE.Vector2(0, 0);
+
+    function getTargetInteractable() {
+      raycaster.setFromCamera(centerVec, camera);
+      const interactableMeshes = buildings.filter(b => [2, 4, 5, 6, 7].includes(b.type)).map(b => b.mesh);
+      const intersects = raycaster.intersectObjects(interactableMeshes, true);
+      if (intersects.length > 0) {
+        let obj = intersects[0].object;
+        while (obj.parent && !buildings.some(b => b.mesh === obj)) {
+          obj = obj.parent;
+        }
+        return buildings.find(b => b.mesh === obj);
+      }
+      return null;
+    }
+
+    function handleInteract() {
+      const target = getTargetInteractable();
+      if (target) {
+        if (target.type === 7) openStorageModal(target);
+        else openMachineModal(target);
+        return;
+      }
+
+      const nearDeposit = oreDeposits.find(d => Math.hypot(player.position.x - d.x, player.position.z - d.z) < 4.5);
+      if (nearDeposit) {
+        if (nearDeposit.type === 'iron') {
+          inventory.iron_ore.count += 2;
+          showToast('+2 Minerai de Fer extrait !');
+        } else {
+          inventory.copper_ore.count += 2;
+          showToast('+2 Minerai de Cuivre extrait !');
+        }
+        playSound('mine');
+        updateInventoryUI();
+      }
+    }
+
+    /* ==========================================================================
+       MODELES 3D DES BATIMENTS (DESIGN SATISFACTORY)
+       ========================================================================== */
+    const GRID_SIZE = 2;
+    let selectedTool = 1;
+    let currentRotation = 0;
+
+    const buildings = [];
+    const itemsOnBelts = [];
+
+    let hologramMesh = new THREE.Group();
+    scene.add(hologramMesh);
+
+    function selectSlot(id) {
+      selectedTool = id;
+      document.querySelectorAll('.hotbar-slot').forEach(s => s.classList.remove('active'));
+      const activeSlot = document.querySelector(`.hotbar-slot[data-id="${id}"]`);
+      if (activeSlot) activeSlot.classList.add('active');
+      updateHologram();
+    }
+
+    function createBuildingMesh(type, isHolo = false) {
+      const group = new THREE.Group();
+
+      if (type === 1) { // FONDATION BÉTON RENFORCÉ
+        const base = new THREE.Mesh(new THREE.BoxGeometry(GRID_SIZE, 0.4, GRID_SIZE), isHolo ? matHoloValid : matConcrete);
+        base.position.y = 0.2;
+        group.add(base);
+      } 
+      else if (type === 2) { // FOREUSE MK.1
+        const base = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.35, 1.9), isHolo ? matHoloValid : matDarkMetal);
+        base.position.y = 0.175;
+        group.add(base);
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.6, 1.4), isHolo ? matHoloValid : matFactoryOrange);
+        body.position.y = 1.05;
+        group.add(body);
+
+        const drillGroup = new THREE.Group();
+        drillGroup.name = 'drill_part';
+        drillGroup.position.set(0, 0.6, 0);
+        const drillCone = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 12), isHolo ? matHoloValid : matDarkMetal);
+        drillCone.rotation.x = Math.PI;
+        drillCone.position.y = 0.1;
+        drillGroup.add(drillCone);
+        group.add(drillGroup);
+
+        const chute = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.6), isHolo ? matHoloValid : matDarkMetal);
+        chute.position.set(0, 0.5, 0.95);
+        group.add(chute);
+      }
+      else if (type === 3) { // CONVOYEUR MK.1
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.15, GRID_SIZE), isHolo ? matHoloValid : matDarkMetal);
+        frame.position.y = 0.08;
+        group.add(frame);
+
+        const beltMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.06, GRID_SIZE), isHolo ? matHoloValid : matBelt);
+        beltMesh.position.y = 0.18;
+        group.add(beltMesh);
+
+        const railL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, GRID_SIZE), isHolo ? matHoloValid : matFactoryOrange);
+        railL.position.set(-0.55, 0.22, 0);
+        const railR = railL.clone(); railR.position.set(0.55, 0.22, 0);
+        group.add(railL, railR);
+      }
+      else if (type === 4) { // FONDERIE MK.1
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.85, 1.8, 1.85), isHolo ? matHoloValid : matFactoryOrange);
+        body.position.y = 0.9;
+        group.add(body);
+
+        if (!isHolo) {
+          const glowWindow = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.1), matMoltenGlow);
+          glowWindow.position.set(0, 0.95, 0.9);
+          group.add(glowWindow);
+        }
+
+        const chimney1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1.5, 12), isHolo ? matHoloValid : matDarkMetal);
+        chimney1.position.set(0.45, 2.35, 0.45);
+        const chimney2 = chimney1.clone();
+        chimney2.position.set(-0.45, 2.35, 0.45);
+        group.add(chimney1, chimney2);
+
+        const portIn = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.4), isHolo ? matHoloValid : matDarkMetal);
+        portIn.position.set(0, 0.45, -1.0);
+        const portOut = portIn.clone(); portOut.position.set(0, 0.45, 1.0);
+        group.add(portIn, portOut);
+      }
+      else if (type === 5) { // CONSTRUCTEUR MK.1
+        const base = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.4, 1.85), isHolo ? matHoloValid : matDarkMetal);
+        base.position.y = 0.2;
+        group.add(base);
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.55, 1.25, 1.55), isHolo ? matHoloValid : matFactoryOrange);
+        body.position.y = 1.0;
+        group.add(body);
+
+        const press = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.35, 0.9), isHolo ? matHoloValid : matDarkMetal);
+        press.position.y = 1.65;
+        press.name = 'press_part';
+        group.add(press);
+
+        const portIn = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.4), isHolo ? matHoloValid : matDarkMetal);
+        portIn.position.set(0, 0.45, -1.0);
+        const portOut = portIn.clone(); portOut.position.set(0, 0.45, 1.0);
+        group.add(portIn, portOut);
+      }
+      else if (type === 6) { // ASSEMBLEUR MK.1 (2 ENTREES, 1 SORTIE)
+        const base = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.45, 2.3), isHolo ? matHoloValid : matDarkMetal);
+        base.position.y = 0.225;
+        group.add(base);
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.45, 2.0), isHolo ? matHoloValid : matFactoryOrange);
+        body.position.y = 1.15;
+        group.add(body);
+
+        // Double bras mécanique d'assemblage
+        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.7, 0.35), isHolo ? matHoloValid : matDarkMetal);
+        armL.position.set(-0.55, 2.0, 0);
+        armL.name = 'asm_arm_l';
+        const armR = armL.clone();
+        armR.position.set(0.55, 2.0, 0);
+        armR.name = 'asm_arm_r';
+        group.add(armL, armR);
+
+        // 2 Ports d'Entrée Arrière (-0.55 et +0.55)
+        const portInA = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.4), isHolo ? matHoloValid : matDarkMetal);
+        portInA.position.set(-0.55, 0.45, -1.15);
+        const portInB = portInA.clone();
+        portInB.position.set(0.55, 0.45, -1.15);
+        group.add(portInA, portInB);
+
+        // 1 Port de Sortie Avant
+        const portOut = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.55, 0.4), isHolo ? matHoloValid : matDarkMetal);
+        portOut.position.set(0, 0.45, 1.15);
+        group.add(portOut);
+      }
+      else if (type === 7) { // CONTENEUR DE STOCKAGE MK.1
+        const containerBox = new THREE.Mesh(new THREE.BoxGeometry(1.75, 1.55, 1.75), isHolo ? matHoloValid : matStorage);
+        containerBox.position.y = 0.775;
+        group.add(containerBox);
+
+        const portIn = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.4), isHolo ? matHoloValid : matDarkMetal);
+        portIn.position.set(0, 0.45, -0.95);
+        group.add(portIn);
+      }
+      else if (type === 8) { // POTEAU ELECTRIQUE
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 3.6, 8), isHolo ? matHoloValid : matDarkMetal);
+        pole.position.y = 1.8;
+        group.add(pole);
+
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.12, 0.12), isHolo ? matHoloValid : matFactoryOrange);
+        arm.position.y = 3.3;
+        group.add(arm);
+
+        const insulator1 = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), isHolo ? matHoloValid : matPowerGlow);
+        insulator1.position.set(-0.55, 3.3, 0);
+        const insulator2 = insulator1.clone(); insulator2.position.set(0.55, 3.3, 0);
+        group.add(insulator1, insulator2);
+      }
+      else if (type === 9) { // SEPARATEUR DE CONVOYEUR (SPLITTER 1 -> 3)
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 1.4), isHolo ? matHoloValid : matFactoryOrange);
+        body.position.y = 0.45;
+        group.add(body);
+
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 1.5), isHolo ? matHoloValid : matDarkMetal);
+        cap.position.y = 0.95;
+        group.add(cap);
+
+        // 1 Entrée Arrière (Bleue)
+        const pIn = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), isHolo ? matHoloValid : matDarkMetal);
+        pIn.position.set(0, 0.45, -0.75);
+        const ledIn = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.05), isHolo ? matHoloValid : matPowerGlow);
+        ledIn.position.set(0, 0.75, -0.72);
+        group.add(pIn, ledIn);
+
+        // 3 Sorties (Avant, Gauche, Droite) avec voyants lumineux
+        const pOutF = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), isHolo ? matHoloValid : matDarkMetal);
+        pOutF.position.set(0, 0.45, 0.75);
+        const pOutL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.5), isHolo ? matHoloValid : matDarkMetal);
+        pOutL.position.set(-0.75, 0.45, 0);
+        const pOutR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.5), isHolo ? matHoloValid : matDarkMetal);
+        pOutR.position.set(0.75, 0.45, 0);
+        group.add(pOutF, pOutL, pOutR);
+      }
+      else if (type === 10) { // GROUPEUR DE CONVOYEUR (MERGER 3 -> 1)
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 1.4), isHolo ? matHoloValid : matStorage);
+        body.position.y = 0.45;
+        group.add(body);
+
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 1.5), isHolo ? matHoloValid : matDarkMetal);
+        cap.position.y = 0.95;
+        group.add(cap);
+
+        // 3 Entrées (Arrière, Gauche, Droite)
+        const pInB = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), isHolo ? matHoloValid : matDarkMetal);
+        pInB.position.set(0, 0.45, -0.75);
+        const pInL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.5), isHolo ? matHoloValid : matDarkMetal);
+        pInL.position.set(-0.75, 0.45, 0);
+        const pInR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.5), isHolo ? matHoloValid : matDarkMetal);
+        pInR.position.set(0.75, 0.45, 0);
+        group.add(pInB, pInL, pInR);
+
+        // 1 Sortie Avant
+        const pOutF = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), isHolo ? matHoloValid : matDarkMetal);
+        pOutF.position.set(0, 0.45, 0.75);
+        group.add(pOutF);
+      }
+
+      return group;
+    }
+
+    function updateHologram() {
+      while(hologramMesh.children.length > 0) {
+        hologramMesh.remove(hologramMesh.children[0]);
+      }
+      if (selectedTool !== 0) {
+        const preview = createBuildingMesh(selectedTool, true);
+        hologramMesh.add(preview);
+      }
+    }
+    updateHologram();
+
+    function getTargetPoint() {
+      raycaster.setFromCamera(centerVec, camera);
+      const targets = [groundMesh, ...buildings.map(b => b.mesh)];
+      const intersects = raycaster.intersectObjects(targets, true);
+      if (intersects.length > 0) return intersects[0];
+      return null;
+    }
+
+    function calculateSnap(hitPoint) {
+      if (!hitPoint) return null;
+
+      let gx = Math.round(hitPoint.x / GRID_SIZE) * GRID_SIZE;
+      let gz = Math.round(hitPoint.z / GRID_SIZE) * GRID_SIZE;
+      let gy = 0;
+      let rot = currentRotation;
+
+      const baseBuilding = buildings.find(b => Math.abs(b.x - gx) < 0.1 && Math.abs(b.z - gz) < 0.1 && b.type === 1);
+      if (baseBuilding && selectedTool !== 1 && selectedTool !== 0) {
+        gy = baseBuilding.y + 0.4;
+      }
+
+      return { x: gx, y: gy, z: gz, rotation: rot };
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('status-toast');
+      toast.innerText = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 1500);
+    }
+
+    window.addEventListener('mousedown', (e) => {
+      if (isInventoryOpen || selectedMachineForConfig || selectedStorageChest || isMilestoneModalOpen) return;
+
+      if (e.button === 2) {
+        const target = getTargetInteractable();
+        if (target) {
+          if (target.type === 6) openStorageModal(target);
+          else openMachineModal(target);
+          return;
+        }
+      }
+
+      if (e.button !== 0) return;
+
+      const hit = getTargetPoint();
+      if (!hit) return;
+
+      const snap = calculateSnap(hit.point);
+      if (!snap) return;
+
+      const gx = snap.x;
+      const gy = snap.y;
+      const gz = snap.z;
+      const rot = snap.rotation;
+
+      const existingAtCell = buildings.find(b => Math.abs(b.x - gx) < 0.1 && Math.abs(b.z - gz) < 0.1);
+
+      if (selectedTool === 0) {
+        if (existingAtCell) {
+          scene.remove(existingAtCell.mesh);
+          const index = buildings.indexOf(existingAtCell);
+          if (index > -1) buildings.splice(index, 1);
+          playSound('dismantle');
+          showToast('Bâtiment démonté');
+          updateFactoryStats();
+        }
+        return;
+      }
+
+      if (existingAtCell && (existingAtCell.type !== 1 || selectedTool === 1)) {
+        showToast('Emplacement déjà occupé !');
+        return;
+      }
+
+      const buildingMesh = createBuildingMesh(selectedTool, false);
+      buildingMesh.position.set(gx, gy, gz);
+      buildingMesh.rotation.y = rot;
+      scene.add(buildingMesh);
+
+      let defaultRecipe = 'iron_ingot';
+      if (selectedTool === 2) {
+        const deposit = oreDeposits.find(d => Math.hypot(d.x - gx, d.z - gz) < 2.5);
+        defaultRecipe = deposit && deposit.type === 'copper' ? 'copper_ore' : 'iron_ore';
+      } else if (selectedTool === 5) {
+        defaultRecipe = 'iron_plate';
+      }
+
+      const newBuilding = {
+        id: Date.now() + Math.random(),
+        type: selectedTool,
+        x: gx,
+        y: gy,
+        z: gz,
+        rotation: rot,
+        mesh: buildingMesh,
+        selectedRecipeId: defaultRecipe,
+        timer: 0,
+        inventory: { iron_ore: 0, copper_ore: 0, iron_ingot: 0, copper_ingot: 0, iron_plate: 0, iron_rod: 0, wire: 0, concrete: 0, rotor: 0 }
+      };
+
+      buildings.push(newBuilding);
+      playSound('build');
+      showToast('Bâtiment construit !');
+      updateFactoryStats();
+    });
+
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
+    function updateFactoryStats() {
+      const activeCount = buildings.filter(b => b.type >= 2 && b.type <= 5).length;
+      const consumption = activeCount * 4;
+      const production = 30 + (buildings.filter(b => b.type === 7).length * 10);
+      document.getElementById('power-text').innerText = `⚡ ${production} MW / ${consumption} MW`;
+      const ratio = Math.min(100, Math.round((consumption / production) * 100));
+      document.getElementById('power-bar-fill').style.width = `${ratio}%`;
+    }
+
+    /* ==========================================================================
+       MODELES 3D MULTI-PIECES HD POUR LES ITEMS SUR LES CONVOYEURS
+       ========================================================================== */
+    const matOreIron = new THREE.MeshLambertMaterial({ color: 0xc2410c });
+    const matOreCopper = new THREE.MeshLambertMaterial({ color: 0x0284c7 });
+    const matIngotIron = new THREE.MeshLambertMaterial({ color: 0xb0bec5 });
+    const matIngotCopper = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
+    const matPlateSteel = new THREE.MeshLambertMaterial({ color: 0x78909c });
+    const matPlateRivet = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
+    const matRodSteel = new THREE.MeshLambertMaterial({ color: 0x64748b });
+    const matSpoolFlange = new THREE.MeshLambertMaterial({ color: 0x1e293b });
+    const matCopperWire = new THREE.MeshLambertMaterial({ color: 0xf97316 });
+    const matRotorShaft = new THREE.MeshLambertMaterial({ color: 0x334155 });
+    const matRotorBlade = new THREE.MeshLambertMaterial({ color: 0xf43f5e });
+
+    function createItemMesh(itemType) {
+      const group = new THREE.Group();
+
+      if (itemType === 'iron_ore' || itemType === 'copper_ore') {
+        const rockMat = itemType === 'iron_ore' ? matOreIron : matOreCopper;
+        for (let i = 0; i < 3; i++) {
+          const shard = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14 + i * 0.04, 0), rockMat);
+          shard.position.set((i - 1) * 0.09, 0.08 + (i % 2) * 0.05, ((i * 2) % 3 - 1) * 0.06);
+          shard.rotation.set(i * 1.2, i * 0.8, i * 0.5);
+          group.add(shard);
+        }
+      }
+      else if (itemType === 'iron_ingot' || itemType === 'copper_ingot') {
+        const ingotMat = itemType === 'iron_ingot' ? matIngotIron : matIngotCopper;
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.26, 0.12, 4), ingotMat);
+        base.rotation.y = Math.PI / 4;
+        base.scale.set(1.4, 1.0, 0.85);
+        base.position.y = 0.06;
+        group.add(base);
+
+        const stamp = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.02, 0.1), matDarkMetal);
+        stamp.position.y = 0.125;
+        group.add(stamp);
+      }
+      else if (itemType === 'iron_plate') {
+        const plate = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.04, 0.48), matPlateSteel);
+        plate.position.y = 0.02;
+        group.add(plate);
+
+        const rib = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.12), matDarkMetal);
+        rib.position.y = 0.03;
+        group.add(rib);
+
+        const rivetGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.05, 8);
+        const offsets = [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]];
+        offsets.forEach(([rx, rz]) => {
+          const rivet = new THREE.Mesh(rivetGeo, matPlateRivet);
+          rivet.position.set(rx, 0.04, rz);
+          group.add(rivet);
+        });
+      }
+      else if (itemType === 'iron_rod') {
+        const rodGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.52, 8);
+        rodGeo.rotateX(Math.PI / 2);
+
+        const r1 = new THREE.Mesh(rodGeo, matRodSteel);
+        r1.position.set(-0.045, 0.04, 0);
+        const r2 = new THREE.Mesh(rodGeo, matRodSteel);
+        r2.position.set(0.045, 0.04, 0);
+        const r3 = new THREE.Mesh(rodGeo, matRodSteel);
+        r3.position.set(0, 0.09, 0);
+        group.add(r1, r2, r3);
+
+        const band1 = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 8), matDarkMetal);
+        band1.rotateX(Math.PI / 2);
+        band1.position.set(0, 0.055, -0.15);
+        const band2 = band1.clone();
+        band2.position.set(0, 0.055, 0.15);
+        group.add(band1, band2);
+      }
+      else if (itemType === 'wire') {
+        const spoolCore = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.22, 16), matCopperWire);
+        spoolCore.rotateZ(Math.PI / 2);
+        spoolCore.position.y = 0.16;
+        group.add(spoolCore);
+
+        const flangeGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.03, 16);
+        flangeGeo.rotateZ(Math.PI / 2);
+        const flangeL = new THREE.Mesh(flangeGeo, matSpoolFlange);
+        flangeL.position.set(-0.12, 0.16, 0);
+        const flangeR = new THREE.Mesh(flangeGeo, matSpoolFlange);
+        flangeR.position.set(0.12, 0.16, 0);
+        group.add(flangeL, flangeR);
+
+        const wireLead = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.2), matCopperWire);
+        wireLead.position.set(0, 0.04, 0.12);
+        group.add(wireLead);
+      }
+      else if (itemType === 'rotor') {
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.35, 10), matRotorShaft);
+        shaft.position.y = 0.16;
+        group.add(shaft);
+
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.12, 6), matDarkMetal);
+        hub.position.y = 0.16;
+        group.add(hub);
+
+        for (let i = 0; i < 4; i++) {
+          const blade = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.08), matRotorBlade);
+          blade.position.set(0, 0.16, 0);
+          blade.rotation.y = (i * Math.PI) / 2;
+          blade.translateX(0.16);
+          group.add(blade);
+        }
+      }
+      else if (itemType === 'reinforced_plate') {
+        // Plaque Renforcée : Double plaque d'acier avec 8 rivets chromés et renforts croisés
+        const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), matPlateSteel);
+        p1.position.y = 0.025;
+        const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.05, 0.42), matDarkMetal);
+        p2.position.y = 0.06;
+        group.add(p1, p2);
+
+        const rivetGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.05, 8);
+        const offsets = [[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]];
+        offsets.forEach(([rx, rz]) => {
+          const rivet = new THREE.Mesh(rivetGeo, matPlateRivet);
+          rivet.position.set(rx, 0.07, rz);
+          group.add(rivet);
+        });
+      }
+      else if (itemType === 'modular_frame') {
+        // Cadre Modulaire : Structure cage cubique 3D
+        const frameMat = matDarkMetal;
+        const beamGeoH = new THREE.BoxGeometry(0.38, 0.05, 0.05);
+        const beamGeoV = new THREE.BoxGeometry(0.05, 0.38, 0.05);
+
+        // Barres horizontales
+        for (const y of [0.05, 0.35]) {
+          for (const z of [-0.15, 0.15]) {
+            const b = new THREE.Mesh(beamGeoH, frameMat);
+            b.position.set(0, y, z);
+            group.add(b);
+          }
+        }
+        // Piliers verticaux
+        for (const x of [-0.16, 0.16]) {
+          for (const z of [-0.16, 0.16]) {
+            const pv = new THREE.Mesh(beamGeoV, matFactoryOrange);
+            pv.position.set(x, 0.2, z);
+            group.add(pv);
+          }
+        }
+      }
+      else if (itemType === 'motor') {
+        // Moteur Électrique FICSIT : Stator orange, axe de rotation et ailettes
+        const motorBody = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.35, 12), matFactoryOrange);
+        motorBody.rotateZ(Math.PI / 2);
+        motorBody.position.y = 0.17;
+        group.add(motorBody);
+
+        const motorShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 8), matRodSteel);
+        motorShaft.rotateZ(Math.PI / 2);
+        motorShaft.position.y = 0.17;
+        group.add(motorShaft);
+
+        const copperCoil = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 8, 16), matCopperWire);
+        copperCoil.rotateY(Math.PI / 2);
+        copperCoil.position.set(0.1, 0.17, 0);
+        group.add(copperCoil);
+      }
+      else {
+        // Bloc générique
+        const genericBox = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.3), matConcrete);
+        genericBox.position.y = 0.1;
+        group.add(genericBox);
+      }
+
+      return group;
+    }
+
+    function spawnItemOnBelt(belt, itemType) {
+      const mesh = createItemMesh(itemType);
+      scene.add(mesh);
+
+      const dir = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), belt.rotation);
+      const startPos = new THREE.Vector3(belt.x, belt.y + 0.3, belt.z).sub(dir.clone().multiplyScalar(GRID_SIZE / 2));
+
+      itemsOnBelts.push({
+        type: itemType,
+        mesh: mesh,
+        currentBelt: belt,
+        progress: 0,
+        speed: 1.25
+      });
+    }
+
+    function simulateFactory(delta) {
+      buildings.forEach(b => {
+        if (b.type === 2) {
+          b.timer += delta;
+          const drill = b.mesh.getObjectByName('drill_part');
+          if (drill) drill.rotation.y += delta * 6.5;
+
+          if (b.timer >= 2.0) {
+            b.timer = 0;
+            const itemType = b.selectedRecipeId === 'copper_ore' ? 'copper_ore' : 'iron_ore';
+            const nextBelt = buildings.find(nb => nb.type === 3 && Math.abs(nb.x - (b.x + Math.sin(b.rotation)*GRID_SIZE)) < 0.5 && Math.abs(nb.z - (b.z + Math.cos(b.rotation)*GRID_SIZE)) < 0.5);
+
+            if (nextBelt) {
+              spawnItemOnBelt(nextBelt, itemType);
+              playSound('produce');
+            } else {
+              inventory[itemType].count++;
+              updateInventoryUI();
+            }
+          }
+        }
+        else if (b.type === 4) {
+          const recipe = MACHINE_RECIPES.smelter.find(r => r.id === b.selectedRecipeId) || MACHINE_RECIPES.smelter[0];
+          const hasInput = (b.inventory[recipe.inType] || 0) >= recipe.inQty;
+
+          if (hasInput) {
+            b.timer += delta;
+            if (b.timer >= 1.5) {
+              b.timer = 0;
+              b.inventory[recipe.inType] -= recipe.inQty;
+
+              const nextBelt = buildings.find(nb => nb.type === 3 && Math.abs(nb.x - (b.x + Math.sin(b.rotation)*GRID_SIZE)) < 0.5 && Math.abs(nb.z - (b.z + Math.cos(b.rotation)*GRID_SIZE)) < 0.5);
+              if (nextBelt) spawnItemOnBelt(nextBelt, recipe.outType);
+              else {
+                inventory[recipe.outType].count += recipe.outQty;
+                updateInventoryUI();
+              }
+              playSound('produce');
+            }
+          }
+        }
+        else if (b.type === 5) {
+          const recipe = MACHINE_RECIPES.constructor.find(r => r.id === b.selectedRecipeId) || MACHINE_RECIPES.constructor[0];
+          const hasInput = (b.inventory[recipe.inType] || 0) >= recipe.inQty;
+
+          const press = b.mesh.getObjectByName('press_part');
+          if (hasInput) {
+            b.timer += delta;
+            if (press) press.position.y = 1.65 - Math.abs(Math.sin(b.timer * 4)) * 0.3;
+
+            if (b.timer >= 2.0) {
+              b.timer = 0;
+              b.inventory[recipe.inType] -= recipe.inQty;
+
+              const nextBelt = buildings.find(nb => nb.type === 3 && Math.abs(nb.x - (b.x + Math.sin(b.rotation)*GRID_SIZE)) < 0.5 && Math.abs(nb.z - (b.z + Math.cos(b.rotation)*GRID_SIZE)) < 0.5);
+              if (nextBelt) spawnItemOnBelt(nextBelt, recipe.outType);
+              else {
+                inventory[recipe.outType].count += recipe.outQty;
+                updateInventoryUI();
+              }
+              playSound('produce');
+            }
+          }
+        }
+        else if (b.type === 6) { // ASSEMBLEUR MK.1 (2 ENTREES)
+          const recipe = MACHINE_RECIPES.assembler.find(r => r.id === b.selectedRecipeId) || MACHINE_RECIPES.assembler[0];
+          const hasInputA = (b.inventory[recipe.inTypeA] || 0) >= recipe.inQtyA;
+          const hasInputB = (b.inventory[recipe.inTypeB] || 0) >= recipe.inQtyB;
+
+          const armL = b.mesh.getObjectByName('asm_arm_l');
+          const armR = b.mesh.getObjectByName('asm_arm_r');
+
+          if (hasInputA && hasInputB) {
+            b.timer += delta;
+            if (armL) armL.position.y = 2.0 - Math.abs(Math.sin(b.timer * 4)) * 0.35;
+            if (armR) armR.position.y = 2.0 - Math.abs(Math.cos(b.timer * 4)) * 0.35;
+
+            if (b.timer >= 2.5) {
+              b.timer = 0;
+              b.inventory[recipe.inTypeA] -= recipe.inQtyA;
+              b.inventory[recipe.inTypeB] -= recipe.inQtyB;
+
+              const nextBelt = buildings.find(nb => nb.type === 3 && Math.abs(nb.x - (b.x + Math.sin(b.rotation)*GRID_SIZE)) < 0.5 && Math.abs(nb.z - (b.z + Math.cos(b.rotation)*GRID_SIZE)) < 0.5);
+              if (nextBelt) spawnItemOnBelt(nextBelt, recipe.outType);
+              else {
+                inventory[recipe.outType].count += recipe.outQty;
+                updateInventoryUI();
+              }
+              playSound('produce');
+            }
+          }
+        }
+      });
+
+      for (let i = itemsOnBelts.length - 1; i >= 0; i--) {
+        const it = itemsOnBelts[i];
+        it.progress += (it.speed * delta) / GRID_SIZE;
+
+        const b = it.currentBelt;
+        const dir = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), b.rotation);
+        const start = new THREE.Vector3(b.x, b.y + 0.3, b.z).sub(dir.clone().multiplyScalar(GRID_SIZE / 2));
+        const currentPos = start.clone().add(dir.clone().multiplyScalar(it.progress * GRID_SIZE));
+
+        it.mesh.position.copy(currentPos);
+        it.mesh.rotation.y = b.rotation;
+
+        if (it.progress >= 1.0) {
+          const nextX = Math.round((b.x + Math.sin(b.rotation) * GRID_SIZE) / GRID_SIZE) * GRID_SIZE;
+          const nextZ = Math.round((b.z + Math.cos(b.rotation) * GRID_SIZE) / GRID_SIZE) * GRID_SIZE;
+          const nextBuilding = buildings.find(nb => Math.abs(nb.x - nextX) < 0.5 && Math.abs(nb.z - nextZ) < 0.5);
+
+          if (nextBuilding) {
+            if (nextBuilding.type === 3) {
+              it.currentBelt = nextBuilding;
+              it.progress = 0;
+            } else if (nextBuilding.type === 9) { // SEPARATEUR (SPLITTER 1 -> 3)
+              const rot = nextBuilding.rotation;
+              const outputAngles = [rot, rot - Math.PI / 2, rot + Math.PI / 2];
+              const availableTargets = [];
+
+              outputAngles.forEach(angle => {
+                const tx = Math.round((nextBuilding.x + Math.sin(angle) * GRID_SIZE) / GRID_SIZE) * GRID_SIZE;
+                const tz = Math.round((nextBuilding.z + Math.cos(angle) * GRID_SIZE) / GRID_SIZE) * GRID_SIZE;
+                const target = buildings.find(nb => Math.abs(nb.x - tx) < 0.5 && Math.abs(nb.z - tz) < 0.5);
+                if (target) availableTargets.push(target);
+              });
+
+              if (availableTargets.length > 0) {
+                nextBuilding.lastOutputIndex = ((nextBuilding.lastOutputIndex || 0) + 1) % availableTargets.length;
+                const chosenBuilding = availableTargets[nextBuilding.lastOutputIndex];
+
+                if (chosenBuilding.type === 3) {
+                  it.currentBelt = chosenBuilding;
+                  it.progress = 0;
+                } else if (chosenBuilding.type === 4 || chosenBuilding.type === 5 || chosenBuilding.type === 6 || chosenBuilding.type === 7) {
+                  chosenBuilding.inventory[it.type] = (chosenBuilding.inventory[it.type] || 0) + 1;
+                  scene.remove(it.mesh);
+                  itemsOnBelts.splice(i, 1);
+                  if (selectedStorageChest === chosenBuilding) updateStorageModalContent();
+                } else {
+                  it.progress = 1.0;
+                }
+              } else {
+                inventory[it.type].count++;
+                updateInventoryUI();
+                scene.remove(it.mesh);
+                itemsOnBelts.splice(i, 1);
+              }
+            } else if (nextBuilding.type === 10) { // GROUPEUR (MERGER 3 -> 1)
+              const rot = nextBuilding.rotation;
+              const fx = Math.round((nextBuilding.x + Math.sin(rot) * GRID_SIZE) / GRID_SIZE) * GRID_SIZE;
+              const fz = Math.round((nextBuilding.z + Math.cos(rot) * GRID_SIZE) / GRID_SIZE) * GRID_SIZE;
+              const frontBuilding = buildings.find(nb => Math.abs(nb.x - fx) < 0.5 && Math.abs(nb.z - fz) < 0.5);
+
+              if (frontBuilding) {
+                if (frontBuilding.type === 3) {
+                  it.currentBelt = frontBuilding;
+                  it.progress = 0;
+                } else if (frontBuilding.type === 4 || frontBuilding.type === 5 || frontBuilding.type === 6 || frontBuilding.type === 7) {
+                  frontBuilding.inventory[it.type] = (frontBuilding.inventory[it.type] || 0) + 1;
+                  scene.remove(it.mesh);
+                  itemsOnBelts.splice(i, 1);
+                  if (selectedStorageChest === frontBuilding) updateStorageModalContent();
+                } else {
+                  it.progress = 1.0;
+                }
+              } else {
+                inventory[it.type].count++;
+                updateInventoryUI();
+                scene.remove(it.mesh);
+                itemsOnBelts.splice(i, 1);
+              }
+            } else if (nextBuilding.type === 4 || nextBuilding.type === 5 || nextBuilding.type === 6 || nextBuilding.type === 7) {
+              nextBuilding.inventory[it.type] = (nextBuilding.inventory[it.type] || 0) + 1;
+              scene.remove(it.mesh);
+              itemsOnBelts.splice(i, 1);
+              if (selectedStorageChest === nextBuilding) {
+                updateStorageModalContent();
+              }
+            } else {
+              it.progress = 1.0;
+            }
+          } else {
+            inventory[it.type].count++;
+            updateInventoryUI();
+            scene.remove(it.mesh);
+            itemsOnBelts.splice(i, 1);
+          }
+        }
+      }
+    }
+
+    /* ==========================================================================
+       BOUCLE DE RENDU 3D
+       ========================================================================== */
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = Math.min(clock.getDelta(), 0.1);
+
+      // Animation fluide des chevrons du tapis roulant
+      beltTexture.offset.y -= delta * 0.65;
+
+      const target = getTargetInteractable();
+      const nearDeposit = oreDeposits.find(d => Math.hypot(player.position.x - d.x, player.position.z - d.z) < 4.5);
+      const prompt = document.getElementById('interact-prompt');
+
+      if (target && isLocked) {
+        prompt.style.display = 'flex';
+
+        if (target.type === 7) { // COFFRE DE STOCKAGE
+          let totalChest = 0;
+          for (const k in target.inventory) totalChest += target.inventory[k];
+          prompt.innerHTML = `
+            <div class="m-inspect-header">
+              <span>📦 Conteneur de Stockage Mk.1</span>
+              <span style="font-size:0.75rem; color:#4ade80;">Ouvert</span>
+            </div>
+            <div class="m-inspect-row" style="margin-top:4px;">
+              <span>Stock total stocké :</span>
+              <strong style="color:#ffb74d;">${totalChest} objets</strong>
+            </div>
+            <div style="font-size:0.75rem; color:#90a4ae; margin-top:4px;">⚡ Clic Droit ou <span class="key-badge">E</span> pour ouvrir le coffre</div>
+          `;
+        } else {
+          const mName = target.type === 2 ? 'Foreuse Mk.1' : (target.type === 4 ? 'Fonderie Mk.1' : (target.type === 5 ? 'Constructeur Mk.1' : 'Assembleur Mk.1'));
+          const category = target.type === 2 ? 'miner' : (target.type === 4 ? 'smelter' : (target.type === 5 ? 'constructor' : 'assembler'));
+          const recipesList = MACHINE_RECIPES[category] || [];
+          const currentRec = recipesList.find(r => r.id === target.selectedRecipeId) || recipesList[0];
+
+          let inHtml = '';
+          if (currentRec && currentRec.inTypeA && currentRec.inTypeB) {
+            const inQtyA = target.inventory[currentRec.inTypeA] || 0;
+            const inQtyB = target.inventory[currentRec.inTypeB] || 0;
+            const inDefA = inventory[currentRec.inTypeA] || { name: currentRec.inTypeA, icon: '📥' };
+            const inDefB = inventory[currentRec.inTypeB] || { name: currentRec.inTypeB, icon: '📥' };
+            inHtml = `
+              <div style="margin-top: 4px;">
+                <div class="m-inspect-row">
+                  <span style="color:#38bdf8; font-weight:bold;">📥 Entrée A : ${inDefA.icon} ${inDefA.name}</span>
+                  <strong style="color:#38bdf8;">${inQtyA} / 100</strong>
+                </div>
+                <div class="m-inspect-row">
+                  <span style="color:#67e8f9; font-weight:bold;">📥 Entrée B : ${inDefB.icon} ${inDefB.name}</span>
+                  <strong style="color:#67e8f9;">${inQtyB} / 100</strong>
+                </div>
+                <div class="m-inspect-bar">
+                  <div class="m-inspect-fill" style="width: ${Math.min(100, inQtyA + inQtyB)}%; background: #38bdf8;"></div>
+                </div>
+              </div>
+            `;
+          } else if (currentRec && currentRec.inType) {
+            const inQty = target.inventory[currentRec.inType] || 0;
+            const inDef = inventory[currentRec.inType] || { name: currentRec.inType, icon: '📥' };
+            const inPct = Math.min(100, inQty);
+            inHtml = `
+              <div style="margin-top: 4px;">
+                <div class="m-inspect-row">
+                  <span style="color:#38bdf8; font-weight:bold;">📥 Entrée : ${inDef.icon} ${inDef.name}</span>
+                  <strong style="color:#38bdf8;">${inQty} / 100</strong>
+                </div>
+                <div class="m-inspect-bar">
+                  <div class="m-inspect-fill" style="width: ${inPct}%; background: #38bdf8;"></div>
+                </div>
+              </div>
+            `;
+          } else if (target.type === 2) {
+            inHtml = `
+              <div class="m-inspect-row" style="margin-top: 4px;">
+                <span style="color:#38bdf8;">📥 Source :</span>
+                <strong style="color:#38bdf8;">⚡ Gisement Minier Brut</strong>
+              </div>
+            `;
+          }
+
+          const outQty = target.inventory[currentRec ? currentRec.outType : ''] || 0;
+          const outDef = inventory[currentRec ? currentRec.outType : ''] || { name: 'Produit', icon: '📤' };
+          const outPct = Math.min(100, outQty);
+
+          prompt.innerHTML = `
+            <div class="m-inspect-header">
+              <span>⚙️ ${mName}</span>
+              <span style="font-size:0.75rem; color:#4ade80;">🟢 En Production</span>
+            </div>
+            <div class="m-inspect-row" style="font-size:0.75rem; color:#b0bec5; margin-top:2px;">
+              <span>Recette : <strong>${currentRec ? currentRec.name : 'Standard'}</strong></span>
+            </div>
+            ${inHtml}
+            <div style="margin-top: 4px;">
+              <div class="m-inspect-row">
+                <span style="color:#4ade80; font-weight:bold;">📤 Sortie : ${outDef.icon} ${outDef.name}</span>
+                <strong style="color:#4ade80;">${outQty} / 100</strong>
+              </div>
+              <div class="m-inspect-bar">
+                <div class="m-inspect-fill" style="width: ${outPct}%; background: #4ade80;"></div>
+              </div>
+            </div>
+            <div style="font-size:0.72rem; color:#90a4ae; margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">
+              ⚡ Clic Droit ou <span class="key-badge">E</span> : Configurer la recette
+            </div>
+          `;
+        }
+      } else if (nearDeposit && isLocked) {
+        prompt.style.display = 'flex';
+        prompt.innerHTML = `
+          <div class="m-inspect-header">
+            <span>⛏️ Gisement Naturel</span>
+            <span style="color:#ffb74d;">Ressource Brute</span>
+          </div>
+          <div class="m-inspect-row" style="margin-top:4px;">
+            <span>Contenu :</span>
+            <strong>${nearDeposit.type === 'iron' ? '⛏️ Minerai de Fer Pure' : '🔶 Minerai de Cuivre Pure'}</strong>
+          </div>
+          <div style="font-size:0.75rem; color:#90a4ae; margin-top:4px;">⚡ Appuyez sur <span class="key-badge">E</span> pour extraire manuellement</div>
+        `;
+      } else {
+        prompt.style.display = 'none';
+      }
+
+      if (isLocked && !isInventoryOpen && !selectedMachineForConfig && !selectedStorageChest && !isMilestoneModalOpen) {
+        const moveDir = new THREE.Vector3();
+        if (keys['KeyW'] || keys['KeyZ'] || keys['ArrowUp']) moveDir.z -= 1;
+        if (keys['KeyS'] || keys['ArrowDown']) moveDir.z += 1;
+        if (keys['KeyA'] || keys['KeyQ'] || keys['ArrowLeft']) moveDir.x -= 1;
+        if (keys['KeyD'] || keys['ArrowRight']) moveDir.x += 1;
+
+        moveDir.normalize();
+        moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
+
+        const currentSpeed = player.speed * (keys['ShiftLeft'] || keys['ShiftRight'] ? player.sprintMult : 1);
+        player.velocity.x = moveDir.x * currentSpeed;
+        player.velocity.z = moveDir.z * currentSpeed;
+
+        if (keys['Space'] && player.canJump && player.onGround) {
+          player.velocity.y = 8.0;
+          player.onGround = false;
+        }
+
+        player.velocity.y -= 18.0 * delta;
+        player.position.addScaledVector(player.velocity, delta);
+
+        if (player.position.y <= 2.5) {
+          player.position.y = 2.5;
+          player.velocity.y = 0;
+          player.onGround = true;
+        }
+
+        camera.position.copy(player.position);
+        camera.rotation.copy(player.rotation);
+      }
+
+      const hit = getTargetPoint();
+      if (hit && selectedTool !== 8 && !isInventoryOpen && !selectedMachineForConfig && !selectedStorageChest && !isMilestoneModalOpen) {
+        const snap = calculateSnap(hit.point);
+        if (snap) {
+          hologramMesh.visible = true;
+          hologramMesh.position.set(snap.x, snap.y, snap.z);
+          hologramMesh.rotation.y = snap.rotation;
+        }
+      } else {
+        hologramMesh.visible = false;
+      }
+
+      simulateFactory(delta);
+      renderer.render(scene, camera);
+    }
+
+    /* ==========================================================================
+       SYSTEME DE SAUVEGARDE & CHARGEMENT AUTOMATIQUE (LOCALSTORAGE)
+       ========================================================================== */
+    const SAVE_KEY = 'ficsit_factory_save_v1';
+    let powerCables = [];
+
+    function connectPowerCables(poleA, poleB) {
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(poleA.x, poleA.y + 3.3, poleA.z),
+        new THREE.Vector3((poleA.x + poleB.x)/2, Math.min(poleA.y, poleB.y) + 2.6, (poleA.z + poleB.z)/2),
+        new THREE.Vector3(poleB.x, poleB.y + 3.3, poleB.z)
+      ]);
+      const cableGeo = new THREE.TubeGeometry(curve, 16, 0.03, 6, false);
+      const cableMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+      const cableMesh = new THREE.Mesh(cableGeo, cableMat);
+      scene.add(cableMesh);
+      powerCables.push(cableMesh);
+    }
+
+    function reconnectPowerGrid() {
+      powerCables.forEach(c => scene.remove(c));
+      powerCables = [];
+
+      const poles = buildings.filter(b => b.type === 7);
+      for (let i = 0; i < poles.length; i++) {
+        for (let j = i + 1; j < poles.length; j++) {
+          if (Math.hypot(poles[i].x - poles[j].x, poles[i].z - poles[j].z) < 25) {
+            connectPowerCables(poles[i], poles[j]);
+          }
+        }
+      }
+    }
+
+    function saveGame(isAuto = false) {
+      try {
+        const buildingsData = buildings.map(b => ({
+          id: b.id,
+          type: b.type,
+          x: b.x,
+          y: b.y,
+          z: b.z,
+          rotation: b.rotation,
+          selectedRecipeId: b.selectedRecipeId,
+          timer: b.timer,
+          inventory: b.inventory
+        }));
+
+        const inventoryData = {};
+        for (const k in inventory) {
+          inventoryData[k] = inventory[k].count;
+        }
+
+        const milestonesData = MILESTONES.map(m => ({
+          id: m.id,
+          filled: m.filled,
+          unlocked: m.unlocked
+        }));
+
+        const saveData = {
+          version: 1,
+          timestamp: Date.now(),
+          buildings: buildingsData,
+          inventory: inventoryData,
+          milestones: milestonesData,
+          activeMilestoneId: activeMilestoneId,
+          player: {
+            x: player.position.x,
+            y: player.position.y,
+            z: player.position.z,
+            rotY: player.rotation.y,
+            rotX: player.rotation.x
+          }
+        };
+
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+
+        if (!isAuto) {
+          playSound('produce');
+          showToast('💾 Usine et Inventaire sauvegardés !');
+        } else {
+          showToast('💾 Sauvegarde Automatique...');
+        }
+      } catch (err) {
+        console.error('Erreur de sauvegarde:', err);
+      }
+    }
+
+    function loadGame() {
+      try {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (!saved) return false;
+
+        const data = JSON.parse(saved);
+        if (!data || !data.buildings) return false;
+
+        // 1. Nettoyer les bâtiments existants
+        buildings.forEach(b => scene.remove(b.mesh));
+        buildings.length = 0;
+
+        // 2. Reconstruire les bâtiments 3D
+        data.buildings.forEach(b => {
+          const mesh = createBuildingMesh(b.type, false);
+          mesh.position.set(b.x, b.y, b.z);
+          mesh.rotation.y = b.rotation;
+          scene.add(mesh);
+
+          buildings.push({
+            id: b.id || (Date.now() + Math.random()),
+            type: b.type,
+            x: b.x,
+            y: b.y,
+            z: b.z,
+            rotation: b.rotation,
+            mesh: mesh,
+            selectedRecipeId: b.selectedRecipeId || 'iron_ingot',
+            timer: b.timer || 0,
+            inventory: b.inventory || { iron_ore: 0, copper_ore: 0, iron_ingot: 0, copper_ingot: 0, iron_plate: 0, iron_rod: 0, wire: 0, concrete: 0, rotor: 0 }
+          });
+        });
+
+        // 3. Reconnecter les lignes électriques
+        reconnectPowerGrid();
+
+        // 4. Restaurer l'inventaire
+        if (data.inventory) {
+          for (const k in data.inventory) {
+            if (inventory[k]) inventory[k].count = data.inventory[k];
+          }
+        }
+
+        // 5. Restaurer les jalons
+        if (data.milestones) {
+          data.milestones.forEach(sm => {
+            const m = MILESTONES.find(item => item.id === sm.id);
+            if (m) {
+              m.filled = sm.filled || m.filled;
+              m.unlocked = sm.unlocked !== undefined ? sm.unlocked : m.unlocked;
+            }
+          });
+        }
+        if (data.activeMilestoneId) activeMilestoneId = data.activeMilestoneId;
+
+        // 6. Restaurer la position joueur
+        if (data.player) {
+          player.position.set(data.player.x, data.player.y, data.player.z);
+          player.rotation.y = data.player.rotY || 0;
+          player.rotation.x = data.player.rotX || 0;
+          camera.position.copy(player.position);
+          camera.rotation.copy(player.rotation);
+        }
+
+        showToast('📂 Partie chargée avec succès !');
+        return true;
+      } catch (err) {
+        console.error('Erreur de chargement:', err);
+        return false;
+      }
+    }
+
+    function resetGame() {
+      if (confirm('⚠️ Attention : Voulez-vous vraiment réinitialiser complètement votre usine et votre inventaire ?')) {
+        localStorage.removeItem(SAVE_KEY);
+        playSound('dismantle');
+        location.reload();
+      }
+    }
+
+    // Sauvegarde Automatique toutes les 25 secondes
+    setInterval(() => {
+      if (buildings.length > 0 || inventory.rotor.count > 0) {
+        saveGame(true);
+      }
+    }, 25000);
+
+    // Sauvegarde avant de quitter ou rafraîchir
+    window.addEventListener('beforeunload', () => {
+      saveGame(true);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Chargement de la sauvegarde ou initialisation par défaut
+    const loaded = loadGame();
+    updateInventoryUI();
+    updateFactoryStats();
+    if (isMilestoneModalOpen) updateMilestoneModalContent();
+    animate();
+  </script>
+</body>
+</html>

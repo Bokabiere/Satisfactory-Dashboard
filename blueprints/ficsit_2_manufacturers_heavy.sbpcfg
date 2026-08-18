@@ -1,0 +1,8 @@
+{
+  "description": "Bus quadruple compact empilé (4 entrées) alimentant 2 façonneuses face à face pour la production de Cadres modulaires lourds, Ordinateurs ou Moteurs modulaires.",
+  "iconID": 101,
+  "color": "#FA9549",
+  "designerDimension": "4x4 Fondations (Designer Mk.1)",
+  "ficsitBuild": "Satisfactory 1.0+",
+  "powerRatingMW": 110
+}

@@ -1,0 +1,9 @@
+# Fichiers temporaires et caches de travail
+scratch/
+node_modules/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

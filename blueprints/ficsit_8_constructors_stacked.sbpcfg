@@ -1,0 +1,8 @@
+{
+  "description": "Système modulaire sur 2 étages (4 constructeurs par étage) avec élévateurs verticaux et câblage électrique interne. Idéal pour vis, plaques, tiges et câbles.",
+  "iconID": 101,
+  "color": "#FA9549",
+  "designerDimension": "4x4 Fondations (Designer Mk.1)",
+  "ficsitBuild": "Satisfactory 1.0+",
+  "powerRatingMW": 32
+}

@@ -1,0 +1,8 @@
+{
+  "description": "Double bus d'alimentation superposé (Bus In A & In B) alimentant 4 assembleuses avec équilibrage par répartiteurs intelligents/standards.",
+  "iconID": 101,
+  "color": "#FA9549",
+  "designerDimension": "4x4 Fondations (Designer Mk.1)",
+  "ficsitBuild": "Satisfactory 1.0+",
+  "powerRatingMW": 60
+}

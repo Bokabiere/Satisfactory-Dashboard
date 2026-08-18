@@ -1,0 +1,8 @@
+{
+  "description": "Module électrique autonome comprenant 8 générateurs à charbon et tuyauterie équilibrée (3 extracteurs d'eau raccordés à 360 m³/min).",
+  "iconID": 101,
+  "color": "#FA9549",
+  "designerDimension": "5x5 Fondations (Designer Mk.2)",
+  "ficsitBuild": "Satisfactory 1.0+",
+  "powerRatingMW": -600
+}

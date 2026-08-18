@@ -1,0 +1,8 @@
+{
+  "description": "Alignement compact de 8 fonderies en double ligne (4+4) avec répartiteurs et groupeurs de convoyeurs intégrés. Parfait pour traiter 240 minerai/min.",
+  "iconID": 101,
+  "color": "#FA9549",
+  "designerDimension": "4x4 Fondations (Designer Mk.1)",
+  "ficsitBuild": "Satisfactory 1.0+",
+  "powerRatingMW": 32
+}
