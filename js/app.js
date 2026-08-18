@@ -35,8 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // GESTION DES ONGLETS & NAVIGATION
   // =========================================================================
   function switchTab(targetView) {
+    if (targetView === "calc-single") targetView = "calculator";
+
     navTabs.forEach(t => {
-      if (t.getAttribute("data-tab") === targetView) {
+      const tabId = t.getAttribute("data-tab");
+      if (tabId === targetView || (targetView === "calculator" && tabId === "calc-single")) {
         t.classList.add("active");
       } else {
         t.classList.remove("active");
@@ -44,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     tabViews.forEach(v => {
-      if (v.id === `view-${targetView}`) {
+      if (v.id === `view-${targetView}` || (targetView === "calc-single" && v.id === "view-calculator")) {
         v.classList.add("active");
       } else {
         v.classList.remove("active");
@@ -68,6 +71,18 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.addEventListener("click", () => {
         const targetView = tab.getAttribute("data-tab");
         switchTab(targetView);
+      });
+    });
+
+    document.querySelectorAll(".btn-switch-to-ms-calc").forEach(btn => {
+      btn.addEventListener("click", () => {
+        switchTab("calc-milestones");
+      });
+    });
+
+    document.querySelectorAll(".btn-switch-to-single-calc").forEach(btn => {
+      btn.addEventListener("click", () => {
+        switchTab("calculator");
       });
     });
   }
@@ -356,46 +371,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function loadMilestoneIntoCalculator(milestone) {
-    const targets = Object.entries(milestone.cost || {}).map(([item, qty]) => {
-      // Cadence pour produire le jalon en 15 minutes
-      return { item: item, rate: Math.round((qty / 15) * 100) / 100 };
-    });
+  function getMilestoneOrPhaseById(id) {
+    const phase = (MILESTONES_DATA.phases || []).find(p => p.id === id);
+    if (phase) return { ...phase, isPhase: true };
 
-    if (targets.length === 0) return;
-
-    const results = calculator.calculate(targets, {
-      defaultOverclock: STATE.calcOverclock,
-      defaultSomersloop: STATE.calcSomersloop,
-      stepOverrides: STATE.stepOverrides
-    });
-    results.milestoneName = milestone.name;
-    results.isMilestone = true;
-    STATE.lastCalculation = results;
-
-    // Afficher la bannière spéciale du Jalon actif
-    const banner = document.getElementById("calc-active-milestone-banner");
-    const bannerName = document.getElementById("calc-milestone-banner-name");
-    const bannerDesc = document.getElementById("calc-milestone-banner-desc");
-    if (banner && bannerName) {
-      banner.style.display = "flex";
-      bannerName.innerText = milestone.name;
-      const targetsDesc = targets.map(t => `<strong style="color: #4ade80;">${t.rate}/m</strong> ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
-      if (bannerDesc) {
-        bannerDesc.innerHTML = `Ligne complète pour compléter ce Jalon en 15 min : ${targetsDesc}`;
-      }
+    for (const tierObj of (MILESTONES_DATA.tiers || [])) {
+      const ms = (tierObj.milestones || []).find(m => m.id === id);
+      if (ms) return { ...ms, isMilestone: true, tier: tierObj.tier };
     }
+    return null;
+  }
 
-    renderCalculationResults(results);
+  function loadMilestoneIntoCalculator(milestone, timeMinutes = 15) {
+    const msSelect = document.getElementById("calc-ms-select");
+    const timeSelect = document.getElementById("calc-ms-time-select");
+    if (msSelect) msSelect.value = milestone.id;
+    if (timeSelect) timeSelect.value = String(timeMinutes);
 
-    // Mettre à jour la sélection d'item
-    const firstTarget = targets[0].item;
-    const itemSelect = document.getElementById("calc-item-select");
-    if (itemSelect) itemSelect.value = firstTarget;
+    executeMilestoneCalculation(false);
+    switchTab("calc-milestones");
+    showToast(`Usine complète calculée pour le Jalon : "${milestone.name}" (${timeMinutes} min)`);
+  }
 
-    // Basculer vers l'onglet calculateur
-    switchTab("calculator");
-    showToast(`Chaîne calculée pour le Jalon : "${milestone.name}" (objectif 15 min)`);
+  function loadPhaseIntoCalculator(phase, timeMinutes = 30) {
+    const msSelect = document.getElementById("calc-ms-select");
+    const timeSelect = document.getElementById("calc-ms-time-select");
+    if (msSelect) msSelect.value = phase.id;
+    if (timeSelect) timeSelect.value = String(timeMinutes);
+
+    executeMilestoneCalculation(false);
+    switchTab("calc-milestones");
+    showToast(`Usine complète calculée pour : "${phase.name}" (${timeMinutes} min)`);
   }
 
   // =========================================================================
@@ -727,39 +733,552 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function loadPhaseIntoCalculator(phase) {
-    const targets = Object.entries(phase.cost).map(([item, qty]) => {
-      // Cadence pour terminer la phase en 30 minutes
-      return { item: item, rate: Math.round((qty / 30) * 100) / 100 };
+  // =========================================================================
+  // CALCULATEUR D'USINES COMPLÈTES DE JALONS & PHASES (MULTI-LIGNES)
+  // =========================================================================
+  function initMilestoneCalculatorUI() {
+    const msSelect = document.getElementById("calc-ms-select");
+    const timeSelect = document.getElementById("calc-ms-time-select");
+    const runBtn = document.getElementById("btn-calc-ms-run");
+    const optimizeBtn = document.getElementById("btn-calc-ms-optimize");
+    const sendToChecklistTop = document.getElementById("btn-calc-ms-send-checklist-top");
+    const sendToChecklistSide = document.getElementById("btn-calc-ms-send-to-checklist");
+    const printBtn = document.getElementById("btn-calc-ms-print-sheet");
+
+    if (!msSelect) return;
+
+    let optionsHtml = "";
+
+    // 1. Phases de l'Ascenseur Spatial
+    if (MILESTONES_DATA.phases && MILESTONES_DATA.phases.length > 0) {
+      optionsHtml += `<optgroup label="🚀 Ascenseur Spatial (Phases 1 à 5)">`;
+      MILESTONES_DATA.phases.forEach(ph => {
+        const costStr = Object.entries(ph.cost).map(([it, q]) => `${q} ${ITEM_NAMES[it]||it}`).join(", ");
+        optionsHtml += `<option value="${ph.id}">${ph.name} [${costStr}]</option>`;
+      });
+      optionsHtml += `</optgroup>`;
+    }
+
+    // 2. Jalons des Paliers 0 à 9
+    if (MILESTONES_DATA.tiers && MILESTONES_DATA.tiers.length > 0) {
+      MILESTONES_DATA.tiers.forEach(tierObj => {
+        optionsHtml += `<optgroup label="${tierObj.name}">`;
+        (tierObj.milestones || []).forEach(m => {
+          const costStr = Object.entries(m.cost || {}).map(([it, q]) => `${q} ${ITEM_NAMES[it]||it}`).join(", ");
+          optionsHtml += `<option value="${m.id}">${m.name} (${costStr})</option>`;
+        });
+        optionsHtml += `</optgroup>`;
+      });
+    }
+
+    msSelect.innerHTML = optionsHtml;
+    // Sélection par défaut : Logistique Mk.1 si disponible, sinon première option
+    if (msSelect.querySelector('option[value="tier_1_logistics_1"]')) {
+      msSelect.value = "tier_1_logistics_1";
+    } else if (msSelect.options[0]) {
+      msSelect.value = msSelect.options[0].value;
+    }
+
+    msSelect.addEventListener("change", () => {
+      executeMilestoneCalculation(false);
     });
+
+    if (timeSelect) {
+      timeSelect.addEventListener("change", () => {
+        executeMilestoneCalculation(false);
+      });
+    }
+
+    if (runBtn) {
+      runBtn.addEventListener("click", () => {
+        executeMilestoneCalculation(false);
+      });
+    }
+
+    if (optimizeBtn) {
+      optimizeBtn.addEventListener("click", () => {
+        executeMilestoneOptimization();
+      });
+    }
+
+    const ocSelect = document.getElementById("calc-ms-global-overclock");
+    if (ocSelect) {
+      ocSelect.value = String(STATE.calcOverclock || 100);
+      ocSelect.addEventListener("change", () => {
+        executeMilestoneCalculation(true);
+      });
+    }
+
+    const slChk = document.getElementById("calc-ms-global-somersloop");
+    if (slChk) {
+      slChk.checked = !!STATE.calcSomersloop;
+      slChk.addEventListener("change", () => {
+        executeMilestoneCalculation(true);
+      });
+    }
+
+    const resetAltsBtn = document.getElementById("btn-reset-ms-standard-recipes");
+    if (resetAltsBtn) {
+      resetAltsBtn.addEventListener("click", () => {
+        calculator.initDefaultRecipes();
+        STATE.activeAltRecipes = {};
+        saveState();
+        const reportEl = document.getElementById("calc-ms-optimizer-report");
+        if (reportEl) reportEl.style.display = "none";
+        executeMilestoneCalculation(false);
+        showToast("Recettes réinitialisées aux standards officiels.");
+      });
+    }
+
+    const sendToChecklistFn = () => {
+      if (!STATE.lastMilestoneCalculation) return;
+      addCalculationToChecklist(STATE.lastMilestoneCalculation);
+      showToast("Complexe de jalon envoyé à la Checklist de Chantier !");
+      switchTab("checklist");
+    };
+
+    if (sendToChecklistTop) sendToChecklistTop.addEventListener("click", sendToChecklistFn);
+    if (sendToChecklistSide) sendToChecklistSide.addEventListener("click", sendToChecklistFn);
+
+    if (printBtn) {
+      printBtn.addEventListener("click", () => {
+        openPrintSpecSheet("milestone");
+      });
+    }
+
+    const downloadMsSbpFn = async () => {
+      if (!STATE.lastMilestoneCalculation || !STATE.lastMilestoneCalculation.productionSteps || STATE.lastMilestoneCalculation.productionSteps.length === 0) {
+        executeMilestoneCalculation(false);
+      }
+      const results = STATE.lastMilestoneCalculation;
+      if (!results || !results.productionSteps || results.productionSteps.length === 0) {
+        showToast("Veuillez d'abord calculer une usine de jalon.");
+        return;
+      }
+
+      const msName = results.milestoneName || "Jalon";
+      const totalMachines = results.productionSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+
+      const bldCount = {};
+      const materialsNeeded = {};
+      results.productionSteps.forEach(s => {
+        const bId = s.building?.id || "constructor";
+        const count = s.physicalMachines || Math.ceil(s.machinesCount) || 1;
+        bldCount[bId] = (bldCount[bId] || 0) + count;
+      });
+
+      materialsNeeded.concrete = (totalMachines * 12) + 80;
+      materialsNeeded.iron_plate = (totalMachines * 8);
+      materialsNeeded.wire = (totalMachines * 6);
+
+      const bpPayload = {
+        id: `bp_ms_${(msName).replace(/[^a-zA-Z0-9_]/g, '_')}`,
+        title: `🏭 Complexe ${msName}`,
+        name: `Complexe ${msName}`,
+        category: "production",
+        designerSize: "6x6 Fondations (Designer Mk.3)",
+        description: `Complexe complet généré pour ${msName}.\n• Machines: ${totalMachines} unités\n• Puissance: ${Math.round(results.totalPowerMW)} MW.`,
+        inputs: Object.entries(results.rawResources).map(([r, rate]) => `${Math.round(rate*10)/10}/m ${ITEM_NAMES[r]||r}`),
+        outputs: results.targets.map(t => `+${t.rate}/min ${ITEM_NAMES[t.item]||t.item}`),
+        powerMW: Math.round(results.totalPowerMW),
+        buildingsCount: bldCount,
+        materialsNeeded: materialsNeeded
+      };
+
+      try {
+        showToast(`⏳ Génération du blueprint pour le complexe ${msName}...`);
+        const files = await BlueprintFileGenerator.generateFiles(bpPayload);
+        BlueprintFileGenerator.downloadBlob(files.sbpBlob, files.sbpFilename);
+        setTimeout(() => {
+          BlueprintFileGenerator.downloadBlob(files.sbpcfgBlob, files.sbpcfgFilename);
+        }, 100);
+        showToast(`✅ Blueprint ${bpPayload.title} téléchargé avec succès (.sbp & .sbpcfg) !`);
+      } catch(err) {
+        console.error(err);
+        showToast(`Erreur export blueprint : ${err.message}`);
+      }
+    };
+
+    const downloadTopBtn = document.getElementById("btn-calc-ms-download-sbp-top");
+    if (downloadTopBtn) downloadTopBtn.onclick = downloadMsSbpFn;
+
+    const downloadMainBtn = document.getElementById("btn-calc-ms-download-sbp-main");
+    if (downloadMainBtn) downloadMainBtn.onclick = downloadMsSbpFn;
+
+    const deployAllStepsBtn = document.getElementById("btn-ms-deploy-all-steps");
+    if (deployAllStepsBtn) {
+      deployAllStepsBtn.onclick = () => {
+        const rows = document.querySelectorAll("#calc-ms-table-body .calc-step-grid-row");
+        const anyHidden = Array.from(rows).some(r => r.style.display === "none");
+        rows.forEach(r => r.style.display = anyHidden ? "table-row" : "none");
+        deployAllStepsBtn.textContent = anyHidden ? "🗺️ Replier Tous les Plans Mk.3" : "🗺️ Déployer Tous les Plans Mk.3";
+      };
+    }
+
+    // Calcul initial du jalon
+    executeMilestoneCalculation(true);
+  }
+
+  function executeMilestoneCalculation(isAuto = false) {
+    const msSelect = document.getElementById("calc-ms-select");
+    const timeSelect = document.getElementById("calc-ms-time-select");
+    if (!msSelect || !timeSelect) return;
+
+    const chosenId = msSelect.value;
+    const itemData = getMilestoneOrPhaseById(chosenId);
+    if (!itemData || !itemData.cost) return;
+
+    const timeMinutes = parseFloat(timeSelect.value) || 15;
+    const targets = Object.entries(itemData.cost).map(([item, qty]) => {
+      const rate = Math.round((qty / timeMinutes) * 100) / 100;
+      return { item, rate: Math.max(rate, 0.1) };
+    });
+
+    if (targets.length === 0) return;
+
+    // Mise à jour de l'aperçu dynamique des cibles
+    const previewEl = document.getElementById("calc-ms-target-preview");
+    if (previewEl) {
+      const title = itemData.isPhase ? `🚀 ${itemData.name}` : `📋 ${itemData.name}`;
+      const chips = targets.map(t => {
+        const totalQty = itemData.cost[t.item] || 0;
+        return `<span style="background: rgba(16, 185, 129, 0.18); border: 1px solid #10b981; color: #a7f3d0; font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px;">
+          📦 ${ITEM_NAMES[t.item] || t.item} : <strong>${totalQty} total</strong> ➔ <span style="color: #38bdf8;">${t.rate}/min</span>
+        </span>`;
+      }).join(" ");
+
+      previewEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <strong style="color: #ffffff; font-size: 13px; font-family: var(--font-display);">${title}</strong>
+          <span style="color: var(--text-muted); font-size: 11.5px;">(Objectif de fabrication en <strong>${timeMinutes} min</strong>)</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          ${chips}
+        </div>
+      `;
+    }
+
+    const ocSelect = document.getElementById("calc-ms-global-overclock");
+    const slChk = document.getElementById("calc-ms-global-somersloop");
+    const ocVal = ocSelect ? (parseInt(ocSelect.value, 10) || 100) : STATE.calcOverclock;
+    const slVal = slChk ? slChk.checked : !!STATE.calcSomersloop;
 
     const results = calculator.calculate(targets, {
-      defaultOverclock: STATE.calcOverclock,
-      defaultSomersloop: STATE.calcSomersloop,
+      defaultOverclock: ocVal,
+      defaultSomersloop: slVal,
       stepOverrides: STATE.stepOverrides
     });
-    results.phaseName = phase.name;
-    results.isPhase = true;
-    STATE.lastCalculation = results;
+    results.milestoneName = itemData.name;
+    results.isMilestone = !itemData.isPhase;
+    results.isPhase = !!itemData.isPhase;
+    STATE.lastMilestoneCalculation = results;
 
-    // Afficher la bannière de phase active
-    const banner = document.getElementById("calc-active-milestone-banner");
-    const bannerName = document.getElementById("calc-milestone-banner-name");
-    const bannerDesc = document.getElementById("calc-milestone-banner-desc");
-    if (banner && bannerName) {
-      banner.style.display = "flex";
-      bannerName.innerText = `Ascenseur Spatial : ${phase.name}`;
-      const targetsDesc = targets.map(t => `<strong style="color: #4ade80;">${t.rate}/m</strong> ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
-      if (bannerDesc) {
-        bannerDesc.innerHTML = `Ligne complète requise (objectif 30 min) : ${targetsDesc}`;
+    renderMilestoneCalculationResults(results);
+    updateHUDStats();
+
+    if (!isAuto) {
+      showToast(`Usine complète calculée pour : ${itemData.name} (${timeMinutes} min)`);
+    }
+  }
+
+  function executeMilestoneOptimization() {
+    const msSelect = document.getElementById("calc-ms-select");
+    const timeSelect = document.getElementById("calc-ms-time-select");
+    const reportEl = document.getElementById("calc-ms-optimizer-report");
+    if (!msSelect || !timeSelect) return;
+
+    const chosenId = msSelect.value;
+    const itemData = getMilestoneOrPhaseById(chosenId);
+    if (!itemData || !itemData.cost) return;
+
+    const timeMinutes = parseFloat(timeSelect.value) || 15;
+    const targets = Object.entries(itemData.cost).map(([item, qty]) => {
+      const rate = Math.round((qty / timeMinutes) * 100) / 100;
+      return { item, rate: Math.max(rate, 0.1) };
+    });
+
+    const opt = calculator.optimize(targets, "min_buildings");
+    STATE.activeAltRecipes = { ...opt.recipeMap };
+
+    const ocSelect = document.getElementById("calc-ms-global-overclock");
+    const slChk = document.getElementById("calc-ms-global-somersloop");
+    const ocVal = ocSelect ? (parseInt(ocSelect.value, 10) || 100) : STATE.calcOverclock;
+    const slVal = slChk ? slChk.checked : !!STATE.calcSomersloop;
+
+    const optimizedResult = calculator.calculate(targets, {
+      defaultOverclock: ocVal,
+      defaultSomersloop: slVal,
+      stepOverrides: STATE.stepOverrides
+    });
+    optimizedResult.milestoneName = itemData.name;
+    optimizedResult.isMilestone = !itemData.isPhase;
+    optimizedResult.isPhase = !!itemData.isPhase;
+
+    STATE.lastMilestoneCalculation = optimizedResult;
+    saveState();
+
+    if (reportEl) {
+      reportEl.style.display = "block";
+      const altsHtml = opt.chosenAlts.map(alt => {
+        return `<span style="background: rgba(250, 149, 73, 0.2); border: 1px solid var(--ficsit-orange); color: var(--ficsit-orange); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">★ ${alt.recipeName}</span>`;
+      }).join(" ") || "<span style='color: var(--text-secondary); font-size: 12px;'>Les recettes standards sont déjà les plus économes en machines.</span>";
+
+      reportEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: var(--ficsit-green); color: #000; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 4px;">OPTIMISATION MULTI-LIGNES</span>
+              <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--text-primary); margin: 0;">
+                🏆 Complexe Compact : Minimum de Bâtiments
+              </h3>
+            </div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
+              Combinaison optimale trouvée pour toutes les sous-chaînes de ce jalon.
+            </p>
+          </div>
+          <div style="display: flex; gap: 14px; text-align: right;">
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Machines Requises</div>
+              <div style="font-size: 20px; font-weight: 800; color: var(--ficsit-green);">${opt.optimal.totalMachines} <span style="font-size: 13px; color: var(--text-muted); text-decoration: line-through;">${opt.baseline.totalMachines}</span></div>
+            </div>
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Gain d'Espace</div>
+              <div style="font-size: 20px; font-weight: 800; color: var(--ficsit-orange);">-${opt.savings.machinesPct}%</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Énergie Totale</div>
+              <div style="font-size: 20px; font-weight: 800; color: var(--ficsit-amber);">${opt.optimal.totalPowerMW} MW</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 10px; margin-top: 10px;">
+          <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+            Recettes Alternatives Sélectionnées (${opt.chosenAlts.length}) :
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            ${altsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    renderMilestoneCalculationResults(optimizedResult);
+    showToast(`Optimisation de l'usine de jalon réussie : ${opt.optimal.totalMachines} machines (-${opt.savings.machinesPct}%) !`);
+  }
+
+  function renderMilestoneCalculationResults(results) {
+    const tableBody = document.getElementById("calc-ms-table-body");
+    const rawResPanel = document.getElementById("calc-ms-raw-resources");
+    const buildingsPanel = document.getElementById("calc-ms-buildings-summary");
+    const powerTotalEl = document.getElementById("calc-ms-total-power-val");
+    const shardsEl = document.getElementById("calc-ms-total-shards-val");
+    const loopsEl = document.getElementById("calc-ms-total-somersloops-val");
+    const altSelectorContainer = document.getElementById("alt-ms-recipes-selection");
+    const bpContainer = document.getElementById("calc-ms-blueprint-mk3-container");
+
+    if (!tableBody) return;
+
+    if (bpContainer) bpContainer.style.display = "block";
+    if (powerTotalEl) powerTotalEl.innerText = `${Math.round(results.totalPowerMW * 10) / 10} MW`;
+    if (shardsEl) shardsEl.innerText = `${results.totalPowerShards || 0} éclat(s)`;
+    if (loopsEl) loopsEl.innerText = `${results.totalSomersloops || 0} loop(s)`;
+
+    // Organigramme interactif SCIM du jalon
+    const chainFlowEl = document.getElementById("calc-ms-chain-flow");
+    const flowViewport = document.getElementById("flowchart-ms-viewport");
+
+    if (chainFlowEl && results.productionSteps.length > 0) {
+      chainFlowEl.style.display = "block";
+      SatisfactoryFlowchart.initInteractive(flowViewport, results);
+
+      const openGlobalPlanBtn = document.getElementById("btn-open-ms-global-factory-plan");
+      if (openGlobalPlanBtn) {
+        openGlobalPlanBtn.onclick = () => {
+          openBlueprintModal(`Organigramme SCIM : ${results.milestoneName || "Complexe de Jalon"}`, SatisfactoryFlowchart.generateSVG(results));
+          SatisfactoryFlowchart.attachInteractivity(document.getElementById("modal-bp-dynamic-svg"), results);
+        };
+      }
+    } else if (chainFlowEl) {
+      chainFlowEl.style.display = "none";
+    }
+
+    // Micro-Usines Intégrées Mk.3 / Méga Complexe
+    const integratedSection = document.getElementById("calc-ms-integrated-module-section");
+    const integratedViewport = document.getElementById("integrated-ms-blueprint-viewport");
+    const integratedBadge = document.getElementById("integrated-ms-module-count-badge");
+    const integratedSummaryBar = document.getElementById("integrated-ms-module-summary-bar");
+    const toggleIntegratedBtn = document.getElementById("btn-toggle-ms-integrated-view");
+
+    if (integratedSection && results.productionSteps.length > 0) {
+      integratedSection.style.display = "block";
+      const totalMachines = results.productionSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+      const modulesNeeded = totalMachines <= 18 ? 1 : (totalMachines <= 36 ? 2 : Math.ceil(totalMachines / 18));
+      
+      if (integratedBadge) {
+        integratedBadge.innerText = modulesNeeded === 1 ? "1 SEUL BLUEPRINT MK.3 TOUT-EN-UN" : `${modulesNeeded} BLUEPRINTS MK.3 COMBINÉS`;
+        integratedBadge.style.background = modulesNeeded === 1 ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)";
+        integratedBadge.style.borderColor = modulesNeeded === 1 ? "#10b981" : "#f59e0b";
+        integratedBadge.style.color = modulesNeeded === 1 ? "#10b981" : "#f59e0b";
+      }
+
+      if (integratedViewport) {
+        integratedViewport.innerHTML = generateIntegratedMultiMachineBlueprintSVG(results);
+        attachMachineInteractivity(integratedViewport);
+      }
+
+      if (integratedSummaryBar) {
+        const rawList = Object.entries(results.rawResources).map(([r, rate]) => `<span style="color: var(--ficsit-orange); font-weight: bold;">${Math.round(rate*10)/10}/m ${ITEM_NAMES[r]||r}</span>`).join(" + ");
+        const targetsList = results.targets.map(t => `<span style="color: #4ade80; font-weight: bold;">+${t.rate}/m ${ITEM_NAMES[t.item]||t.item}</span>`).join(" + ");
+
+        integratedSummaryBar.innerHTML = `
+          <div>
+            <strong>📥 Minerais Bruts :</strong> ${rawList || "Matières directes"}
+          </div>
+          <div>
+            <strong>⚙️ Machines Compactées :</strong> <span style="color: var(--ficsit-cyan); font-weight: bold;">${totalMachines} machines</span> (<strong style="color: #10b981;">${modulesNeeded} Mod. Mk.3</strong>)
+          </div>
+          <div>
+            <strong>🎯 Sortie Globale :</strong> ${targetsList}
+          </div>
+        `;
+      }
+
+      if (toggleIntegratedBtn) {
+        toggleIntegratedBtn.onclick = () => {
+          openBlueprintModal(`Méga-Complexe Intégré Mk.3 : ${results.milestoneName || "Jalon"}`, generateIntegratedMultiMachineBlueprintSVG(results));
+        };
+      }
+    } else if (integratedSection) {
+      integratedSection.style.display = "none";
+    }
+
+    // Notice de Montage Pas-à-Pas du Jalon
+    FactoryConstructionGuide.init(results, true);
+
+    // Tableau des plans Blueprint Mk.3
+    const mk3Modules = groupStepsIntoMk3Modules(results.productionSteps);
+    let tableHtml = "";
+
+    mk3Modules.forEach(mod => {
+      const bldBadges = mod.bldList.map(b => `<span style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #e2e8f0; font-size: 11px; padding: 2px 6px; border-radius: 3px;">${b.count}× ${b.name}</span>`).join(" ");
+
+      tableHtml += `
+        <tr>
+          <td>
+            <div style="font-weight: 800; color: #38bdf8; font-size: 13px;">${mod.title}</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Designer Mk.3 (6×6 Fondations)</div>
+          </td>
+          <td>
+            <div style="display: flex; gap: 4px; flex-wrap: wrap;">${bldBadges}</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Total : <strong>${mod.machinesCount} machines</strong></div>
+          </td>
+          <td>
+            <div style="font-size: 12px;"><strong>Entrées :</strong> ${mod.rawInputs}</div>
+            <div style="font-size: 12px; color: #4ade80; font-weight: bold; margin-top: 2px;"><strong>Sortie :</strong> ${mod.outputStr}</div>
+          </td>
+          <td>
+            <div style="color: var(--ficsit-amber); font-weight: 800;">${Math.round(mod.powerMW)} MW</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${mod.steps.length} procédé(s)</div>
+          </td>
+        </tr>
+      `;
+    });
+
+    tableBody.innerHTML = tableHtml || `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 16px;">Aucune étape de production requise.</td></tr>`;
+
+    // Minerais bruts
+    if (rawResPanel) {
+      const rawEntries = Object.entries(results.rawResources || {});
+      if (rawEntries.length === 0) {
+        rawResPanel.innerHTML = "<div style='color: var(--text-secondary); font-size: 12px;'>Aucun minerai brut requis.</div>";
+      } else {
+        rawResPanel.innerHTML = rawEntries.map(([resKey, rate]) => {
+          const rName = ITEM_NAMES[resKey] || resKey;
+          return `
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+              <span>${rName} :</span>
+              <strong style="color: var(--ficsit-orange);">${Math.round(rate * 10) / 10} /min</strong>
+            </div>
+          `;
+        }).join("");
       }
     }
 
-    renderCalculationResults(results);
+    // Bâtiments
+    if (buildingsPanel) {
+      const bldCount = {};
+      results.productionSteps.forEach(s => {
+        const bName = s.building?.name || "Machine";
+        const count = s.physicalMachines || Math.ceil(s.machinesCount);
+        bldCount[bName] = (bldCount[bName] || 0) + count;
+      });
 
-    // Basculer vers l'onglet calculateur
-    switchTab("calculator");
-    showToast(`Calcul chargé pour : ${phase.name}`);
+      const totalMachinesCount = Object.values(bldCount).reduce((a, b) => a + b, 0);
+      let bldHtml = Object.entries(bldCount).map(([name, count]) => `
+        <div style="display: flex; justify-content: space-between; font-size: 12.5px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+          <span>${name} :</span>
+          <strong style="color: var(--ficsit-cyan);">${count}</strong>
+        </div>
+      `).join("");
+
+      bldHtml += `
+        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; padding-top: 6px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.1); color: #ffffff;">
+          <span>TOTAL COMPLEXE :</span>
+          <strong style="color: #4ade80;">${totalMachinesCount} machines</strong>
+        </div>
+      `;
+      buildingsPanel.innerHTML = bldHtml;
+    }
+
+    // Recettes alternatives pour le jalon
+    if (altSelectorContainer) {
+      const uniqueItems = Array.from(new Set(results.productionSteps.map(s => s.itemId)));
+      altSelectorContainer.innerHTML = uniqueItems.map(itemId => {
+        const availableRecipes = calculator.getRecipesForItem(itemId);
+        if (availableRecipes.length <= 1) return "";
+
+        const currentActive = calculator.getActiveRecipe(itemId);
+        const optionsHtml = availableRecipes.map(r => {
+          const isSelected = currentActive && currentActive.id === r.id;
+          return `<option value="${r.id}" ${isSelected ? "selected" : ""}>${r.name} ${r.isAlt ? "★ (Alt)" : ""}</option>`;
+        }).join("");
+
+        return `
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label">${ITEM_NAMES[itemId] || itemId}</label>
+            <select class="form-control alt-ms-recipe-select" data-item="${itemId}">
+              ${optionsHtml}
+            </select>
+          </div>
+        `;
+      }).filter(Boolean).join("");
+
+      document.querySelectorAll(".alt-ms-recipe-select").forEach(select => {
+        select.addEventListener("change", (e) => {
+          const it = e.target.getAttribute("data-item");
+          const recId = e.target.value;
+          calculator.setRecipeForItem(it, recId);
+          if (calculator.isAltRecipe(recId)) {
+            STATE.activeAltRecipes[it] = recId;
+          } else {
+            delete STATE.activeAltRecipes[it];
+          }
+          saveState();
+          executeMilestoneCalculation(true);
+          showToast(`Recette mise à jour pour ${ITEM_NAMES[it] || it}`);
+        });
+      });
+    }
+
+    // Badge recettes alternatives actives
+    const activeCount = Object.keys(STATE.activeAltRecipes || {}).filter(k => calculator.isAltRecipe(STATE.activeAltRecipes[k])).length;
+    const countBadge = document.getElementById("badge-ms-active-alt-count");
+    if (countBadge) {
+      countBadge.innerText = `${activeCount} active(s)`;
+      countBadge.style.color = activeCount > 0 ? "var(--ficsit-orange)" : "var(--text-muted)";
+      countBadge.style.borderColor = activeCount > 0 ? "var(--ficsit-orange)" : "var(--border-subtle)";
+    }
   }
 
   // =========================================================================
@@ -1875,12 +2394,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }, { passive: false });
 
-      const btnIn = document.getElementById("flowchart-btn-zoom-in");
-      const btnOut = document.getElementById("flowchart-btn-zoom-out");
-      const btnReset = document.getElementById("flowchart-btn-reset");
-      const btnResetLayout = document.getElementById("flowchart-btn-reset-layout");
-      const btnToggleOrientation = document.getElementById("flowchart-btn-toggle-orientation");
-      const btnToggleHeatmap = document.getElementById("flowchart-btn-toggle-heatmap");
+      const isMs = (viewportEl.id && viewportEl.id.includes("ms"));
+      const btnIn = document.getElementById(isMs ? "flowchart-ms-btn-zoom-in" : "flowchart-btn-zoom-in");
+      const btnOut = document.getElementById(isMs ? "flowchart-ms-btn-zoom-out" : "flowchart-btn-zoom-out");
+      const btnReset = document.getElementById(isMs ? "flowchart-ms-btn-reset" : "flowchart-btn-reset");
+      const btnResetLayout = document.getElementById(isMs ? "flowchart-ms-btn-reset-layout" : "flowchart-btn-reset-layout");
+      const btnToggleOrientation = document.getElementById(isMs ? "flowchart-ms-btn-toggle-orientation" : "flowchart-btn-toggle-orientation");
+      const btnToggleHeatmap = document.getElementById(isMs ? "flowchart-ms-btn-toggle-heatmap" : "flowchart-btn-toggle-heatmap");
+
+      const reRender = () => {
+        if (isMs && STATE.lastMilestoneCalculation) {
+          renderMilestoneCalculationResults(STATE.lastMilestoneCalculation);
+        } else if (!isMs && STATE.lastCalculation) {
+          renderCalculationResults(STATE.lastCalculation);
+        }
+      };
 
       if (btnIn) btnIn.onclick = () => {
         const newW = vbW * 0.8;
@@ -1912,10 +2440,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (btnResetLayout) btnResetLayout.onclick = () => {
         SatisfactoryFlowchart.customPositions = {};
-        if (STATE.lastCalculation) {
-          renderCalculationResults(STATE.lastCalculation);
-          showToast("↺ Agencement automatique du graphe rétabli.");
-        }
+        reRender();
+        showToast("↺ Agencement automatique du graphe rétabli.");
       };
 
       if (btnToggleOrientation) {
@@ -1924,10 +2450,8 @@ document.addEventListener("DOMContentLoaded", () => {
           SatisfactoryFlowchart.orientation = SatisfactoryFlowchart.orientation === "vertical" ? "horizontal" : "vertical";
           btnToggleOrientation.innerText = SatisfactoryFlowchart.orientation === "vertical" ? "↕️ Vertic." : "↔️ Horiz.";
           SatisfactoryFlowchart.customPositions = {};
-          if (STATE.lastCalculation) {
-            renderCalculationResults(STATE.lastCalculation);
-            showToast(`↔️ Orientation : ${SatisfactoryFlowchart.orientation === "vertical" ? "Verticale (Haut ➔ Bas)" : "Horizontale (A ➔ Z)"}`);
-          }
+          reRender();
+          showToast(`↔️ Orientation : ${SatisfactoryFlowchart.orientation === "vertical" ? "Verticale (Haut ➔ Bas)" : "Horizontale (A ➔ Z)"}`);
         };
       }
 
@@ -1938,10 +2462,8 @@ document.addEventListener("DOMContentLoaded", () => {
           SatisfactoryFlowchart.heatmapMode = !SatisfactoryFlowchart.heatmapMode;
           btnToggleHeatmap.style.background = SatisfactoryFlowchart.heatmapMode ? "rgba(16, 185, 129, 0.25)" : "";
           btnToggleHeatmap.style.borderColor = SatisfactoryFlowchart.heatmapMode ? "#10b981" : "";
-          if (STATE.lastCalculation) {
-            renderCalculationResults(STATE.lastCalculation);
-            showToast(`🌡️ Mode Diagnostic Heatmap : ${SatisfactoryFlowchart.heatmapMode ? "ACTIVÉ" : "DÉSACTIVÉ"}`);
-          }
+          reRender();
+          showToast(`🌡️ Mode Diagnostic Heatmap : ${SatisfactoryFlowchart.heatmapMode ? "ACTIVÉ" : "DÉSACTIVÉ"}`);
         };
       }
     }
@@ -3451,24 +3973,28 @@ document.addEventListener("DOMContentLoaded", () => {
       return steps;
     },
 
-    renderCurrentStep() {
-      if (this.steps.length === 0) return;
-      const step = this.steps[this.currentStepIndex];
+    renderCurrentStep(isMs = false) {
+      const state = isMs ? this.msState : this.singleState;
+      if (!state || state.steps.length === 0) return;
+      const step = state.steps[state.currentStepIndex];
       if (!step) return;
 
-      const badgeEl = document.getElementById("guide-step-counter-badge");
-      const tagEl = document.getElementById("guide-step-tag");
-      const titleEl = document.getElementById("guide-step-title");
-      const descEl = document.getElementById("guide-step-description");
-      const detailsEl = document.getElementById("guide-step-details-card");
-      const shoppingEl = document.getElementById("guide-step-shopping-list");
-      const svgViewport = document.getElementById("guide-step-svg-viewport");
-      const progressFill = document.getElementById("guide-progress-bar-fill");
-      const progressPct = document.getElementById("guide-progress-pct");
-      const validateBtn = document.getElementById("btn-guide-validate-step");
-      const toggleFullBtn = document.getElementById("btn-guide-toggle-full-view");
+      const prefix = isMs ? "guide-ms-" : "guide-";
+      const btnPrefix = isMs ? "btn-guide-ms-" : "btn-guide-";
 
-      if (badgeEl) badgeEl.innerText = `Étape ${this.currentStepIndex + 1} / ${this.steps.length}`;
+      const badgeEl = document.getElementById(`${prefix}step-counter-badge`);
+      const tagEl = document.getElementById(`${prefix}step-tag`);
+      const titleEl = document.getElementById(`${prefix}step-title`);
+      const descEl = document.getElementById(`${prefix}step-description`);
+      const detailsEl = document.getElementById(`${prefix}step-details-card`);
+      const shoppingEl = document.getElementById(`${prefix}step-shopping-list`);
+      const svgViewport = document.getElementById(`${prefix}step-svg-viewport`);
+      const progressFill = document.getElementById(`${prefix}progress-bar-fill`);
+      const progressPct = document.getElementById(`${prefix}progress-pct`);
+      const validateBtn = document.getElementById(`${btnPrefix}validate-step`);
+      const toggleFullBtn = document.getElementById(`${btnPrefix}toggle-full-view`);
+
+      if (badgeEl) badgeEl.innerText = `Étape ${state.currentStepIndex + 1} / ${state.steps.length}`;
       if (tagEl) tagEl.innerText = step.tag;
       if (titleEl) titleEl.innerText = step.title;
       if (descEl) descEl.innerText = step.desc;
@@ -3483,20 +4009,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (svgViewport) {
-        if (this.currentViewMode === "full" && this.lastResults) {
-          svgViewport.innerHTML = this.generateTopDownFactoryBlueprintSVG(this.lastResults, null);
+        if (state.currentViewMode === "full" && state.lastResults) {
+          svgViewport.innerHTML = this.generateTopDownFactoryBlueprintSVG(state.lastResults, null);
         } else {
           svgViewport.innerHTML = step.svg;
         }
       }
 
       if (toggleFullBtn) {
-        toggleFullBtn.innerText = this.currentViewMode === "full" ? "🎯 Vue Étape Ciblée" : "🗺️ Vue Usine Complète 2D";
-        toggleFullBtn.style.background = this.currentViewMode === "full" ? "rgba(56, 189, 248, 0.2)" : "transparent";
+        toggleFullBtn.innerText = state.currentViewMode === "full" ? "🎯 Vue Étape Ciblée" : "🗺️ Vue Usine Complète 2D";
+        toggleFullBtn.style.background = state.currentViewMode === "full" ? "rgba(56, 189, 248, 0.2)" : "transparent";
       }
 
       // Progression
-      const pct = Math.round(((this.validatedSteps.size) / Math.max(this.steps.length, 1)) * 100);
+      const pct = Math.round(((this.validatedSteps.size) / Math.max(state.steps.length, 1)) * 100);
       if (progressFill) progressFill.style.width = `${pct}%`;
       if (progressPct) progressPct.innerText = `${pct}%`;
 
@@ -3508,50 +4034,56 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     },
 
-    init(results) {
+    init(results, isMs = false) {
+      const sectionId = isMs ? "calc-ms-construction-guide-section" : "calc-construction-guide-section";
+      const section = document.getElementById(sectionId);
+
       if (!results || !results.productionSteps || results.productionSteps.length === 0) {
-        const section = document.getElementById("calc-construction-guide-section");
         if (section) section.style.display = "none";
         return;
       }
 
-      const section = document.getElementById("calc-construction-guide-section");
       if (section) section.style.display = "block";
 
-      this.lastResults = results;
-      this.generateSteps(results);
-      this.currentStepIndex = 0;
-      this.currentViewMode = "step";
-      this.renderCurrentStep();
+      if (!this.singleState) this.singleState = { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null };
+      if (!this.msState) this.msState = { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null };
 
-      const prevBtn = document.getElementById("btn-guide-prev-step");
-      const nextBtn = document.getElementById("btn-guide-next-step");
-      const validateBtn = document.getElementById("btn-guide-validate-step");
-      const toggleFullBtn = document.getElementById("btn-guide-toggle-full-view");
-      const fullscreenBtn = document.getElementById("btn-guide-fullscreen");
+      const state = isMs ? this.msState : this.singleState;
+      state.lastResults = results;
+      state.steps = this.generateSteps(results);
+      state.currentStepIndex = 0;
+      state.currentViewMode = "step";
+      this.renderCurrentStep(isMs);
+
+      const btnPrefix = isMs ? "btn-guide-ms-" : "btn-guide-";
+      const prevBtn = document.getElementById(`${btnPrefix}prev-step`);
+      const nextBtn = document.getElementById(`${btnPrefix}next-step`);
+      const validateBtn = document.getElementById(`${btnPrefix}validate-step`);
+      const toggleFullBtn = document.getElementById(`${btnPrefix}toggle-full-view`);
+      const fullscreenBtn = document.getElementById(`${btnPrefix}fullscreen`);
 
       if (prevBtn) {
         prevBtn.onclick = () => {
-          if (this.currentStepIndex > 0) {
-            this.currentStepIndex--;
-            this.renderCurrentStep();
+          if (state.currentStepIndex > 0) {
+            state.currentStepIndex--;
+            this.renderCurrentStep(isMs);
           }
         };
       }
 
       if (nextBtn) {
         nextBtn.onclick = () => {
-          if (this.currentStepIndex < this.steps.length - 1) {
-            this.currentStepIndex++;
-            this.renderCurrentStep();
+          if (state.currentStepIndex < state.steps.length - 1) {
+            state.currentStepIndex++;
+            this.renderCurrentStep(isMs);
           }
         };
       }
 
       if (toggleFullBtn) {
         toggleFullBtn.onclick = () => {
-          this.currentViewMode = this.currentViewMode === "full" ? "step" : "full";
-          this.renderCurrentStep();
+          state.currentViewMode = state.currentViewMode === "full" ? "step" : "full";
+          this.renderCurrentStep(isMs);
         };
       }
 
@@ -3559,16 +4091,16 @@ document.addEventListener("DOMContentLoaded", () => {
         fullscreenBtn.onclick = () => {
           const targetItem = (results.targets && results.targets[0]) || { item: "Usine", rate: 10 };
           const targetName = ITEM_NAMES[targetItem.item] || targetItem.item;
-          const svgContent = this.currentViewMode === "full"
+          const svgContent = state.currentViewMode === "full"
             ? this.generateTopDownFactoryBlueprintSVG(results, null)
-            : (this.steps[this.currentStepIndex] ? this.steps[this.currentStepIndex].svg : this.generateTopDownFactoryBlueprintSVG(results, null));
+            : (state.steps[state.currentStepIndex] ? state.steps[state.currentStepIndex].svg : this.generateTopDownFactoryBlueprintSVG(results, null));
           openBlueprintModal(`📐 Plan d'Implantation Top-Down 2D : ${targetName}`, svgContent);
         };
       }
 
       if (validateBtn) {
         validateBtn.onclick = () => {
-          const step = this.steps[this.currentStepIndex];
+          const step = state.steps[state.currentStepIndex];
           if (step) {
             if (this.validatedSteps.has(step.id)) {
               this.validatedSteps.delete(step.id);
@@ -3576,13 +4108,12 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
               this.validatedSteps.add(step.id);
               showToast(`✅ Étape validée : ${step.title}`);
-              // Avancer à l'étape suivante si possible
-              if (this.currentStepIndex < this.steps.length - 1) {
-                this.currentStepIndex++;
+              if (state.currentStepIndex < state.steps.length - 1) {
+                state.currentStepIndex++;
               }
             }
             localStorage.setItem("ficsit_guide_validated", JSON.stringify(Array.from(this.validatedSteps)));
-            this.renderCurrentStep();
+            this.renderCurrentStep(isMs);
           }
         };
       }
@@ -4123,6 +4654,7 @@ document.addEventListener("DOMContentLoaded", () => {
       this.isInitialized = true;
 
       const openBtn = document.getElementById("btn-open-alt-recipes-modal");
+      const openMsBtn = document.getElementById("btn-open-ms-alt-recipes-modal");
       const closeBtn = document.getElementById("btn-close-alt-modal");
       const applyBtn = document.getElementById("btn-apply-alt-modal");
       const modal = document.getElementById("alt-recipes-manager-modal");
@@ -4137,6 +4669,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      if (openMsBtn) {
+        openMsBtn.addEventListener("click", () => {
+          this.open("current");
+        });
+      }
+
       if (closeBtn) {
         closeBtn.addEventListener("click", () => {
           this.close();
@@ -4147,6 +4685,9 @@ document.addEventListener("DOMContentLoaded", () => {
         applyBtn.addEventListener("click", () => {
           this.close();
           executeCalculation();
+          if (typeof executeMilestoneCalculation === "function") {
+            executeMilestoneCalculation(true);
+          }
           showToast("Recettes alternatives appliquées avec succès !");
         });
       }
@@ -4196,6 +4737,9 @@ document.addEventListener("DOMContentLoaded", () => {
           saveState();
           this.render();
           executeCalculation();
+          if (typeof executeMilestoneCalculation === "function") {
+            executeMilestoneCalculation(true);
+          }
           showToast("↺ Toutes les recettes ont été réinitialisées aux standards.");
         });
       }
@@ -6222,6 +6766,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPhases();
   renderSyntheticView();
   initCalculatorUI();
+  initMilestoneCalculatorUI();
   renderBlueprints();
   renderChecklist();
   initSaveUploader();
