@@ -6,13 +6,13 @@
 [![Visualiseur 3D](https://img.shields.io/badge/Moteur%203D-Three.js%20WebGL-3fe0d0?style=for-the-badge&logo=three.js&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 [![Déploiement](https://img.shields.io/badge/GitHub%20Pages-Pr%C3%AAt-2ecc71?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 
-> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.2** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, générateur de Blueprints `.sbp`, simulateur énergétique & logistique, carte interactive des gisements et checklist de chantier.
+> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.2** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, générateur & bibliothèque de Blueprints `.sbp` *(en cours de développement)*, simulateur énergétique & logistique, carte interactive des gisements et checklist de chantier.
 
 ---
 
 > [!NOTE]
 > ### 🚧 PROJET EN COURS DE DÉVELOPPEMENT (Work In Progress)
-> Ce projet est **activement développé** pour la version 1.2 de Satisfactory. De nouvelles fonctionnalités, modèles 3D, schémas d'usines et optimisations d'interface sont ajoutés et ajustés en continu.  
+> Ce projet est **activement développé** pour la version 1.2 de Satisfactory. De nouvelles fonctionnalités, modèles 3D, schémas d'usines, modules blueprints et optimisations d'interface sont ajoutés et ajustés en continu.  
 > Les retours et suggestions d'amélioration sont les bienvenus !
 
 ---
@@ -115,9 +115,14 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
 
 ---
 
-## 📦 Bibliothèque & Générateur de Blueprints (.SBP & .SBPCFG)
+## 📦 Bibliothèque & Générateur de Blueprints (.SBP & .SBPCFG) ⚠️ *(En cours de développement)*
 
-Le projet intègre un moteur complet de génération binaire et une collection de blueprints natifs prêts à être déposés dans votre dossier de sauvegarde :
+> [!WARNING]
+> ### ⚙️ Fonctionnalité Expérimentale (WIP)
+> Le moteur de génération binaire `.sbp` / `.sbpcfg` ainsi que les fichiers de la bibliothèque de blueprints sont actuellement en **phase active de développement et d'expérimentation**.  
+> Certains agencements, connexions automatiques ou gabarits de bâtiments peuvent encore évoluer ou nécessiter des ajustements lors de l'import direct dans les Blueprint Designers de Satisfactory 1.0 / 1.2.
+
+Le module blueprint comprend :
 
 * **Générateur Universel de Blueprints** (`js/engine/blueprintGenerator.js`) : Génère directement au format binaire Unreal Engine les fichiers `.sbp` et `.sbpcfg` compressés en zlib.
 * **Dossier de Blueprints Dédié** (`/blueprints`) :
@@ -125,7 +130,7 @@ Le projet intègre un moteur complet de génération binaire et une collection d
   * Modules d'énergie (*Centrales à charbon*, *Raffineries*, etc.).
   * Modules de phases spatiales (Phases 1 à 5).
   * Architecture 1900 et packs d'usines complets (`Pack_Campus_1900.zip`, `Campus_1900_Cascades.cbp`).
-* **Export par lot** : Script `batch_export_sbp.js` pour générer automatiquement l'ensemble des blueprints du catalogue.
+* **Export par lot** : Script `batch_export_sbp.js` pour tester et générer automatiquement l'ensemble des blueprints du catalogue.
 
 ---
 
@@ -143,7 +148,7 @@ Le projet intègre un moteur complet de génération binaire et une collection d
 
 ```text
 Satisfactory-Dashboard/
-├── blueprints/                 # Collection de blueprints .sbp, .sbpcfg, .cbp et archives zip
+├── blueprints/                 # Collection de blueprints .sbp, .sbpcfg, .cbp et archives zip (WIP)
 ├── js/
 │   ├── app.js                  # Contrôleur principal et routage de l'interface
 │   ├── data/                   # Données de référence Satisfactory 1.2
@@ -158,7 +163,7 @@ Satisfactory-Dashboard/
 │   │   ├── powerData.js        # Données des centrales et combustibles
 │   │   └── recipes.js          # Recettes de base et alternatives 1.2
 │   └── engine/                 # Moteurs de calcul et de rendu
-│       ├── blueprintGenerator.js # Générateur binaire .sbp / .sbpcfg
+│       ├── blueprintGenerator.js # Générateur binaire .sbp / .sbpcfg (expérimental)
 │       ├── calculator.js       # Calculateur de production et optimiseur IA
 │       ├── factoryViewer3D.js  # Moteur 3D WebGL (Three.js)
 │       ├── logisticsEngine.js  # Moteur de dimensionnement du fret
@@ -199,14 +204,13 @@ Activez GitHub Pages dans les options de votre dépôt GitHub (`Settings > Pages
 - [x] Moteur d'optimisation automatique des recettes alternatives (Minimum de machines).
 - [x] Visualiseur 3D temps réel WebGL (Three.js) avec modèle interactif des usines et sélecteur d'étages.
 - [x] Guide de construction visuel 2D CAD étape par étape avec isolation dynamique.
-- [x] Générateur et exportateur de fichiers Blueprints `.sbp` / `.sbpcfg` natifs.
 - [x] Carte Canvas interactive avec inspecteur de foreuses, radar de zone et outil de tracé logistique.
 - [x] Simulateur Logistique & Réseaux de Fret (Trains, Drones, Camions & Matrice de rentabilité FICSIT).
 - [x] Simulateur de Centrales Électriques pour les 10 technologies 1.2 (Ficsonium, Rocket Fuel, Ionized Fuel, etc.).
 - [x] Arbre Technologique Complet du MAM & Traqueur de Disques Durs (Dépôt Dimensionnel 1.0, Tier-List S/A/B/C/D & Aide au tirage).
 - [x] Checklist de chantier interactive et fiche d'atelier imprimable.
 - [x] Synchroniseur et importateur de sauvegardes `.SAV` Satisfactory.
-- [ ] 🟡 *En cours* : Ajout de nouveaux modules d'usines compactes et plans d'architecte Blueprint Designer Mk.3.
+- [ ] 🟡 *En cours de développement* : **Générateur & Bibliothèque de Blueprints .sbp / .sbpcfg natifs** (phase expérimentale, enrichissement et stabilisation des modules compacts et plans d'architecte Blueprint Designer Mk.1 / Mk.2 / Mk.3).
 
 ---
 
