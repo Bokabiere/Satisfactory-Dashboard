@@ -259,15 +259,31 @@ class ProductionCalculator {
   }
 
   /**
-   * Optimiseur automatique de recettes alternatives (Minimisation du nombre de machines)
+   * Alias pour compatibilité
+   */
+  optimize(targets, criterion = "min_buildings", allowedRecipeIds = null) {
+    return this.optimizeAlternativeRecipes(targets, criterion, allowedRecipeIds);
+  }
+
+  /**
+   * Optimisation automatique de l'arbre de production pour minimiser le nombre de machines
    * Utilise la programmation dynamique pour trouver la combinaison globale avec le moins d'usines
    * @param {Array<{item: string, rate: number}>} targets 
-   * @param {string} criterion 'min_buildings' | 'min_power'
-   * @returns {Object} Rapport d'optimisation (comparatif avant/après, recettes choisies, économies)
+   * @param {string} criterion "min_machines" | "min_power" | "min_raw"
+   * @param {Array<string>|Set<string>|null} allowedRecipeIds Liste des IDs de recettes autorisées (null = toutes autorisées)
+   * @returns {Object} Analyse comparative et recettes optimales trouvées
    */
-  optimize(targets, criterion = 'min_buildings') {
+  optimizeAlternativeRecipes(targets, criterion = "min_machines", allowedRecipeIds = null) {
     const memo = new Map();
     const callStack = new Set();
+
+    const isAllowed = (rec) => {
+      if (!rec.isAlt) return true;
+      if (!allowedRecipeIds) return true;
+      if (allowedRecipeIds instanceof Set) return allowedRecipeIds.has(rec.id);
+      if (Array.isArray(allowedRecipeIds)) return allowedRecipeIds.includes(rec.id);
+      return true;
+    };
 
     const getBestRecipeForItem = (itemId) => {
       if (this.isRawResource(itemId)) {
@@ -283,12 +299,19 @@ class ProductionCalculator {
       }
       callStack.add(itemId);
 
-      const recipes = this.getRecipesForItem(itemId);
+      const allRecipes = this.getRecipesForItem(itemId);
+      const recipes = (allRecipes || []).filter(isAllowed);
+      
       if (!recipes || recipes.length === 0) {
-        callStack.delete(itemId);
-        const res = { costPerUnit: 0, bestRecipeId: null, subRecipes: {} };
-        memo.set(itemId, res);
-        return res;
+        // Si aucune alternative autorisée, essayer la recette de base non-alt
+        const fallback = (allRecipes || []).filter(r => !r.isAlt);
+        if (!fallback || fallback.length === 0) {
+          callStack.delete(itemId);
+          const res = { costPerUnit: 0, bestRecipeId: null, subRecipes: {} };
+          memo.set(itemId, res);
+          return res;
+        }
+        recipes.push(...fallback);
       }
 
       let minCost = Infinity;

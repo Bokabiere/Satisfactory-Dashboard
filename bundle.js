@@ -10,10 +10,16 @@ const recipesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'recipes.js')
 const milestonesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'milestones.js'), 'utf8');
 const blueprintsJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'blueprints.js'), 'utf8');
 const nodesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'nodes.js'), 'utf8');
+const powerDataJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'powerData.js'), 'utf8');
+const logisticsDataJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'logisticsData.js'), 'utf8');
+const mamDataJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'mamData.js'), 'utf8');
 const mapTexturesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'mapTextures.js'), 'utf8');
 const buildingTexturesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'buildingTextures.js'), 'utf8');
 const calcJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'calculator.js'), 'utf8');
+const powerCalcJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'powerCalculator.js'), 'utf8');
 const saveJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'saveParser.js'), 'utf8');
+const logisticsEngineJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'logisticsEngine.js'), 'utf8');
+const mamEngineJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'mamEngine.js'), 'utf8');
 const mapEngineJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'mapEngine.js'), 'utf8');
 const factory3DJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'factoryViewer3D.js'), 'utf8');
 const blueprintGenJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'blueprintGenerator.js'), 'utf8');
@@ -33,10 +39,16 @@ const bundleScript = '<script>\n' +
   milestonesJs + '\n\n' +
   blueprintsJs + '\n\n' +
   nodesJs + '\n\n' +
+  powerDataJs + '\n\n' +
+  logisticsDataJs + '\n\n' +
+  mamDataJs + '\n\n' +
   mapTexturesJs + '\n\n' +
   buildingTexturesJs + '\n\n' +
   calcJs + '\n\n' +
+  powerCalcJs + '\n\n' +
   saveJs + '\n\n' +
+  logisticsEngineJs + '\n\n' +
+  mamEngineJs + '\n\n' +
   mapEngineJs + '\n\n' +
   factory3DJs + '\n\n' +
   blueprintGenJs + '\n\n' +

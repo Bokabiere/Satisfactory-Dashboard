@@ -38,16 +38,18 @@ class SatisfactoryMapEngine {
 
     this.initMapImages();
 
-    // Tools: 'select', 'radius', 'custom_pin'
+    // Tools: 'select', 'radius', 'custom_pin', 'route'
     this.currentTool = 'select';
     this.radiusCenter = null;
     this.radiusDistance = 150; // in map units (approx 1.5km)
     this.customPins = this.loadCustomPins();
+    this.routePoints = [];
 
     // Callbacks
     this.onNodeSelect = options.onNodeSelect || (() => {});
     this.onRadiusUpdate = options.onRadiusUpdate || (() => {});
     this.onPinUpdate = options.onPinUpdate || (() => {});
+    this.onRouteMeasured = options.onRouteMeasured || (() => {});
 
     // Init
     this.initEventListeners();
@@ -180,6 +182,9 @@ class SatisfactoryMapEngine {
     if (toolName !== 'radius') {
       this.radiusCenter = null;
     }
+    if (toolName !== 'route') {
+      this.routePoints = [];
+    }
     this.render();
   }
 
@@ -246,6 +251,27 @@ class SatisfactoryMapEngine {
       if (this.currentTool === 'radius') {
         this.radiusCenter = worldPos;
         this.updateRadiusAnalysis();
+        this.render();
+        return;
+      }
+
+      if (this.currentTool === 'route') {
+        const clickedNode = this.findNodeAt(mouseX, mouseY);
+        const pt = clickedNode ? { x: clickedNode.x, y: clickedNode.y, label: clickedNode.type } : { x: Math.round(worldPos.x), y: Math.round(worldPos.y) };
+        
+        if (this.routePoints.length >= 2) {
+          this.routePoints = [pt];
+        } else {
+          this.routePoints.push(pt);
+        }
+
+        if (this.routePoints.length === 2) {
+          const dx = this.routePoints[1].x - this.routePoints[0].x;
+          const dy = this.routePoints[1].y - this.routePoints[0].y;
+          const units = Math.sqrt(dx * dx + dy * dy);
+          const distMeters = Math.round(units * 5.4 * 1.15); // Facteur 1.15 pour virages
+          this.onRouteMeasured(distMeters, this.routePoints[0], this.routePoints[1]);
+        }
         this.render();
         return;
       }
@@ -356,8 +382,16 @@ class SatisfactoryMapEngine {
       this.renderRadiusOverlay(ctx);
     }
 
+    // 3b. Render Logistics Route Line
+    if (this.routePoints && this.routePoints.length > 0) {
+      this.renderRouteOverlay(ctx);
+    }
+
     // 4. Render Custom Pins
     this.renderCustomPins(ctx);
+
+    // 4b. Render Hard Drive Crash Sites
+    this.renderCrashSites(ctx);
 
     // 5. Render Resource Nodes
     this.renderNodes(ctx);
@@ -481,6 +515,76 @@ class SatisfactoryMapEngine {
     ctx.restore();
   }
 
+  renderRouteOverlay(ctx) {
+    if (!this.routePoints || this.routePoints.length === 0) return;
+    ctx.save();
+
+    // 1er Point
+    const p1 = this.worldToScreen(this.routePoints[0].x, this.routePoints[0].y);
+    ctx.fillStyle = '#3fe0d0';
+    ctx.beginPath();
+    ctx.arc(p1.x, p1.y, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#3fe0d0';
+    ctx.font = '700 12px "Chakra Petch", sans-serif';
+    ctx.fillText('🚩 DÉPART (Gare A)', p1.x + 12, p1.y + 4);
+
+    if (this.routePoints.length >= 2) {
+      const p2 = this.worldToScreen(this.routePoints[1].x, this.routePoints[1].y);
+      
+      // Ligne de tracé
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = '#3fe0d0';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 2e Point
+      ctx.fillStyle = '#fa9549';
+      ctx.beginPath();
+      ctx.arc(p2.x, p2.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#fa9549';
+      ctx.font = '700 12px "Chakra Petch", sans-serif';
+      ctx.fillText('🏁 ARRIVÉE (Gare B)', p2.x + 12, p2.y + 4);
+
+      // Badge distance au milieu
+      const midX = (p1.x + p2.x) / 2;
+      const midY = (p1.y + p2.y) / 2;
+      const dx = this.routePoints[1].x - this.routePoints[0].x;
+      const dy = this.routePoints[1].y - this.routePoints[0].y;
+      const units = Math.sqrt(dx * dx + dy * dy);
+      const distMeters = Math.round(units * 5.4 * 1.15);
+
+      const label = `📏 DISTANCE : ${distMeters.toLocaleString()} m`;
+      ctx.font = '700 12px "Chakra Petch", sans-serif';
+      const textWidth = ctx.measureText(label).width;
+
+      ctx.fillStyle = 'rgba(14, 18, 23, 0.9)';
+      ctx.strokeStyle = '#3fe0d0';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(midX - textWidth / 2 - 8, midY - 14, textWidth + 16, 26);
+      ctx.strokeRect(midX - textWidth / 2 - 8, midY - 14, textWidth + 16, 26);
+
+      ctx.fillStyle = '#3fe0d0';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, midX, midY + 4);
+    }
+
+    ctx.restore();
+  }
+
   renderCustomPins(ctx) {
     this.customPins.forEach(pin => {
       const pos = this.worldToScreen(pin.x, pin.y);
@@ -497,6 +601,29 @@ class SatisfactoryMapEngine {
       ctx.font = '700 12px "Inter", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`🚩 ${pin.name}`, pos.x, pos.y - 12);
+      ctx.restore();
+    });
+  }
+
+  renderCrashSites(ctx) {
+    if (typeof MAM_DATA === 'undefined' || !MAM_DATA.crashSites) return;
+    MAM_DATA.crashSites.forEach(crash => {
+      const pos = this.worldToScreen(crash.x, crash.y);
+      ctx.save();
+      ctx.fillStyle = '#ff007f';
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      if (this.scale > 1.2) {
+        ctx.fillStyle = '#ff007f';
+        ctx.font = '700 10px "Chakra Petch", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`🛸 Épave (${crash.req})`, pos.x, pos.y - 10);
+      }
       ctx.restore();
     });
   }

@@ -7,10 +7,14 @@ class SatisfactorySaveParser {
    * @param {File|ArrayBuffer} fileData 
    * @returns {Promise<Object>} Informations extraites de la sauvegarde
    */
-  static async parseSave(fileData) {
+  static async parseSave(fileData, onProgress = null) {
     let arrayBuffer;
     if (fileData instanceof File || fileData instanceof Blob) {
       arrayBuffer = await fileData.arrayBuffer();
+    } else if (fileData instanceof ArrayBuffer) {
+      arrayBuffer = fileData;
+    } else if (fileData && fileData.buffer instanceof ArrayBuffer) {
+      arrayBuffer = fileData.buffer.slice(fileData.byteOffset, fileData.byteOffset + fileData.byteLength);
     } else {
       arrayBuffer = fileData;
     }
@@ -19,7 +23,7 @@ class SatisfactorySaveParser {
     const decoder = new TextDecoder("utf-8");
 
     try {
-      // 1. Lecture de l'en-tête du fichier .sav
+      // 1. Lecture de l'en-tête du fichier .sav (GVAS Unreal Engine)
       let offset = 0;
 
       // SaveHeaderVersion (uint32)
@@ -34,44 +38,31 @@ class SatisfactorySaveParser {
       const buildVersion = dataView.getInt32(offset, true);
       offset += 4;
 
-      // MapName (FString)
-      const mapNameObj = this.readFString(dataView, offset, decoder);
-      offset = mapNameObj.nextOffset;
+      let saveName = "", mapName = "", mapOptions = "", sessionName = "";
 
-      // MapOptions (FString)
-      const mapOptionsObj = this.readFString(dataView, offset, decoder);
-      offset = mapOptionsObj.nextOffset;
-
-      // SessionName (FString)
-      const sessionNameObj = this.readFString(dataView, offset, decoder);
-      offset = sessionNameObj.nextOffset;
+      if (saveHeaderVersion >= 14) {
+        const s1 = this.readFString(dataView, offset, decoder); offset = s1.nextOffset; saveName = s1.str;
+        const s2 = this.readFString(dataView, offset, decoder); offset = s2.nextOffset; mapName = s2.str;
+        const s3 = this.readFString(dataView, offset, decoder); offset = s3.nextOffset; mapOptions = s3.str;
+        const s4 = this.readFString(dataView, offset, decoder); offset = s4.nextOffset; sessionName = s4.str;
+      } else {
+        const s1 = this.readFString(dataView, offset, decoder); offset = s1.nextOffset; mapName = s1.str;
+        const s2 = this.readFString(dataView, offset, decoder); offset = s2.nextOffset; mapOptions = s2.str;
+        const s3 = this.readFString(dataView, offset, decoder); offset = s3.nextOffset; sessionName = s3.str;
+        saveName = sessionName;
+      }
 
       // PlayDurationSeconds (uint32)
-      const playDurationSeconds = dataView.getInt32(offset, true);
-      offset += 4;
-
-      // SaveDateTime (int64)
-      offset += 8;
-
-      // SessionVisibility (uint8)
-      offset += 1;
-
-      // Header fields additionnels selon la version UE / Satisfactory 1.0
-      if (saveHeaderVersion >= 7) offset += 4; // EditorObjectVersion
-      if (saveHeaderVersion >= 8) {
-        const modMetadata = this.readFString(dataView, offset, decoder);
-        offset = modMetadata.nextOffset;
-      }
-      if (saveHeaderVersion >= 9) offset += 4; // IsModdedSave
-      if (saveHeaderVersion >= 10) {
-        const customData = this.readFString(dataView, offset, decoder);
-        offset = customData.nextOffset;
+      let playDurationSeconds = 0;
+      if (offset + 4 <= dataView.byteLength) {
+        playDurationSeconds = dataView.getInt32(offset, true);
+        offset += 4;
       }
 
       // 2. Décompression des chunks Unreal Engine (zlib/deflate)
       let uncompressedText = "";
       try {
-        uncompressedText = await this.decompressChunks(arrayBuffer, offset);
+        uncompressedText = await this.decompressChunks(arrayBuffer, offset, onProgress);
       } catch (decompErr) {
         console.warn("Décompression des chunks :", decompErr);
       }
@@ -82,14 +73,13 @@ class SatisfactorySaveParser {
 
       const unlockedMilestones = [];
 
-      // Détection exhaustive des schémas 1.0 & historiques
+      // Détection exhaustive des schémas 1.0, 1.1 et 1.2
       const milestonePatterns = [
-        { id: "tier_0_hub_1", keys: ["Schematic_Tutorial_1", "Schem_Tutorial_1", "HubUpgrade1", "Tier0_1"] },
-        { id: "tier_0_hub_2", keys: ["Schematic_Tutorial_2", "Schem_Tutorial_2", "HubUpgrade2", "Tier0_2"] },
-        { id: "tier_0_hub_3", keys: ["Schematic_Tutorial_3", "Schem_Tutorial_3", "HubUpgrade3", "Tier0_3"] },
-        { id: "tier_0_hub_4", keys: ["Schematic_Tutorial_4", "Schem_Tutorial_4", "HubUpgrade4", "Tier0_4"] },
-        { id: "tier_0_hub_5", keys: ["Schematic_Tutorial_5", "Schem_Tutorial_5", "HubUpgrade5", "Tier0_5"] },
-        { id: "tier_0_hub_6", keys: ["Schematic_Tutorial_6", "Schem_Tutorial_6", "HubUpgrade6", "Tier0_6"] },
+        { id: "tier_0_hub_1", keys: ["Schematic_Tutorial1", "Schematic_Tutorial_1", "HubUpgrade1", "Tier0_1"] },
+        { id: "tier_0_hub_2", keys: ["Schematic_Tutorial2", "Schematic_Tutorial_2", "HubUpgrade2", "Tier0_2"] },
+        { id: "tier_0_hub_3", keys: ["Schematic_Tutorial3", "Schematic_Tutorial_3", "HubUpgrade3", "Tier0_3"] },
+        { id: "tier_0_hub_4", keys: ["Schematic_Tutorial4", "Schematic_Tutorial_4", "HubUpgrade4", "Tier0_4"] },
+        { id: "tier_0_hub_5", keys: ["Schematic_Tutorial5", "Schematic_Tutorial_5", "HubUpgrade5", "Tier0_5"] },
         { id: "tier_1_logistics_1", keys: ["Schematic_1-1", "Schematic_1_1", "Logistics_1"] },
         { id: "tier_1_field_research", keys: ["Schematic_1-2", "Schematic_1_2", "FieldResearch"] },
         { id: "tier_1_base_building", keys: ["Schematic_1-3", "Schematic_1_3", "BaseBuilding"] },
@@ -144,20 +134,105 @@ class SatisfactorySaveParser {
         unlockedPhases.push("phase_5");
       }
 
+      // Détection des Recettes Alternatives 1.0/1.2 (Disques durs)
+      const altRecipePatterns = [
+        { id: "recipe_alt_pure_iron_ingot", name: "Lingot de fer pur (Alt)", keys: ["PureIron", "IngotPureIron", "Alternate_PureIron", "Alternate_IngotIronPure", "PureIronIngot"] },
+        { id: "recipe_alt_iron_alloy_ingot", name: "Alliage de fer (Alt)", keys: ["IronAlloy", "IngotIronAlloy", "Alternate_IronAlloy", "Alternate_IngotIronAlloy", "IronAlloyIngot"] },
+        { id: "recipe_alt_copper_alloy_ingot", name: "Alliage de cuivre (Alt)", keys: ["CopperAlloy", "IngotCopperAlloy", "Alternate_CopperAlloy", "Alternate_IngotCopperAlloy", "CopperAlloyIngot"] },
+        { id: "recipe_alt_pure_copper_ingot", name: "Lingot de cuivre pur (Alt)", keys: ["PureCopper", "IngotPureCopper", "Alternate_PureCopper", "Alternate_IngotCopperPure", "PureCopperIngot"] },
+        { id: "recipe_alt_pure_caterium_ingot", name: "Lingot de caterium pur (Alt)", keys: ["PureCaterium", "IngotCateriumPure", "Alternate_PureCaterium", "Alternate_IngotCateriumPure", "PureCateriumIngot"] },
+        { id: "recipe_alt_solid_steel_ingot", name: "Lingot d'acier massif (Alt)", keys: ["SolidSteel", "IngotSteelSolid", "Alternate_SolidSteel", "Alternate_IngotSteelSolid", "SolidSteelIngot"] },
+        { id: "recipe_alt_coke_steel_ingot", name: "Acier au coke (Alt)", keys: ["CokeSteel", "IngotSteelCoke", "Alternate_CokeSteel", "Alternate_IngotSteelCoke", "CokeSteelIngot"] },
+        { id: "recipe_alt_pure_aluminum_ingot", name: "Lingot d'aluminium pur (Alt)", keys: ["PureAluminum", "IngotAluminumPure", "Alternate_PureAluminum", "Alternate_IngotAluminumPure", "PureAluminumIngot"] },
+        { id: "recipe_alt_steel_rod", name: "Tige en acier (Alt)", keys: ["SteelRod", "Alternate_SteelRod", "RodSteel", "Alternate_RodSteel", "AluminumRod"] },
+        { id: "recipe_alt_cast_screw", name: "Vis coulée (Alt)", keys: ["CastScrew", "Alternate_CastScrew", "ScrewCast", "Screw_1", "Alternate_Screw_1"] },
+        { id: "recipe_alt_steel_screw", name: "Vis en acier (Alt)", keys: ["SteelScrew", "Alternate_SteelScrew", "ScrewSteel", "Screw_2", "Alternate_Screw_2"] },
+        { id: "recipe_alt_iron_wire", name: "Fil de fer (Alt)", keys: ["IronWire", "Alternate_IronWire", "WireIron", "Wire_1", "Alternate_Wire_1"] },
+        { id: "recipe_alt_fused_wire", name: "Fil fusionné (Alt)", keys: ["FusedWire", "Alternate_FusedWire", "WireFused", "Wire_2", "Alternate_Wire_2"] },
+        { id: "recipe_alt_quickwire_cable", name: "Câble au filactif (Alt)", keys: ["QuickwireCable", "Alternate_QuickwireCable", "CableQuickwire", "Cable_1", "Alternate_Cable_1"] },
+        { id: "recipe_alt_insulated_cable", name: "Câble isolé (Alt)", keys: ["InsulatedCable", "Alternate_InsulatedCable", "CableInsulated", "Cable_2", "Alternate_Cable_2", "CoatedCable"] },
+        { id: "recipe_alt_steamed_copper_sheet", name: "Tôle de cuivre étuvée (Alt)", keys: ["SteamedCopperSheet", "Alternate_SteamedCopperSheet", "CopperSheetSteamed", "Alternate_CopperSheet"] },
+        { id: "recipe_alt_wet_concrete", name: "Béton humide (Alt)", keys: ["WetConcrete", "Alternate_WetConcrete", "ConcreteWet", "Concrete_1", "Alternate_Concrete_1"] },
+        { id: "recipe_alt_rubber_concrete", name: "Béton au caoutchouc (Alt)", keys: ["RubberConcrete", "Alternate_RubberConcrete", "ConcreteRubber", "Concrete_2", "Alternate_Concrete_2"] },
+        { id: "recipe_alt_stitched_iron_plate", name: "Plaque de fer cousue (Alt)", keys: ["StitchedIronPlate", "Alternate_StitchedIronPlate", "ReinforcedIronPlate_1", "Alternate_ReinforcedIronPlate_1"] },
+        { id: "recipe_alt_bolted_iron_plate", name: "Plaque de fer boulonnée (Alt)", keys: ["BoltedIronPlate", "Alternate_BoltedIronPlate", "ReinforcedIronPlate_2", "Alternate_ReinforcedIronPlate_2"] },
+        { id: "recipe_alt_adhered_iron_plate", name: "Plaque de fer collée (Alt)", keys: ["AdheredIronPlate", "Alternate_AdheredIronPlate", "ReinforcedIronPlate_3", "Alternate_ReinforcedIronPlate_3"] },
+        { id: "recipe_alt_copper_rotor", name: "Rotor en cuivre (Alt)", keys: ["CopperRotor", "Alternate_CopperRotor", "RotorCopper", "Rotor_1", "Alternate_Rotor_1"] },
+        { id: "recipe_alt_steel_rotor", name: "Rotor en acier (Alt)", keys: ["SteelRotor", "Alternate_SteelRotor", "RotorSteel", "Rotor_2", "Alternate_Rotor_2"] },
+        { id: "recipe_alt_bolted_frame", name: "Cadre boulonné (Alt)", keys: ["BoltedFrame", "Alternate_BoltedFrame", "ModularFrame_1", "Alternate_ModularFrame_1"] },
+        { id: "recipe_alt_steeled_frame", name: "Cadre en acier (Alt)", keys: ["SteeledFrame", "Alternate_SteeledFrame", "ModularFrame_2", "Alternate_ModularFrame_2"] },
+        { id: "recipe_alt_encased_pipe", name: "Tuyau enrobé (Alt)", keys: ["EncasedPipe", "Alternate_EncasedPipe", "EncasedIndustrialBeam_1", "Alternate_EncasedIndustrialBeam_1"] },
+        { id: "recipe_alt_quickwire_stator", name: "Stator au filactif (Alt)", keys: ["QuickwireStator", "Alternate_QuickwireStator", "Stator_1", "Alternate_Stator_1"] },
+        { id: "recipe_alt_rigour_motor", name: "Moteur rigoureux (Alt)", keys: ["RigourMotor", "Alternate_RigourMotor", "Motor_1", "Alternate_Motor_1", "ElectricMotor"] },
+        { id: "recipe_alt_heavy_encased_frame", name: "Cadre modulaire lourd enrobé (Alt)", keys: ["HeavyEncasedFrame", "Alternate_HeavyEncasedFrame", "HeavyModularFrame_1", "Alternate_HeavyModularFrame_1"] },
+        { id: "recipe_alt_heavy_flexible_frame", name: "Cadre lourd flexible (Alt)", keys: ["HeavyFlexibleFrame", "Alternate_HeavyFlexibleFrame", "HeavyModularFrame_2", "Alternate_HeavyModularFrame_2", "FlexibleFramework"] },
+        { id: "recipe_alt_heavy_oil_residue", name: "Résidu d'huile lourde (Alt)", keys: ["HeavyOilResidue", "Alternate_HeavyOilResidue"] },
+        { id: "recipe_alt_diluted_fuel", name: "Carburant dilué (Alt)", keys: ["DilutedFuel", "Alternate_DilutedFuel", "DilutedPackagedFuel"] },
+        { id: "recipe_alt_recycled_plastic", name: "Plastique recyclé (Alt)", keys: ["RecycledPlastic", "Alternate_RecycledPlastic", "Plastic_1", "Alternate_Plastic_1"] },
+        { id: "recipe_alt_recycled_rubber", name: "Caoutchouc recyclé (Alt)", keys: ["RecycledRubber", "Alternate_RecycledRubber", "Rubber_1", "Alternate_Rubber_1"] },
+        { id: "recipe_alt_silicon_circuit_board", name: "Circuit imprimé au silicium (Alt)", keys: ["SiliconCircuitBoard", "Alternate_SiliconCircuitBoard", "CircuitBoard_1", "Alternate_CircuitBoard_1"] },
+        { id: "recipe_alt_caterium_circuit_board", name: "Circuit imprimé au caterium (Alt)", keys: ["CateriumCircuitBoard", "Alternate_CateriumCircuitBoard", "CircuitBoard_2", "Alternate_CircuitBoard_2"] },
+        { id: "recipe_alt_fused_quickwire", name: "Filactif fusionné (Alt)", keys: ["FusedQuickwire", "Alternate_FusedQuickwire", "Quickwire_1", "Alternate_Quickwire_1"] },
+        { id: "recipe_alt_silicon_high_speed_connector", name: "Connecteur haute vitesse au silicium (Alt)", keys: ["SiliconHighSpeedConnector", "Alternate_SiliconHighSpeedConnector", "HighSpeedConnector_1"] },
+        { id: "recipe_alt_oc_supercomputer", name: "Supercalculateur OC (Alt)", keys: ["OCSupercomputer", "Alternate_OCSupercomputer", "Supercomputer_1", "Alternate_Supercomputer_1"] },
+        { id: "recipe_alt_pure_quartz_crystal", name: "Cristal de quartz pur (Alt)", keys: ["PureQuartzCrystal", "Alternate_PureQuartzCrystal", "QuartzCrystal_1", "Alternate_QuartzCrystal_1"] },
+        { id: "recipe_alt_cheap_silica", name: "Silice économique (Alt)", keys: ["CheapSilica", "Alternate_CheapSilica", "Silica_1", "Alternate_Silica_1"] }
+      ];
+
+      const unlockedRecipes = [];
+      altRecipePatterns.forEach(r => {
+        const found = r.keys.some(k => fullSearchText.includes(k));
+        if (found) {
+          unlockedRecipes.push(r.id);
+        }
+      });
+
+      // Détection des arbres MAM
+      const mamTrees = {
+        caterium: { name: "Caterium", count: 0, total: 8 },
+        quartz: { name: "Quartz", count: 0, total: 7 },
+        sulfur: { name: "Soufre", count: 0, total: 6 },
+        alien: { name: "Organismes Extraterrestres", count: 0, total: 6 },
+        mycelia: { name: "Mycélium", count: 0, total: 4 },
+        slugs: { name: "Limaces Électriques", count: 0, total: 4 }
+      };
+
+      for (let i = 1; i <= 8; i++) {
+        if (fullSearchText.includes(`Research_Caterium_${i}`) || fullSearchText.includes(`Schematic_Tree_Caterium_${i}`)) mamTrees.caterium.count++;
+      }
+      for (let i = 1; i <= 7; i++) {
+        if (fullSearchText.includes(`Research_Quartz_${i}`) || fullSearchText.includes(`Schematic_Tree_Quartz_${i}`)) mamTrees.quartz.count++;
+      }
+      for (let i = 1; i <= 6; i++) {
+        if (fullSearchText.includes(`Research_Sulfur_${i}`) || fullSearchText.includes(`Schematic_Tree_Sulfur_${i}`)) mamTrees.sulfur.count++;
+      }
+      for (let i = 1; i <= 6; i++) {
+        if (fullSearchText.includes(`Research_AlienOrganisms_${i}`) || fullSearchText.includes(`Research_AO_`) || fullSearchText.includes(`Research_Xeno_${i}`)) mamTrees.alien.count++;
+      }
+      for (let i = 1; i <= 4; i++) {
+        if (fullSearchText.includes(`Research_Mycelia_${i}`) || fullSearchText.includes(`Research_Nutrients_${i}`)) mamTrees.mycelia.count++;
+      }
+      for (let i = 1; i <= 4; i++) {
+        if (fullSearchText.includes(`Research_PowerSlugs_${i}`)) mamTrees.slugs.count++;
+      }
+
       // Formatage du temps de jeu
       const hours = Math.floor(playDurationSeconds / 3600);
       const minutes = Math.floor((playDurationSeconds % 3600) / 60);
 
       return {
         success: true,
-        sessionName: sessionNameObj.str || "Session FICSIT",
+        sessionName: sessionName || saveName || "Session FICSIT",
+        saveName: saveName || sessionName,
         buildVersion: buildVersion,
         saveVersion: saveVersion,
-        mapName: mapNameObj.str || "Pionnier Island",
+        mapName: mapName || "Pionnier Island",
         playtime: `${hours}h ${minutes}m`,
         playDurationSeconds: playDurationSeconds,
         unlockedMilestones: unlockedMilestones,
         unlockedPhases: unlockedPhases,
+        unlockedRecipes: unlockedRecipes,
+        mamTrees: mamTrees,
         fileSizeBytes: arrayBuffer.byteLength
       };
     } catch (err) {
@@ -170,82 +245,71 @@ class SatisfactorySaveParser {
   }
 
   /**
-   * Décompresse les chunks Unreal Engine de Satisfactory 1.0/1.1/1.2
+   * Décompresse l'intégralité des chunks Unreal Engine de Satisfactory 1.0/1.1/1.2
    */
-  static async decompressChunks(arrayBuffer, startOffset) {
+  static async decompressChunks(arrayBuffer, startOffset, onProgress = null) {
     if (typeof DecompressionStream === "undefined") return "";
 
     const rawBytes = new Uint8Array(arrayBuffer);
-    const dataView = new DataView(arrayBuffer);
+    const decoder = new TextDecoder("utf-8", { fatal: false });
     
-    // Recherche dynamique du marqueur de chunks Unreal Engine (PackageFileTag = 0x9E2A83C1)
-    // En little-endian : [0xC1, 0x83, 0x2A, 0x9E]
-    let offset = -1;
-    const searchLimit = Math.min(arrayBuffer.byteLength - 48, 16384);
-    const scanStart = Math.max(0, startOffset - 200);
-
-    for (let i = scanStart; i < searchLimit; i++) {
+    // Détection de tous les en-têtes de chunks (PackageFileTag = 0x9E2A83C1)
+    const chunkOffsets = [];
+    for (let i = Math.max(0, startOffset - 100); i < rawBytes.length - 48; i++) {
       if (rawBytes[i] === 0xC1 && rawBytes[i+1] === 0x83 && rawBytes[i+2] === 0x2A && rawBytes[i+3] === 0x9E) {
-        // Vérifier si un deuxième marqueur ou une structure valide suit
-        offset = i;
-        break;
+        chunkOffsets.push(i);
+        i += 40;
       }
     }
 
-    if (offset === -1) offset = startOffset;
+    if (chunkOffsets.length === 0) return "";
 
     let combinedText = "";
-    let chunkCount = 0;
-    const maxChunksToRead = 40; // Lit jusqu'à 40 chunks pour couvrir toute la progression
+    const batchSize = 25; // Traitement par lots parallèles non bloquants
 
-    while (offset + 48 < arrayBuffer.byteLength && chunkCount < maxChunksToRead) {
-      // Structure de chunk UE :
-      // int64 packageTag (8 octets), int64 summarySize (8 octets), int64 compressedSize (8 octets), int64 uncompressedSize (8 octets)
-      let compressedSize = 0;
-      let uncompressedSize = 0;
-
-      try {
-        compressedSize = Number(dataView.getBigInt64(offset + 16, true));
-        uncompressedSize = Number(dataView.getBigInt64(offset + 24, true));
-      } catch (e) {
-        break;
+    for (let b = 0; b < chunkOffsets.length; b += batchSize) {
+      if (onProgress) {
+        try {
+          onProgress(Math.min(b + batchSize, chunkOffsets.length), chunkOffsets.length);
+        } catch (e) {}
       }
 
-      if (compressedSize <= 0 || compressedSize > 15000000 || offset + 48 + compressedSize > arrayBuffer.byteLength) {
-        // Saut vers le prochain marqueur potentiel
-        let nextMarker = -1;
-        for (let j = offset + 4; j < Math.min(arrayBuffer.byteLength - 48, offset + 10000); j++) {
-          if (rawBytes[j] === 0xC1 && rawBytes[j+1] === 0x83 && rawBytes[j+2] === 0x2A && rawBytes[j+3] === 0x9E) {
-            nextMarker = j;
-            break;
+      // Laisser respirer la boucle d'événements du navigateur pour rafraîchir l'animation du loader
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const batch = chunkOffsets.slice(b, b + batchSize);
+      const batchPromises = batch.map(async (chOffset, idx) => {
+        const globalIdx = b + idx;
+        const start = chOffset + 48;
+        const end = (globalIdx + 1 < chunkOffsets.length) ? chunkOffsets[globalIdx + 1] : rawBytes.length;
+        const chunkData = rawBytes.subarray(start, end);
+
+        try {
+          const stream = new Response(chunkData).body.pipeThrough(new DecompressionStream("deflate"));
+          const decompressedBuffer = await new Response(stream).arrayBuffer();
+          return decoder.decode(decompressedBuffer);
+        } catch (e1) {
+          if (chunkData[0] === 0x00) {
+            try {
+              const stream2 = new Response(chunkData.subarray(1)).body.pipeThrough(new DecompressionStream("deflate"));
+              const decompressedBuffer2 = await new Response(stream2).arrayBuffer();
+              return decoder.decode(decompressedBuffer2);
+            } catch (e2) {}
+          }
+          try {
+            const stream3 = new Response(chunkData).body.pipeThrough(new DecompressionStream("deflate-raw"));
+            const decompressedBuffer3 = await new Response(stream3).arrayBuffer();
+            return decoder.decode(decompressedBuffer3);
+          } catch (e3) {
+            return "";
           }
         }
-        if (nextMarker !== -1) {
-          offset = nextMarker;
-          continue;
-        }
-        break;
-      }
+      });
 
-      const chunkData = arrayBuffer.slice(offset + 48, offset + 48 + compressedSize);
-      offset += 48 + compressedSize;
-      chunkCount++;
-
-      try {
-        const stream = new Response(chunkData).body.pipeThrough(new DecompressionStream("deflate-raw"));
-        const decompressedBuffer = await new Response(stream).arrayBuffer();
-        const text = new TextDecoder("utf-8", { fatal: false }).decode(decompressedBuffer);
-        combinedText += "\n" + text;
-      } catch (e1) {
-        try {
-          const stream2 = new Response(chunkData).body.pipeThrough(new DecompressionStream("deflate"));
-          const decompressedBuffer2 = await new Response(stream2).arrayBuffer();
-          const text2 = new TextDecoder("utf-8", { fatal: false }).decode(decompressedBuffer2);
-          combinedText += "\n" + text2;
-        } catch (e2) {
-          // Chunk ignoré
-        }
-      }
+      const batchResults = await Promise.all(batchPromises);
+      batchResults.forEach(text => {
+        if (text) combinedText += text + "\n";
+      });
     }
 
     return combinedText;

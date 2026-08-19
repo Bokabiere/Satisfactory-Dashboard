@@ -780,6 +780,11 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
+@keyframes ficsit-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* =========================================================================
    FICHE DE CHANTIER OFFICIELLE FICSIT (IMPRESSION & PDF)
    ========================================================================= */
@@ -902,7 +907,63 @@ body {
 </head>
 <body>
 
-
+  <!-- EN-TÊTE FICSIT HUD -->
+  <header class="hud-header">
+    <div class="brand-section">
+      <div class="ficsit-badge">
+        <span>⚡</span> FICSIT INC.
+      </div>
+      <div class="app-title">
+        COMPAGNON INDUSTRIEL <span>FICSIT 1.2</span>
+      </div>
+    </div>
+    <div class="hud-controls-section">
+      <div class="quick-stats">
+        <div class="stat-pill">
+          <span class="stat-label">Jalons Débloqués</span>
+          <span class="stat-value" id="stat-completed-milestones">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Puissance Usine</span>
+          <span class="stat-value" id="stat-total-power">0 MW</span>
+        </div>
+      </div>
+      <button type="button" id="btn-open-save-modal" class="btn-ficsit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 700; font-size: 12px; padding: 6px 14px; border: none; box-shadow: 0 0 12px rgba(16, 185, 129, 0.35); display: flex; align-items: center; gap: 6px; cursor: pointer; border-radius: var(--radius-sm); color: #fff;">
+        <span style="font-size: 14px;">🔄</span> Synchroniser .SAV
+      </button>
+      <div class="theme-selector-container">
+        <label for="ficsit-theme-select" class="theme-label">
+          <span>🎨</span> Thème :
+        </label>
+        <select id="ficsit-theme-select" class="theme-select">
+          <option value="ficsit-classic">🏭 FICSIT Standard (Orange)</option>
+          <option value="ficsit-caterium">⚡ Caterium Cyberpunk (Or & Cyan)</option>
+          <option value="ficsit-uranium">☢️ Uranium Hazard (Vert Fluorescent)</option>
+          <option value="ficsit-blueprint">📐 Schéma Technique (Bleu Blueprint)</option>
+          <option value="ficsit-pioneer-light">🔬 Laboratoire Pionnier (Thème Clair)</option>
+        </select>
+      </div>
+      <div class="display-settings-container">
+        <button type="button" id="btn-toggle-display-menu" class="btn-outline" style="font-size: 12px; padding: 6px 12px; display: flex; align-items: center; gap: 6px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; font-weight: 700;" title="Personnaliser les menus et onglets affichés">
+          <span>⚙️</span> Affichage <span>▾</span>
+        </button>
+        <div id="display-settings-popover" class="display-settings-popover" style="display: none;">
+          <div class="display-settings-header">
+            <h4><span>⚙️</span> Onglets Visibles</h4>
+            <button type="button" id="btn-close-display-popover" class="btn-close-popover" title="Fermer">✕</button>
+          </div>
+          <div class="display-settings-list" id="display-tabs-toggles">
+            <!-- Rempli dynamiquement par DisplayPreferencesManager -->
+          </div>
+          <div class="display-settings-footer">
+            <button type="button" id="btn-reset-display-prefs" class="btn-outline" style="font-size: 11px; width: 100%; justify-content: center; padding: 5px 8px; color: #f59e0b; border-color: rgba(245, 158, 11, 0.4);">
+              ↺ Réinitialiser l'affichage
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
 
   <!-- BARRE DE NAVIGATION -->
   <nav class="nav-tabs-bar">
@@ -910,16 +971,19 @@ body {
       <span>📊</span> Vue Synthétique
     </button>
     <button class="nav-tab" data-tab="milestones">
-      <span>📋</span> Jalons du HUB (Tiers 0-9)
+      <span>📋</span> Jalons & Ascenseur Spatial
     </button>
-    <button class="nav-tab" data-tab="phases">
-      <span>🚀</span> Ascenseur Spatial
+    <button class="nav-tab" data-tab="mam">
+      <span>🔬</span> MAM & Disques Durs
     </button>
     <button class="nav-tab" data-tab="calculator">
-      <span>🔩</span> Pièces Uniques
+      <span>🏭</span> Usines & Production
     </button>
-    <button class="nav-tab" data-tab="calc-milestones">
-      <span>🏭</span> Usines Complètes de Jalons
+    <button class="nav-tab" data-tab="energy">
+      <span>⚡</span> Centrales & Énergie
+    </button>
+    <button class="nav-tab" data-tab="logistics">
+      <span>🚚</span> Logistique & Transports
     </button>
     <button class="nav-tab" data-tab="checklist">
       <span>🏗️</span> Checklist de Chantier
@@ -942,75 +1006,235 @@ body {
       </div>
     </section>
 
-    <!-- 2. JALONS DU HUB (TIERS 0 À 9) -->
+    <!-- 2. JALONS DU HUB & ASCENSEUR SPATIAL -->
     <section id="view-milestones" class="tab-view">
-      <div class="panel-header">
-        <h2 class="panel-title"><i>📋</i> Jalons du HUB & Déblocages de Machines (Tiers 0 à 9)</h2>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn-outline" id="btn-expand-all-tiers" style="font-size: 12px; padding: 6px 12px;">
-            <span>📂</span> Tout Déplier
-          </button>
-          <button class="btn-outline" id="btn-collapse-all-tiers" style="font-size: 12px; padding: 6px 12px;">
-            <span>📁</span> Tout Replier
-          </button>
-        </div>
-      </div>
-      <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
-        Cochez les jalons déjà accomplis dans votre partie. L'outil adaptera automatiquement la liste des bâtiments débloqués et les recommandations d'usine.
-      </p>
-      
-      <!-- Barre de Saut Rapide vers un Palier -->
-      <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
-        <span style="font-size: 12px; color: var(--text-muted); font-weight: 700; align-self: center; margin-right: 6px;">ACCÈS RAPIDE :</span>
-        <button class="btn-outline tier-jump-btn" data-tier="0" style="font-size: 11px; padding: 4px 8px;">Palier 0</button>
-        <button class="btn-outline tier-jump-btn" data-tier="1" style="font-size: 11px; padding: 4px 8px;">Palier 1</button>
-        <button class="btn-outline tier-jump-btn" data-tier="2" style="font-size: 11px; padding: 4px 8px;">Palier 2</button>
-        <button class="btn-outline tier-jump-btn" data-tier="3" style="font-size: 11px; padding: 4px 8px;">Palier 3</button>
-        <button class="btn-outline tier-jump-btn" data-tier="4" style="font-size: 11px; padding: 4px 8px;">Palier 4</button>
-        <button class="btn-outline tier-jump-btn" data-tier="5" style="font-size: 11px; padding: 4px 8px;">Palier 5</button>
-        <button class="btn-outline tier-jump-btn" data-tier="6" style="font-size: 11px; padding: 4px 8px;">Palier 6</button>
-        <button class="btn-outline tier-jump-btn" data-tier="7" style="font-size: 11px; padding: 4px 8px;">Palier 7</button>
-        <button class="btn-outline tier-jump-btn" data-tier="8" style="font-size: 11px; padding: 4px 8px;">Palier 8</button>
-        <button class="btn-outline tier-jump-btn" data-tier="9" style="font-size: 11px; padding: 4px 8px;">Palier 9</button>
-      </div>
-
-      <div class="tier-accordion" id="milestones-accordion">
-        <!-- Rempli dynamiquement par app.js -->
-      </div>
-    </section>
-
-    <!-- 3. ASCENSEUR SPATIAL (PHASES 1 À 5) -->
-    <section id="view-phases" class="tab-view">
-      <div class="panel-header">
-        <h2 class="panel-title"><i>🚀</i> Projet Assemblée - Phases de l'Ascenseur Spatial (1.2)</h2>
-      </div>
-      <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
-        Suivez les livraisons orbitales requises pour débloquer les paliers technologiques majeurs jusqu'au dénouement de Satisfactory 1.2.
-      </p>
-      <div id="phases-container">
-        <!-- Rempli dynamiquement par app.js -->
-      </div>
-    </section>
-
-    <!-- 4. CALCULATEUR DE PRODUCTION — PIÈCES UNIQUES & COMPOSANTS INDIVIDUELS -->
-    <section id="view-calculator" class="tab-view">
       <div class="card-panel">
-        <div class="panel-header">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
           <div>
-            <h2 class="panel-title"><i>🔩</i> Calculateur de Production — Pièce Unique & Ligne Dédiée</h2>
+            <h2 class="panel-title"><i>📋</i> Jalons du HUB & Ascenseur Spatial (Satisfactory 1.2)</h2>
             <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
-              Dimensionnez précisément votre chaîne pour fabriquer un composant individuel avec recettes optimisées.
+              Suivi unifié de la progression : Paliers 0 à 9 du HUB et Phases 1 à 5 du Projet Assemblée.
             </div>
           </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <button type="button" class="btn-outline btn-switch-to-ms-calc" style="font-size: 11.5px; padding: 6px 12px; border-color: rgba(56, 189, 248, 0.6); color: #38bdf8; font-weight: 600;">
-              🏭 Usines Complètes de Jalons ➔
+          <div class="logistics-subnav" style="margin-bottom: 0;">
+            <button type="button" class="logistics-subnav-btn active" data-prog-subtab="milestones">
+              <span>📋</span> Jalons du HUB (Tiers 0-9)
             </button>
+            <button type="button" class="logistics-subnav-btn" data-prog-subtab="phases">
+              <span>🚀</span> Ascenseur Spatial (Phases 1-5)
+            </button>
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 1 : JALONS DU HUB -->
+        <div id="prog-subtab-milestones" class="prog-subtab-view">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <p style="color: var(--text-secondary); margin: 0; font-size: 13.5px;">
+              Cochez les jalons accomplis pour débloquer les recettes et bâtiments dans les calculateurs.
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-outline" id="btn-expand-all-tiers" style="font-size: 11.5px; padding: 5px 10px;">
+                <span>📂</span> Tout Déplier
+              </button>
+              <button class="btn-outline" id="btn-collapse-all-tiers" style="font-size: 11.5px; padding: 5px 10px;">
+                <span>📁</span> Tout Replier
+              </button>
+            </div>
+          </div>
+
+          <!-- Barre de Saut Rapide vers un Palier -->
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; align-items: center;">
+            <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-right: 4px;">ACCÈS RAPIDE :</span>
+            <button class="btn-outline tier-jump-btn" data-tier="0" style="font-size: 11px; padding: 4px 8px;">Palier 0</button>
+            <button class="btn-outline tier-jump-btn" data-tier="1" style="font-size: 11px; padding: 4px 8px;">Palier 1</button>
+            <button class="btn-outline tier-jump-btn" data-tier="2" style="font-size: 11px; padding: 4px 8px;">Palier 2</button>
+            <button class="btn-outline tier-jump-btn" data-tier="3" style="font-size: 11px; padding: 4px 8px;">Palier 3</button>
+            <button class="btn-outline tier-jump-btn" data-tier="4" style="font-size: 11px; padding: 4px 8px;">Palier 4</button>
+            <button class="btn-outline tier-jump-btn" data-tier="5" style="font-size: 11px; padding: 4px 8px;">Palier 5</button>
+            <button class="btn-outline tier-jump-btn" data-tier="6" style="font-size: 11px; padding: 4px 8px;">Palier 6</button>
+            <button class="btn-outline tier-jump-btn" data-tier="7" style="font-size: 11px; padding: 4px 8px;">Palier 7</button>
+            <button class="btn-outline tier-jump-btn" data-tier="8" style="font-size: 11px; padding: 4px 8px;">Palier 8</button>
+            <button class="btn-outline tier-jump-btn" data-tier="9" style="font-size: 11px; padding: 4px 8px;">Palier 9</button>
+          </div>
+
+          <div class="tier-accordion" id="milestones-accordion">
+            <!-- Rempli dynamiquement par app.js -->
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 2 : ASCENSEUR SPATIAL -->
+        <div id="prog-subtab-phases" class="prog-subtab-view" style="display: none;">
+          <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13.5px;">
+            Suivez les livraisons orbitales requises pour débloquer les paliers technologiques majeurs jusqu'au dénouement de Satisfactory 1.2.
+          </p>
+          <div id="phases-container">
+            <!-- Rempli dynamiquement par app.js -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3b. M.A.M. & DISQUES DURS -->
+    <section id="view-mam" class="tab-view">
+      <div class="card-panel">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 class="panel-title"><i>🔬</i> M.A.M. & Traqueur de Disques Durs (Satisfactory 1.2)</h2>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+              Arbres technologiques complets, Dépôt Dimensionnel 1.0, simulateur d'aide au tirage de disques durs et Tier-List.
+            </div>
+          </div>
+          <div class="logistics-subnav" style="margin-bottom: 0;">
+            <button type="button" class="logistics-subnav-btn active" data-mam-subtab="trees">
+              <span>🌳</span> Arbres du MAM
+            </button>
+            <button type="button" class="logistics-subnav-btn" data-mam-subtab="picker">
+              <span>💾</span> Aide au Tirage (Scan)
+            </button>
+            <button type="button" class="logistics-subnav-btn" data-mam-subtab="tierlist">
+              <span>🏆</span> Tier-List Recettes
+            </button>
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 1 : ARBRES DU MAM -->
+        <div id="mam-subtab-trees" class="mam-subtab-view">
+          <!-- Barre de sélection des 9 branches -->
+          <div class="mam-branch-list" id="mam-branch-chips-container">
+            <!-- Rempli dynamiquement -->
+          </div>
+
+          <!-- En-tête de la branche active -->
+          <div id="mam-active-branch-header" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <!-- Rempli dynamiquement -->
+          </div>
+
+          <!-- Grille des Nœuds de Recherche -->
+          <div class="mam-tree-grid" id="mam-nodes-container">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 2 : AIDE AU TIRAGE DISQUE DUR -->
+        <div id="mam-subtab-picker" class="mam-subtab-view" style="display: none;">
+          <div class="card-panel" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px;">
+            <h3 style="color: var(--ficsit-orange); font-family: var(--font-display); font-size: 16px; margin: 0 0 6px 0;">
+              💾 Simulateur de Tirage — Que choisir parmi vos 3 propositions en jeu ?
+            </h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 16px 0;">
+              Sélectionnez les 3 recettes proposées par votre scan MAM en jeu pour obtenir la recommandation instantanée de FICSIT.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 16px;">
+              <div class="form-group">
+                <label class="form-label" style="color: #38bdf8; font-weight: 700;">Choix #1 du MAM :</label>
+                <select id="mam-pick-1" class="form-select"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="color: #a855f7; font-weight: 700;">Choix #2 du MAM :</label>
+                <select id="mam-pick-2" class="form-select"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="color: var(--ficsit-orange); font-weight: 700;">Choix #3 du MAM :</label>
+                <select id="mam-pick-3" class="form-select"></select>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+              <button type="button" class="btn-ficsit" id="btn-eval-hard-drive" style="padding: 10px 20px; font-weight: 700;">
+                <span>🎯</span> Évaluer les Choix
+              </button>
+            </div>
+
+            <!-- Résultat de l'analyse -->
+            <div id="mam-picker-results"></div>
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 3 : TIER-LIST COMPLÈTE & FILTRES STRATÉGIQUES -->
+        <div id="mam-subtab-tierlist" class="mam-subtab-view" style="display: none;">
+          <div class="card-panel" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <h3 style="color: var(--ficsit-orange); font-family: var(--font-display); font-size: 16px; margin: 0;">
+                  🏆 Tier-List & Guide Stratégique des 100+ Recettes Alternatives
+                </h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
+                  Classées de Tier S (Indispensables) à Tier D selon leur efficacité, gain d'espace et économie de ressources.
+                </p>
+              </div>
+              <input type="text" id="mam-tier-search" class="form-input" placeholder="🔍 Rechercher une recette..." style="max-width: 260px; font-size: 12px;">
+            </div>
+
+            <!-- Filtres par Rang -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;">
+              <span style="font-size: 12px; color: var(--text-secondary); font-weight: 700;">Rang :</span>
+              <button class="purity-chip active mam-tier-chip" data-tier="all">Tous</button>
+              <button class="purity-chip mam-tier-chip" data-tier="S" style="border-color: #ffd700; color: #ffd700;">Tier S (Top)</button>
+              <button class="purity-chip mam-tier-chip" data-tier="A" style="border-color: #a855f7; color: #a855f7;">Tier A</button>
+              <button class="purity-chip mam-tier-chip" data-tier="B" style="border-color: #38bdf8; color: #38bdf8;">Tier B</button>
+              <button class="purity-chip mam-tier-chip" data-tier="C">Tier C</button>
+            </div>
+
+            <!-- Grille / Table des Recettes -->
+            <div id="mam-tierlist-content"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. CALCULATEUR DE PRODUCTION & USINES (PIÈCES UNIQUES & COMPLEXES DE JALONS) -->
+    <section id="view-calculator" class="tab-view">
+      <div class="card-panel">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h2 class="panel-title"><i>🏭</i> Calculateur de Production & Usines (Satisfactory 1.2)</h2>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+              Dimensionnez vos chaînes pour un composant individuel ou calculez un complexe industriel multi-lignes complet.
+            </div>
+          </div>
+          <div class="logistics-subnav" style="margin-bottom: 0;">
+            <button type="button" class="logistics-subnav-btn active" data-calc-subtab="single">
+              <span>🔩</span> Pièce Unique & Ligne Dédiée
+            </button>
+            <button type="button" class="logistics-subnav-btn" data-calc-subtab="milestones">
+              <span>🏭</span> Usines Complètes de Jalons / Phases
+            </button>
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 1 : PIÈCES UNIQUES & LIGNES DÉDIÉES -->
+        <div id="calc-subtab-single" class="calc-subtab-view">
+          <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;">
             <button class="btn-ficsit" id="btn-calc-download-sbp-top" style="background: linear-gradient(135deg, #fa9549 0%, #ff5e3a 100%); font-weight: 800; box-shadow: 0 0 15px rgba(250, 149, 73, 0.4);">
               <span>📥</span> Télécharger le Blueprint (.sbp) <span style="font-size: 10px; opacity: 0.85; margin-left: 4px; color: #fff;">(En cours de dev)</span>
             </button>
             <button class="btn-ficsit" id="btn-send-checklist">
               <span>🏗️</span> Envoyer vers la Checklist
+            </button>
+          </div>
+
+        <!-- BARRE DE SÉLECTION DE MODE DE RECETTES ALTERNATIVES -->
+        <div class="alt-filter-bar" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--ficsit-orange); text-transform: uppercase;">⚙️ Recettes Alternatives :</span>
+            <div class="recipe-mode-btn-group" style="display: flex; gap: 6px;">
+              <button type="button" class="btn-alt-mode-toggle active" data-mode="all" style="background: var(--ficsit-orange); color: #000; font-weight: 800; border: none; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                🌐 Toutes (Théorique 1.2)
+              </button>
+              <button type="button" class="btn-alt-mode-toggle" data-mode="save" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                💾 Ma Sauvegarde (.SAV)
+              </button>
+              <button type="button" class="btn-alt-mode-toggle" data-mode="custom" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                🛠️ Personnalisé
+              </button>
+            </div>
+          </div>
+          <div>
+            <button type="button" id="btn-open-alt-recipes-modal" class="btn-outline" style="font-size: 11px; padding: 4px 12px; border-color: var(--ficsit-orange); color: var(--ficsit-orange); font-weight: 700;">
+              ✨ Gérer les Recettes Alternatives (<span id="count-active-alts-label">0</span>)
             </button>
           </div>
         </div>
@@ -1093,7 +1317,7 @@ body {
         </div>
 
         <!-- Sélecteur des Recettes Alternatives pour cette chaîne -->
-        <div style="background: var(--bg-surface-elevated); padding: 16px; border-radius: var(--radius-sm); margin-top: 16px;">
+        <div id="alt-recipes-container" class="collapsible-section" data-collapsible-id="calc-alt-recipes" style="background: var(--bg-surface-elevated); padding: 16px; border-radius: var(--radius-sm); margin-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <h4 style="font-family: var(--font-display); font-size: 13px; text-transform: uppercase; color: var(--ficsit-orange); margin: 0;">
@@ -1118,7 +1342,7 @@ body {
         </div>
 
         <!-- SATISFACTORY CALCULATOR (SCIM) PRODUCTION FLOWCHART DAG -->
-        <div id="calc-chain-flow" style="margin-top: 20px; background: #0f1319; border: 1px solid rgba(75, 179, 253, 0.4); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: block;">
+        <div id="calc-chain-flow" class="collapsible-section" data-collapsible-id="calc-chain-flow" style="margin-top: 20px; background: #0f1319; border: 1px solid rgba(75, 179, 253, 0.4); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: block;">
           <!-- En-tête avec Contrôles SCIM -->
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #181d26; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -1157,41 +1381,8 @@ body {
           </div>
         </div>
 
-        <!-- MICRO-USINES INTÉGRÉES MK.3 TOUT-EN-UN (MINIMUM DE PLANS VECTORIELS) -->
-        <div id="calc-integrated-module-section" style="margin-top: 20px; background: #0c111a; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #131a26; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">🏛️</span>
-              <div>
-                <h4 style="margin: 0; font-family: var(--font-display); font-size: 14px; color: #38bdf8; text-transform: uppercase;">
-                  Micro-Usine Intégrée Mk.3 (Multi-Machines Tout-en-Un)
-                </h4>
-                <span style="font-size: 11px; color: var(--text-muted);">Fusionne toutes les étapes (Fonderies + Constructeurs + Assembleuses) dans le minimum absolu de plans Mk.3 (6x6 Fondations)</span>
-              </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span id="integrated-module-count-badge" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; font-weight: 800; font-size: 11px; padding: 3px 10px; border-radius: 4px;">
-                1 SEUL BLUEPRINT MK.3
-              </span>
-              <button type="button" id="btn-toggle-integrated-view" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 12px; background: #38bdf8; color: #000; font-weight: 800;">
-                🔍 Plein Écran
-              </button>
-            </div>
-          </div>
-
-          <!-- Zone du Plan Vectoriel Mixte Mk.3 -->
-          <div id="integrated-blueprint-viewport" style="width: 100%; min-height: 520px; background: #060a12; padding: 12px;">
-            <!-- Rempli par app.js avec le SVG mixte -->
-          </div>
-
-          <!-- Barre d'infos de la Micro-Usine -->
-          <div id="integrated-module-summary-bar" style="padding: 10px 18px; background: #0f1622; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <!-- Rempli par app.js -->
-          </div>
-        </div>
-
         <!-- GUIDE DE CHANTIER PAS-À-PAS INTERACTIF (NOTICE FICSIT IN-GAME) -->
-        <div id="calc-construction-guide-section" style="margin-top: 20px; background: #0c121d; border: 1.5px solid #10b981; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 6px 28px rgba(0,0,0,0.65);">
+        <div id="calc-construction-guide-section" class="collapsible-section" data-collapsible-id="calc-construction-guide-section" style="margin-top: 20px; background: #0c121d; border: 1.5px solid #10b981; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 6px 28px rgba(0,0,0,0.65);">
           <!-- En-tête Guide de Chantier -->
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #111a28; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -1445,8 +1636,41 @@ body {
           </div>
         </div>
 
+        <!-- MICRO-USINES INTÉGRÉES MK.3 TOUT-EN-UN (MINIMUM DE PLANS VECTORIELS) -->
+        <div id="calc-integrated-module-section" class="collapsible-section" data-collapsible-id="calc-integrated-module-section" style="margin-top: 20px; background: #0c111a; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #131a26; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 20px;">🏛️</span>
+              <div>
+                <h4 style="margin: 0; font-family: var(--font-display); font-size: 14px; color: #38bdf8; text-transform: uppercase;">
+                  Micro-Usine Intégrée Mk.3 (Multi-Machines Tout-en-Un)
+                </h4>
+                <span style="font-size: 11px; color: var(--text-muted);">Fusionne toutes les étapes (Fonderies + Constructeurs + Assembleuses) dans le minimum absolu de plans Mk.3 (6x6 Fondations)</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span id="integrated-module-count-badge" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; font-weight: 800; font-size: 11px; padding: 3px 10px; border-radius: 4px;">
+                1 SEUL BLUEPRINT MK.3
+              </span>
+              <button type="button" id="btn-toggle-integrated-view" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 12px; background: #38bdf8; color: #000; font-weight: 800;">
+                🔍 Plein Écran
+              </button>
+            </div>
+          </div>
+
+          <!-- Zone du Plan Vectoriel Mixte Mk.3 -->
+          <div id="integrated-blueprint-viewport" style="width: 100%; min-height: 520px; background: #060a12; padding: 12px;">
+            <!-- Rempli par app.js avec le SVG mixte -->
+          </div>
+
+          <!-- Barre d'infos de la Micro-Usine -->
+          <div id="integrated-module-summary-bar" style="padding: 10px 18px; background: #0f1622; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <!-- Rempli par app.js -->
+          </div>
+        </div>
+
         <!-- Résultats du Calcul -->
-        <div class="calc-results-layout" style="margin-top: 16px;">
+        <div class="calc-results-layout collapsible-section" data-collapsible-id="calc-results-layout" style="margin-top: 16px;">
           <div id="calc-blueprint-mk3-container" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
               <h3 style="font-family: var(--font-display); font-size: 16px; margin: 0;">
@@ -1516,6 +1740,9 @@ body {
               <button class="btn-ficsit" id="btn-send-to-checklist" style="width: 100%; justify-content: center; font-weight: 700;">
                 <span>🏗️</span> Envoyer vers la Checklist
               </button>
+              <button class="btn-outline" id="btn-send-to-logistics" style="width: 100%; justify-content: center; font-size: 12px; border-color: rgba(250, 149, 73, 0.6); color: var(--ficsit-orange);">
+                <span>🚚</span> Planifier le Transport Logistique
+              </button>
               <button class="btn-outline" id="btn-print-calc-sheet" style="width: 100%; justify-content: center; font-size: 12px; border-color: rgba(75, 179, 253, 0.5); color: var(--ficsit-cyan);">
                 <span>📋</span> Fiche Récapitulative de l'Usine
               </button>
@@ -1523,27 +1750,38 @@ body {
           </div>
         </div>
       </div>
-    </section>
+      <!-- FIN SOUS-ONGLET 1 -->
 
-    <!-- 5. CALCULATEUR D'USINES COMPLÈTES DE JALONS & PHASES -->
-    <section id="view-calc-milestones" class="tab-view">
-      <div class="card-panel">
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title"><i>🏭</i> Calculateur d'Usines Complètes (Jalons du HUB & Ascenseur Spatial)</h2>
-            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
-              Calculez et dimensionnez une méga-usine multi-lignes produisant simultanément tous les composants d'un jalon ou d'une phase.
-            </div>
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <button type="button" class="btn-outline btn-switch-to-single-calc" style="font-size: 11.5px; padding: 6px 12px; border-color: rgba(250, 149, 73, 0.6); color: var(--ficsit-orange); font-weight: 600;">
-              🔩 Pièce Unique ➔
-            </button>
+      <!-- SOUS-ONGLET 2 : USINES COMPLÈTES DE JALONS & PHASES -->
+      <div id="calc-subtab-milestones" class="calc-subtab-view" style="display: none;">
+          <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;">
             <button class="btn-ficsit" id="btn-calc-ms-download-sbp-top" style="background: linear-gradient(135deg, #fa9549 0%, #ff5e3a 100%); font-weight: 800; box-shadow: 0 0 15px rgba(250, 149, 73, 0.4);">
               <span>📥</span> Télécharger le Blueprint (.sbp) <span style="font-size: 10px; opacity: 0.85; margin-left: 4px; color: #fff;">(En cours de dev)</span>
             </button>
             <button class="btn-ficsit" id="btn-calc-ms-send-checklist-top">
               <span>🏗️</span> Envoyer vers la Checklist
+            </button>
+          </div>
+
+        <!-- BARRE DE SÉLECTION DE MODE DE RECETTES ALTERNATIVES (USINES DE JALONS) -->
+        <div class="alt-filter-bar" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-transform: uppercase;">⚙️ Recettes Alternatives :</span>
+            <div class="recipe-mode-btn-group" style="display: flex; gap: 6px;">
+              <button type="button" class="btn-alt-mode-toggle active" data-mode="all" style="background: #38bdf8; color: #000; font-weight: 800; border: none; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                🌐 Toutes (Théorique 1.2)
+              </button>
+              <button type="button" class="btn-alt-mode-toggle" data-mode="save" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                💾 Ma Sauvegarde (.SAV)
+              </button>
+              <button type="button" class="btn-alt-mode-toggle" data-mode="custom" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                🛠️ Personnalisé
+              </button>
+            </div>
+          </div>
+          <div>
+            <button type="button" id="btn-open-ms-alt-recipes-modal" class="btn-outline" style="font-size: 11px; padding: 4px 12px; border-color: #38bdf8; color: #38bdf8; font-weight: 700;">
+              ✨ Gérer les Recettes Alternatives (<span id="count-active-alts-label-ms">0</span>)
             </button>
           </div>
         </div>
@@ -1618,7 +1856,7 @@ body {
         </div>
 
         <!-- Sélecteur des Recettes Alternatives pour l'usine complète -->
-        <div style="background: var(--bg-surface-elevated); padding: 16px; border-radius: var(--radius-sm); margin-top: 16px;">
+        <div id="alt-ms-recipes-container" class="collapsible-section" data-collapsible-id="calc-ms-alt-recipes" style="background: var(--bg-surface-elevated); padding: 16px; border-radius: var(--radius-sm); margin-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <h4 style="font-family: var(--font-display); font-size: 13px; text-transform: uppercase; color: var(--ficsit-orange); margin: 0;">
@@ -1643,7 +1881,7 @@ body {
         </div>
 
         <!-- GUIDE DE CHANTIER PAS-À-PAS INTERACTIF DU JALON (FONCTION PRINCIPALE) -->
-        <div id="calc-ms-construction-guide-section" style="margin-top: 20px; background: #0c121d; border: 2px solid #10b981; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 6px 30px rgba(16, 185, 129, 0.15);">
+        <div id="calc-ms-construction-guide-section" class="collapsible-section" data-collapsible-id="calc-ms-construction-guide-section" style="margin-top: 20px; background: #0c121d; border: 2px solid #10b981; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 6px 30px rgba(16, 185, 129, 0.15);">
           <!-- En-tête Guide de Chantier -->
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #111a28; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -1903,7 +2141,7 @@ body {
         </div>
 
         <!-- SATISFACTORY CALCULATOR (SCIM) PRODUCTION FLOWCHART DAG DU JALON -->
-        <div id="calc-ms-chain-flow" style="margin-top: 20px; background: #0f1319; border: 1px solid rgba(75, 179, 253, 0.4); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: block;">
+        <div id="calc-ms-chain-flow" class="collapsible-section" data-collapsible-id="calc-ms-chain-flow" style="margin-top: 20px; background: #0f1319; border: 1px solid rgba(75, 179, 253, 0.4); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: block;">
           <!-- En-tête avec Contrôles SCIM -->
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #181d26; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -1943,7 +2181,7 @@ body {
         </div>
 
         <!-- MICRO-USINES INTÉGRÉES MK.3 / MÉGA-COMPLEXE DU JALON (MASQUÉ) -->
-        <div id="calc-ms-integrated-module-section" style="display: none !important; margin-top: 20px; background: #0c111a; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+        <div id="calc-ms-integrated-module-section" class="collapsible-section" data-collapsible-id="calc-ms-integrated-module-section" style="display: none !important; margin-top: 20px; background: #0c111a; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #131a26; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 20px;">🏛️</span>
@@ -1976,7 +2214,7 @@ body {
         </div>
 
         <!-- Résultats du Calcul de Jalon -->
-        <div class="calc-results-layout" style="margin-top: 16px;">
+        <div class="calc-results-layout collapsible-section" data-collapsible-id="calc-ms-results-layout" style="margin-top: 16px;">
           <div id="calc-ms-blueprint-mk3-container" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
               <h3 style="font-family: var(--font-display); font-size: 16px; margin: 0;">
@@ -2053,11 +2291,351 @@ body {
           </div>
         </div>
       </div>
+      <!-- FIN SOUS-ONGLET 2 -->
+    </div>
+  </section>
+
+
+
+    <!-- 5.5 SIMULATEUR DE CENTRALES & ÉNERGIE (1.0 / 1.2) -->
+    <section id="view-energy" class="tab-view">
+      <div class="card-panel">
+        <div class="panel-header">
+          <h2 class="panel-title"><i>⚡</i> Simulateur de Centrales Électriques & Réseau FICSIT (1.0 / 1.2)</h2>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-outline" id="btn-energy-export-checklist" style="font-size: 12px; padding: 6px 14px; border-color: var(--ficsit-orange); color: var(--ficsit-orange); font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+              <span>🏗️</span> Exporter vers la Checklist
+            </button>
+          </div>
+        </div>
+
+        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+          Dimensionnez vos centrales thermiques, nucléaires et renouvelables. Choisissez une technologie, indiquez votre puissance désirée en MW ou vos ressources disponibles par minute, et obtenez les ratios de plomberie parfaits pour zéro coupure électrique.
+        </p>
+
+        <!-- FILTRES DE CATÉGORIES / FAMILLES D'ÉNERGIE -->
+        <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Filtrer :</span>
+          <button class="btn-outline energy-cat-filter active" data-cat="all" style="padding: 4px 10px; font-size: 12px;">🌟 Toutes les Recettes</button>
+          <button class="btn-outline energy-cat-filter" data-cat="coal" style="padding: 4px 10px; font-size: 12px;">🪨 Charbon & Vapeur</button>
+          <button class="btn-outline energy-cat-filter" data-cat="fuel" style="padding: 4px 10px; font-size: 12px;">🛢️ Carburant & Dilué</button>
+          <button class="btn-outline energy-cat-filter" data-cat="turbofuel" style="padding: 4px 10px; font-size: 12px;">🔥 Turbofuel</button>
+          <button class="btn-outline energy-cat-filter" data-cat="rocket_fuel" style="padding: 4px 10px; font-size: 12px;">🚀 Rocket Fuel</button>
+          <button class="btn-outline energy-cat-filter" data-cat="ionized_fuel" style="padding: 4px 10px; font-size: 12px;">⚛️ Combustible Quantique</button>
+          <button class="btn-outline energy-cat-filter" data-cat="nuclear" style="padding: 4px 10px; font-size: 12px;">☢️ Nucléaire & Ficsonium</button>
+          <button class="btn-outline energy-cat-filter" data-cat="alien" style="padding: 4px 10px; font-size: 12px;">🌋 Propre & Alien</button>
+        </div>
+
+        <!-- SÉLECTEUR DE TECHNOLOGIES (16 RECETTES) -->
+        <div class="energy-tech-grid" id="energy-tech-grid">
+          <!-- Rempli dynamiquement par app.js -->
+        </div>
+
+        <!-- PANNEAU DE CONFIGURATION -->
+        <div class="energy-config-panel">
+          <!-- Colonne Gauche : Mode & Valeurs -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px;">
+            <!-- SÉLECTEUR DE RECETTE DÉDIÉ -->
+            <div style="margin-bottom: 16px;">
+              <label style="display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--text-primary);">
+                <span>📜 Recette & Procédé Énergétique :</span>
+                <span id="energy-recipe-badge" style="font-size: 11px; padding: 2px 6px; border-radius: 3px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">Standard</span>
+              </label>
+              <select id="energy-recipe-select" class="form-input" style="width: 100%; font-weight: 600; font-size: 13px; background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-subtle); padding: 8px 10px; cursor: pointer;">
+                <!-- Rempli dynamiquement -->
+              </select>
+            </div>
+
+            <div class="energy-mode-selector">
+              <button class="energy-mode-btn active" id="btn-energy-mode-target" data-mode="target_power">
+                <span>🎯</span> Puissance Cible (MW)
+              </button>
+              <button class="energy-mode-btn" id="btn-energy-mode-resource" data-mode="resource_rate">
+                <span>📦</span> Ressource Disponible (/min)
+              </button>
+            </div>
+
+            <div id="energy-input-group-target">
+              <label style="display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; margin-bottom: 6px;">
+                <span>Puissance Électrique Cible :</span>
+                <strong id="energy-target-power-label" style="color: var(--ficsit-amber); font-family: var(--font-display); font-size: 15px;">2 500 MW</strong>
+              </label>
+              <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <input type="number" id="energy-target-power-input" class="form-input" value="2500" min="30" max="1000000" step="50" style="font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--ficsit-amber); width: 140px;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; flex: 1;">
+                  <button class="btn-outline energy-quick-preset" data-val="600" style="padding: 4px 8px; font-size: 11px;">600 MW</button>
+                  <button class="btn-outline energy-quick-preset" data-val="1200" style="padding: 4px 8px; font-size: 11px;">1.2 GW</button>
+                  <button class="btn-outline energy-quick-preset" data-val="2500" style="padding: 4px 8px; font-size: 11px;">2.5 GW</button>
+                  <button class="btn-outline energy-quick-preset" data-val="5000" style="padding: 4px 8px; font-size: 11px;">5 GW</button>
+                  <button class="btn-outline energy-quick-preset" data-val="10000" style="padding: 4px 8px; font-size: 11px;">10 GW</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="energy-input-group-resource" style="display: none;">
+              <label style="display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; margin-bottom: 6px;">
+                <span id="energy-resource-input-label">Débit de Combustible Brut :</span>
+                <strong id="energy-resource-val-label" style="color: var(--ficsit-orange); font-family: var(--font-display); font-size: 15px;">300 /min</strong>
+              </label>
+              <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <input type="number" id="energy-resource-rate-input" class="form-input" value="300" min="1" max="10000" step="10" style="font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--ficsit-orange); width: 140px;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; flex: 1;">
+                  <button class="btn-outline energy-quick-res-preset" data-val="120" style="padding: 4px 8px; font-size: 11px;">120/min</button>
+                  <button class="btn-outline energy-quick-res-preset" data-val="240" style="padding: 4px 8px; font-size: 11px;">240/min</button>
+                  <button class="btn-outline energy-quick-res-preset" data-val="300" style="padding: 4px 8px; font-size: 11px;">300/min</button>
+                  <button class="btn-outline energy-quick-res-preset" data-val="600" style="padding: 4px 8px; font-size: 11px;">600/min</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne Droite : Overclocking & Boost FICSIT -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Cadence des Générateurs (Overclock) :</span>
+                <strong id="energy-oc-label" style="color: var(--ficsit-amber); font-family: var(--font-display); font-weight: 700;">100% (1.0x)</strong>
+              </div>
+              <input type="range" id="energy-oc-slider" min="100" max="250" value="100" step="25" style="width: 100%; accent-color: var(--ficsit-amber);">
+              <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+                <span>100% (Base)</span>
+                <span>150% (1 Éclat)</span>
+                <span>200% (2 Éclats)</span>
+                <span>250% (3 Éclats)</span>
+              </div>
+            </div>
+
+            <label class="somersloop-toggle" style="margin: 0; padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); display: flex; align-items: center; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="energy-somersloop-chk">
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">🌀 Boost Somersloop Amplifié (x2 Puissance)</span>
+            </label>
+
+            <button class="btn-ficsit" id="btn-recalc-energy" style="width: 100%; padding: 10px; font-size: 14px; font-weight: 700;">
+              <span>⚡</span> Calculer la Centrale
+            </button>
+          </div>
+        </div>
+
+        <!-- RÉSULTATS DE LA SIMULATION -->
+        <div id="energy-results-container" class="energy-results-container">
+          <!-- Rempli dynamiquement par app.js -->
+        </div>
+
+        <!-- ORGANIGRAMME SCIM MULTI-PRODUITS DE LA CENTRALE -->
+        <div class="card" id="energy-chain-flow" style="margin-top: 24px; overflow: hidden; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; color: var(--ficsit-orange); font-family: var(--font-display); font-size: 16px;">
+                <span>📊</span> Organigramme SCIM Multi-Produits de la Centrale
+              </h3>
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--text-secondary);">
+                Graphique vectoriel interactif : Gisements / Extraction ➔ Traitement & Plomberie ➔ Générateurs ➔ Réseau Électrique & Sous-produits
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn-outline" id="btn-open-energy-fullscreen" style="font-size: 12px; padding: 6px 12px; display: flex; align-items: center; gap: 6px;">
+                <span>🖨️</span> Agrandir / Plein Écran
+              </button>
+            </div>
+          </div>
+          <div id="flowchart-energy-viewport" style="width: 100%; height: 560px; background: #080d14; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); position: relative; overflow: hidden;">
+          </div>
+        </div>
+      </div>
     </section>
 
+    <!-- 6. LOGISTIQUE & TRANSPORTS FICSIT -->
+    <section id="view-logistics" class="tab-view">
+      <div class="card-panel">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <h2 class="panel-title"><i>🚚</i> Simulateur Logistique & Réseaux de Fret (Satisfactory 1.2)</h2>
+          <div class="logistics-subnav" style="margin-bottom: 0;">
+            <button type="button" class="logistics-subnav-btn active" data-subtab="simulator">
+              <span>⚡</span> Dimensionnement de Ligne
+            </button>
+            <button type="button" class="logistics-subnav-btn" data-subtab="matrix">
+              <span>⚖️</span> Matrice Décisionnelle
+            </button>
+            <button type="button" class="logistics-subnav-btn" data-subtab="engineering">
+              <span>📐</span> Guides d'Ingénierie & Signaux
+            </button>
+          </div>
+        </div>
 
+        <!-- SOUS-ONGLET 1 : DIMENSIONNEMENT DE LIGNE -->
+        <div id="logistics-subtab-simulator" class="logistics-subtab-view">
+          <div class="logistics-grid">
+            
+            <!-- Colonne Paramètres -->
+            <div class="logistics-card">
+              <div class="logistics-card-header">
+                <h3 class="logistics-card-title"><span>⚙️</span> Paramètres du Trajet</h3>
+              </div>
 
-    <!-- 6. CHECKLIST DE CHANTIER INTERACTIVE -->
+              <!-- Mode de Transport -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label">Mode de Transport :</label>
+                <select id="logistics-mode-select" class="form-select">
+                  <option value="train" selected>🚂 Monorail Ferroviaire (Train Fret / Citerne)</option>
+                  <option value="drone">🛸 Drone de Fret Aérien (Longue Distance)</option>
+                  <option value="truck">🚛 Camion Lourd FICSIT (48 slots)</option>
+                  <option value="tractor">🚜 Tracteur FICSIT (25 slots)</option>
+                  <option value="explorer">🏎️ Explorateur Tout-Terrain (24 slots)</option>
+                  <option value="belt">📦 Convoyeur / Tuyau Direct</option>
+                </select>
+              </div>
+
+              <!-- Ressource / Objet -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label">Marchandise / Composant :</label>
+                <select id="logistics-item-select" class="form-select">
+                  <optgroup label="Matières Premières (200 stacks / fluides)">
+                    <option value="iron_ore" selected>Minerai de Fer (200/stack)</option>
+                    <option value="copper_ore">Minerai de Cuivre (200/stack)</option>
+                    <option value="coal">Charbon (200/stack)</option>
+                    <option value="limestone">Calcaire (200/stack)</option>
+                    <option value="caterium_ore">Minerai de Caterium (200/stack)</option>
+                    <option value="raw_quartz">Quartz Brut (200/stack)</option>
+                    <option value="bauxite">Bauxite (200/stack)</option>
+                    <option value="uranium">Uranium (200/stack)</option>
+                    <option value="water">Eau (Fluide - 2400 m³/wagon)</option>
+                    <option value="crude_oil">Pétrole Brut (Fluide - 2400 m³/wagon)</option>
+                  </optgroup>
+                  <optgroup label="Produits Intermédiaires (100 stacks)">
+                    <option value="iron_plate">Plaque de Fer (100/stack)</option>
+                    <option value="iron_rod">Tige de Fer (100/stack)</option>
+                    <option value="reinforced_iron_plate">Plaque de Fer Renforcée (100/stack)</option>
+                    <option value="steel_beam">Poutre en Acier (100/stack)</option>
+                    <option value="steel_pipe">Tuyau en Acier (100/stack)</option>
+                    <option value="plastic">Plastique (100/stack)</option>
+                    <option value="rubber">Caoutchouc (100/stack)</option>
+                    <option value="circuit_board">Circuit Imprimé (100/stack)</option>
+                    <option value="motor">Moteur (100/stack)</option>
+                    <option value="aluminum_sheet">Tôle d'Aluminium (100/stack)</option>
+                  </optgroup>
+                  <optgroup label="Éléments Très Compacts (500 stacks)">
+                    <option value="screw">Vis (500/stack)</option>
+                    <option value="wire">Fil Électrique (500/stack)</option>
+                    <option value="quickwire">Fil Actif de Caterium (500/stack)</option>
+                  </optgroup>
+                  <optgroup label="Produits Lourds & Haute Technologie (50 stacks)">
+                    <option value="modular_frame">Cadre Modulaire (50/stack)</option>
+                    <option value="heavy_modular_frame">Cadre Modulaire Lourd (50/stack)</option>
+                    <option value="computer">Ordinateur (50/stack)</option>
+                    <option value="supercomputer">Supercalculateur (50/stack)</option>
+                    <option value="battery">Batterie (50/stack)</option>
+                    <option value="turbo_motor">Moteur Turbo (50/stack)</option>
+                    <option value="smart_plating">Placage Intelligent (50/stack)</option>
+                    <option value="versatile_framework">Structure Polyvalente (50/stack)</option>
+                    <option value="thermal_propulsion_rocket">Fusée à Propulsion Thermique (50/stack)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <!-- Cadence Cible -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label">Cadence Cible à Transporter :</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="number" id="logistics-throughput-input" class="form-input" value="600" min="1" max="10000" step="10" style="flex: 1;">
+                  <span id="logistics-unit-label" style="font-size: 12px; color: var(--text-secondary); font-weight: 600; min-width: 80px;">pièces / min</span>
+                </div>
+              </div>
+
+              <!-- Distance -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label">Distance Aller Simple :</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="number" id="logistics-distance-input" class="form-input" value="1200" min="50" max="15000" step="50" style="flex: 1;">
+                  <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600; min-width: 80px;">mètres</span>
+                </div>
+                <div style="margin-top: 6px;">
+                  <button type="button" class="btn-outline" id="btn-measure-on-map" style="width: 100%; font-size: 11.5px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>🗺️</span> Mesurer Trajet sur la Carte
+                  </button>
+                </div>
+              </div>
+
+              <!-- Options Avancées selon le Mode -->
+              <div id="logistics-advanced-options" style="border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: 12px;">
+                <div class="form-group" id="opt-train-slope" style="margin-bottom: 12px;">
+                  <label class="form-label" style="font-size: 12px;">Relief & Pente Ferroviaire :</label>
+                  <select id="logistics-slope-select" class="form-select" style="font-size: 12px;">
+                    <option value="flat" selected>Plat / Pente douce (1 Loco pour 4 Wagons)</option>
+                    <option value="moderate">Vallonné moyen (1 Loco pour 3 Wagons)</option>
+                    <option value="steep">Montagne / Pente raide 4m-8m (1 Loco pour 2 Wagons)</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="opt-train-bidirectional" style="margin-bottom: 12px;">
+                  <label class="form-checkbox-label" style="font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <input type="checkbox" id="logistics-bidirectional-check" class="form-checkbox">
+                    <span>Voie unique va-et-vient (2 Locomotives Push-Pull)</span>
+                  </label>
+                </div>
+
+                <div class="form-group" id="opt-road-fuel" style="margin-bottom: 12px; display: none;">
+                  <label class="form-label" style="font-size: 12px;">Type de Carburant Véhicule :</label>
+                  <select id="logistics-fuel-select" class="form-select" style="font-size: 12px;">
+                    <option value="fuel" selected>⛽ Carburant Liquide Emballé (750 MJ)</option>
+                    <option value="coal">🪨 Charbon (300 MJ)</option>
+                    <option value="compacted_coal">🧱 Charbon Compacté (630 MJ)</option>
+                    <option value="solid_biofuel">🪵 Biocarburant Solide (450 MJ)</option>
+                    <option value="turbofuel">🚀 Turbo-Carburant (2000 MJ)</option>
+                    <option value="rocket_fuel">🔥 Carburant de Fusée 1.0 (3600 MJ)</option>
+                    <option value="battery">🔋 Batterie (6000 MJ)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div style="display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap;">
+                <button type="button" class="btn-ficsit" id="btn-calc-logistics" style="flex: 1; padding: 10px; font-weight: 700;">
+                  <span>⚡</span> Recalculer Ligne
+                </button>
+                <button type="button" class="btn-outline" id="btn-export-logistics-checklist" style="flex: 1; padding: 10px; font-size: 12px; border-color: var(--ficsit-cyan); color: var(--ficsit-cyan);">
+                  <span>🏗️</span> Exporter Checklist
+                </button>
+              </div>
+            </div>
+
+            <!-- Colonne Résultats & Visualiseur -->
+            <div id="logistics-results-panel">
+              <!-- Rempli dynamiquement par app.js -->
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 2 : MATRICE DÉCISIONNELLE -->
+        <div id="logistics-subtab-matrix" class="logistics-subtab-view" style="display: none;">
+          <div class="card-panel" style="background: var(--bg-surface);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h3 style="color: var(--ficsit-orange); font-family: var(--font-display); font-size: 16px; margin: 0;">
+                  ⚖️ Matrice d'Optimisation Décisionnelle FICSIT (Comparateur Multi-Modalités)
+                </h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
+                  Analyse comparative objective entre Convoyeurs, Trains, Drones et Camions pour votre distance et débit.
+                </p>
+              </div>
+            </div>
+            <div id="logistics-matrix-content">
+              <!-- Rempli dynamiquement -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 3 : GUIDES D'INGÉNIERIE & SCHÉMAS -->
+        <div id="logistics-subtab-engineering" class="logistics-subtab-view" style="display: none;">
+          <div id="logistics-engineering-content">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 7. CHECKLIST DE CHANTIER INTERACTIVE -->
     <section id="view-checklist" class="tab-view">
       <div class="card-panel">
         <div class="panel-header">
@@ -2121,6 +2699,9 @@ body {
               </button>
               <button class="map-btn" id="tool-map-pin" title="Poser un Marqueur de Base">
                 <span>🚩</span> Ajouter Base
+              </button>
+              <button class="map-btn" id="tool-map-route" title="Mesure de Trajet & Tracé Logistique">
+                <span>🚚</span> Tracé Ligne
               </button>
               <div style="height: 1px; background: var(--border-subtle); margin: 4px 0;"></div>
               <button class="map-btn" id="btn-map-zoom-in" title="Zoomer">
@@ -2285,6 +2866,90 @@ body {
     </div>
   </div>
 
+  <!-- Modal Synchronisation Sauvegarde .SAV -->
+  <div id="save-sync-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 999999; justify-content: center; align-items: center; padding: 20px;">
+    <div onclick="event.stopPropagation()" style="background: #0d1117; border: 2px solid var(--ficsit-green); border-radius: var(--radius-md); max-width: 860px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.9);">
+      
+      <!-- En-tête du Modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 22px;">🔄</span>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--ficsit-green); margin: 0; text-transform: uppercase;">
+              Synchronisation & Analyseur de Sauvegarde Satisfactory (.SAV)
+            </h3>
+            <span style="font-size: 11.5px; color: var(--text-muted);">
+              Importez votre sauvegarde pour détecter automatiquement vos jalons, arbres MAM et recettes alternatives
+            </span>
+          </div>
+        </div>
+        <button type="button" id="btn-close-save-modal" style="background: none; border: none; color: #fff; font-size: 26px; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- Corps du Modal -->
+      <div style="padding: 20px; overflow-y: auto; flex: 1; max-height: calc(92vh - 140px); background: #090d14; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Zone Drag & Drop -->
+        <div id="save-dropzone" style="border: 2px dashed var(--border-strong); border-radius: var(--radius-md); padding: 28px 20px; text-align: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: all 0.2s ease;">
+          <div style="font-size: 36px; margin-bottom: 8px;">📁</div>
+          <h4 style="font-family: var(--font-display); font-size: 15px; color: var(--text-primary); margin-bottom: 6px;">
+            Glissez-déposez votre fichier de sauvegarde <code>.sav</code> ici
+          </h4>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+            Traitement 100% local dans votre navigateur (aucun upload sur un serveur externe, ultra-rapide et sécurisé).
+          </p>
+          <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" id="btn-browse-save" class="btn-ficsit" style="font-size: 12px; padding: 6px 16px; background: var(--ficsit-green); color: #000; font-weight: 800;">
+              Parcourir mes fichiers...
+            </button>
+            <button type="button" id="btn-copy-save-path" class="btn-outline" style="font-size: 12px; padding: 6px 14px;">
+              📋 Copier l'emplacement Windows
+            </button>
+          </div>
+          <input type="file" id="save-file-input" accept=".sav" style="display: none;">
+        </div>
+
+        <!-- Loader / Spinner d'analyse avec progression des chunks -->
+        <div id="save-loader-overlay" style="display: none; background: rgba(13, 17, 23, 0.95); border: 2px solid var(--ficsit-orange); border-radius: var(--radius-md); padding: 32px 24px; text-align: center;">
+          <div class="ficsit-spinner" style="width: 50px; height: 50px; margin: 0 auto 16px; border: 4px solid rgba(250, 149, 73, 0.2); border-top: 4px solid var(--ficsit-orange); border-radius: 50%; animation: ficsit-spin 0.8s linear infinite;"></div>
+          <h4 id="save-loader-title" style="font-family: var(--font-display); font-size: 16px; color: var(--ficsit-orange); margin: 0 0 8px 0;">
+            ⚙️ Décompression & Analyse de la Sauvegarde...
+          </h4>
+          <p id="save-loader-status" style="font-size: 13px; color: var(--text-secondary); margin: 0 0 16px 0;">
+            Lecture et décompression des blocs de données Unreal Engine...
+          </p>
+          <div style="max-width: 440px; margin: 0 auto; background: rgba(0,0,0,0.5); border: 1px solid var(--border-subtle); border-radius: 20px; height: 14px; overflow: hidden; position: relative;">
+            <div id="save-loader-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--ficsit-orange), var(--ficsit-green)); transition: width 0.15s ease; border-radius: 20px;"></div>
+          </div>
+          <div id="save-loader-percentage" style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-top: 8px;">0%</div>
+        </div>
+
+        <!-- Astuce Emplacement -->
+        <div style="background: rgba(75, 179, 253, 0.08); border: 1px solid rgba(75, 179, 253, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 11.5px; color: var(--text-secondary);">
+          <strong style="color: var(--ficsit-blue);">💡 Où trouver vos sauvegardes sur Windows :</strong><br>
+          Appuyez sur <kbd style="background: #1e293b; padding: 2px 5px; border-radius: 3px; color: #fff;">Win + R</kbd>, collez : <code style="color: var(--ficsit-amber);">%LOCALAPPDATA%\FactoryGame\Saved\SaveGames\</code> et ouvrez le sous-dossier avec votre identifiant Steam / Epic Games.
+        </div>
+
+        <!-- Rapport d'Analyse de Sauvegarde -->
+        <div id="save-report-panel" style="display: none; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px;">
+          <!-- Injecté dynamiquement par app.js -->
+        </div>
+
+      </div>
+
+      <!-- Pied de page -->
+      <div style="padding: 12px 20px; border-top: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 12px; color: var(--text-secondary);">
+          ✅ Sauvegarde persistée automatiquement dans votre navigateur (LocalStorage).
+        </div>
+        <button type="button" id="btn-save-modal-done" class="btn-ficsit" style="font-size: 12px; padding: 6px 16px; background: var(--ficsit-green); color: #000; font-weight: 800; cursor: pointer;">
+          Fermer & Retourner au Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Modal Sélecteur Avancé de Recettes Alternatives FICSIT -->
   <div id="alt-recipes-manager-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 999999; justify-content: center; align-items: center; padding: 20px;">
     <div onclick="event.stopPropagation()" style="background: #0d1117; border: 2px solid var(--ficsit-orange); border-radius: var(--radius-md); max-width: 1080px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.9);">
@@ -2324,6 +2989,9 @@ body {
           </button>
           <button type="button" class="alt-modal-filter-btn" data-filter="all" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); padding: 5px 12px; border-radius: 4px; font-size: 11.5px; cursor: pointer;">
             🌐 Tous les Produits
+          </button>
+          <button type="button" class="alt-modal-filter-btn" data-filter="save" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); padding: 5px 12px; border-radius: 4px; font-size: 11.5px; cursor: pointer;">
+            💾 Débloquées dans ma Save
           </button>
           <button type="button" class="alt-modal-filter-btn" data-filter="active" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); padding: 5px 12px; border-radius: 4px; font-size: 11.5px; cursor: pointer;">
             ★ Uniquement Alternatives Actives

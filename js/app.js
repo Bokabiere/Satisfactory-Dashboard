@@ -10,6 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
     completedMilestones: new Set(JSON.parse(localStorage.getItem("ficsit_milestones") || "[]")),
     completedPhases: new Set(JSON.parse(localStorage.getItem("ficsit_phases") || "[]")),
     activeAltRecipes: JSON.parse(localStorage.getItem("ficsit_alt_recipes") || "{}"),
+    unlockedAltRecipes: new Set(JSON.parse(localStorage.getItem("ficsit_unlocked_alt_recipes") || "[]")),
+    recipeFilterMode: localStorage.getItem("ficsit_recipe_filter_mode") || "all",
+    saveSessionInfo: JSON.parse(localStorage.getItem("ficsit_save_session") || "null"),
+    mamTrees: JSON.parse(localStorage.getItem("ficsit_mam_trees") || "null"),
+    researchedMAMNodes: new Set(JSON.parse(localStorage.getItem("ficsit_mam_nodes") || "[]")),
     checkedChecklist: new Set(JSON.parse(localStorage.getItem("ficsit_checklist") || "[]")),
     builtMachines: new Set(JSON.parse(localStorage.getItem("ficsit_built_machines") || "[]")),
     calcOverclock: parseInt(localStorage.getItem("ficsit_calc_overclock") || "100", 10),
@@ -34,12 +39,60 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   // GESTION DES ONGLETS & NAVIGATION
   // =========================================================================
+  function switchProgressionSubtab(subtab) {
+    const subnavBtns = document.querySelectorAll("[data-prog-subtab]");
+    const milestonesSubtab = document.getElementById("prog-subtab-milestones");
+    const phasesSubtab = document.getElementById("prog-subtab-phases");
+
+    subnavBtns.forEach(btn => {
+      if (btn.getAttribute("data-prog-subtab") === subtab) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    if (milestonesSubtab) milestonesSubtab.style.display = subtab === "milestones" ? "block" : "none";
+    if (phasesSubtab) phasesSubtab.style.display = subtab === "phases" ? "block" : "none";
+  }
+
+  function switchCalculatorSubtab(subtab) {
+    const subnavBtns = document.querySelectorAll("[data-calc-subtab]");
+    const singleSubtab = document.getElementById("calc-subtab-single");
+    const milestonesSubtab = document.getElementById("calc-subtab-milestones");
+
+    subnavBtns.forEach(btn => {
+      if (btn.getAttribute("data-calc-subtab") === subtab) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    if (singleSubtab) singleSubtab.style.display = subtab === "single" ? "block" : "none";
+    if (milestonesSubtab) milestonesSubtab.style.display = subtab === "milestones" ? "block" : "none";
+  }
+
   function switchTab(targetView) {
-    if (targetView === "calc-single") targetView = "calculator";
+    let progSubtab = null;
+    let calcSubtab = null;
+
+    if (targetView === "phases") {
+      targetView = "milestones";
+      progSubtab = "phases";
+    } else if (targetView === "milestones") {
+      progSubtab = "milestones";
+    } else if (targetView === "calc-milestones") {
+      targetView = "calculator";
+      calcSubtab = "milestones";
+    } else if (targetView === "calc-single" || targetView === "calculator") {
+      targetView = "calculator";
+      calcSubtab = "single";
+    }
 
     navTabs.forEach(t => {
       const tabId = t.getAttribute("data-tab");
-      if (tabId === targetView || (targetView === "calculator" && tabId === "calc-single")) {
+      if (tabId === targetView || (targetView === "calculator" && (tabId === "calc-single" || tabId === "calc-milestones"))) {
         t.classList.add("active");
       } else {
         t.classList.remove("active");
@@ -47,15 +100,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     tabViews.forEach(v => {
-      if (v.id === `view-${targetView}` || (targetView === "calc-single" && v.id === "view-calculator")) {
+      if (v.id === `view-${targetView}` || (targetView === "calculator" && (v.id === "view-calc-single" || v.id === "view-calc-milestones"))) {
         v.classList.add("active");
       } else {
         v.classList.remove("active");
       }
     });
 
+    if (progSubtab) {
+      switchProgressionSubtab(progSubtab);
+    }
+    if (calcSubtab) {
+      switchCalculatorSubtab(calcSubtab);
+    }
+
     if (targetView === "synthetic") {
       renderSyntheticView();
+    } else if (targetView === "milestones") {
+      renderMilestones();
+      renderPhases();
+    } else if (targetView === "energy") {
+      if (typeof initPowerCalculatorUI === 'function') {
+        // Déjà initialisé ou actualisé
+      }
+    } else if (targetView === "logistics") {
+      if (typeof initLogisticsUI === 'function') {
+        initLogisticsUI();
+      }
+    } else if (targetView === "mam") {
+      if (typeof initMAMUI === 'function') {
+        initMAMUI();
+      }
     } else if (targetView === "blueprints") {
       renderBlueprints();
     } else if (targetView === "map") {
@@ -88,11 +163,270 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
+  // GESTION DE LA PERSONNALISATION DE L'AFFICHAGE & SECTIONS REPLIABLES
+  // =========================================================================
+  const DisplayPreferencesManager = {
+    STORAGE_KEY_TABS: "ficsit_visible_tabs",
+    STORAGE_KEY_COLLAPSED: "ficsit_collapsed_sections",
+
+    allTabs: [
+      { id: "synthetic", label: "Vue Synthétique", icon: "📊" },
+      { id: "milestones", label: "Jalons & Ascenseur Spatial", icon: "📋" },
+      { id: "mam", label: "MAM & Disques Durs", icon: "🔬" },
+      { id: "calculator", label: "Usines & Production", icon: "🏭" },
+      { id: "energy", label: "Centrales & Énergie", icon: "⚡" },
+      { id: "logistics", label: "Logistique & Transports", icon: "🚚" },
+      { id: "checklist", label: "Checklist de Chantier", icon: "🏗️" },
+      { id: "map", label: "Carte des Ressources", icon: "🗺️" }
+    ],
+
+    getVisibleTabs() {
+      try {
+        const saved = localStorage.getItem(this.STORAGE_KEY_TABS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.warn("Erreur lecture ficsit_visible_tabs", e);
+      }
+      return this.allTabs.map(t => t.id);
+    },
+
+    saveVisibleTabs(tabs) {
+      try {
+        localStorage.setItem(this.STORAGE_KEY_TABS, JSON.stringify(tabs));
+      } catch (e) {}
+    },
+
+    getCollapsedSections() {
+      try {
+        const saved = localStorage.getItem(this.STORAGE_KEY_COLLAPSED);
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+      return {};
+    },
+
+    saveCollapsedSections(collapsedMap) {
+      try {
+        localStorage.setItem(this.STORAGE_KEY_COLLAPSED, JSON.stringify(collapsedMap));
+      } catch (e) {}
+    },
+
+    init() {
+      this.renderTabsDropdown();
+      this.applyTabPreferences();
+      this.initCollapsibleSections();
+      this.bindEvents();
+    },
+
+    renderTabsDropdown() {
+      const listEl = document.getElementById("display-tabs-toggles");
+      if (!listEl) return;
+
+      const visibleTabs = this.getVisibleTabs();
+
+      listEl.innerHTML = this.allTabs.map(tab => {
+        const isChecked = visibleTabs.includes(tab.id);
+        return `
+          <label class="display-tab-switch-item" data-tab-toggle="${tab.id}">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 15px;">${tab.icon}</span>
+              <span style="font-size: 12px; font-weight: 600; color: #e2e8f0;">${tab.label}</span>
+            </div>
+            <input type="checkbox" class="ficsit-switch-input" data-tab-id="${tab.id}" ${isChecked ? "checked" : ""}>
+            <span class="ficsit-switch-slider"></span>
+          </label>
+        `;
+      }).join("");
+    },
+
+    applyTabPreferences() {
+      const visibleTabs = this.getVisibleTabs();
+      let activeTabVisible = false;
+      let firstVisibleTab = null;
+
+      navTabs.forEach(tab => {
+        const tabId = tab.getAttribute("data-tab");
+        if (visibleTabs.includes(tabId)) {
+          tab.style.display = "";
+          if (!firstVisibleTab) firstVisibleTab = tabId;
+          if (tab.classList.contains("active")) activeTabVisible = true;
+        } else {
+          tab.style.display = "none";
+        }
+      });
+
+      // Si l'onglet actif a été masqué, basculer sur le premier onglet visible
+      if (!activeTabVisible && firstVisibleTab) {
+        switchTab(firstVisibleTab);
+      }
+    },
+
+    toggleTabVisibility(tabId, isVisible) {
+      let visibleTabs = this.getVisibleTabs();
+      if (isVisible) {
+        if (!visibleTabs.includes(tabId)) visibleTabs.push(tabId);
+      } else {
+        if (visibleTabs.length <= 1) {
+          alert("Au moins un onglet de navigation doit rester visible !");
+          this.renderTabsDropdown();
+          return;
+        }
+        visibleTabs = visibleTabs.filter(id => id !== tabId);
+      }
+
+      this.saveVisibleTabs(visibleTabs);
+      this.applyTabPreferences();
+    },
+
+    initCollapsibleSections() {
+      const collapsedMap = this.getCollapsedSections();
+
+      // Sélecteur ciblant les sections identifiées et les card-panels
+      const candidateElements = document.querySelectorAll(
+        ".collapsible-section, [data-collapsible-id], .tab-view > .card-panel"
+      );
+
+      candidateElements.forEach(el => {
+        const id = el.getAttribute("data-collapsible-id") || el.id || el.getAttribute("id");
+        if (!id) return;
+
+        // Trouver ou créer l'en-tête
+        const header = el.querySelector(":scope > .panel-header, :scope > div:first-child");
+        if (!header) return;
+
+        // Vérifier si un bouton de repliage existe déjà
+        let btn = header.querySelector(".btn-toggle-collapse");
+        if (!btn) {
+          btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn-toggle-collapse";
+          btn.title = "Replier / Déplier cette section";
+          btn.innerHTML = `<span>▲ Replier</span>`;
+          
+          // Ajouter dans les actions de l'en-tête ou à la fin
+          const actionsContainer = header.querySelector("div[style*='display: flex']:last-child") || header;
+          actionsContainer.appendChild(btn);
+        }
+
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          this.toggleSectionCollapse(el, id);
+        };
+
+        // État initial
+        if (collapsedMap[id]) {
+          el.classList.add("is-collapsed");
+          btn.innerHTML = `<span>▼ Déplier</span>`;
+        } else {
+          el.classList.remove("is-collapsed");
+          btn.innerHTML = `<span>▲ Replier</span>`;
+        }
+      });
+    },
+
+    toggleSectionCollapse(el, id) {
+      const isNowCollapsed = !el.classList.contains("is-collapsed");
+      el.classList.toggle("is-collapsed", isNowCollapsed);
+
+      const btn = el.querySelector(".btn-toggle-collapse");
+      if (btn) {
+        btn.innerHTML = isNowCollapsed 
+          ? `<span>▼ Déplier</span>` 
+          : `<span>▲ Replier</span>`;
+      }
+
+      const collapsedMap = this.getCollapsedSections();
+      if (isNowCollapsed) {
+        collapsedMap[id] = true;
+      } else {
+        delete collapsedMap[id];
+      }
+      this.saveCollapsedSections(collapsedMap);
+    },
+
+    resetAll() {
+      localStorage.removeItem(this.STORAGE_KEY_TABS);
+      localStorage.removeItem(this.STORAGE_KEY_COLLAPSED);
+
+      this.renderTabsDropdown();
+      this.applyTabPreferences();
+
+      document.querySelectorAll(".is-collapsed").forEach(el => {
+        el.classList.remove("is-collapsed");
+        const btn = el.querySelector(".btn-toggle-collapse");
+        if (btn) {
+          btn.innerHTML = `<span>▲ Replier</span>`;
+        }
+      });
+
+      const popover = document.getElementById("display-settings-popover");
+      if (popover) popover.style.display = "none";
+    },
+
+    bindEvents() {
+      const toggleBtn = document.getElementById("btn-toggle-display-menu");
+      const popover = document.getElementById("display-settings-popover");
+      const closeBtn = document.getElementById("btn-close-display-popover");
+      const resetBtn = document.getElementById("btn-reset-display-prefs");
+
+      if (toggleBtn && popover) {
+        toggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          const isHidden = popover.style.display === "none" || !popover.style.display;
+          popover.style.display = isHidden ? "block" : "none";
+        };
+
+        document.addEventListener("click", (e) => {
+          if (popover && popover.style.display === "block" && !popover.contains(e.target) && e.target !== toggleBtn && !toggleBtn.contains(e.target)) {
+            popover.style.display = "none";
+          }
+        });
+      }
+
+      if (closeBtn && popover) {
+        closeBtn.onclick = () => {
+          popover.style.display = "none";
+        };
+      }
+
+      if (resetBtn) {
+        resetBtn.onclick = () => {
+          if (confirm("Voulez-vous réinitialiser tous les menus et sections visibles par défaut ?")) {
+            this.resetAll();
+          }
+        };
+      }
+
+      const listEl = document.getElementById("display-tabs-toggles");
+      if (listEl) {
+        listEl.addEventListener("change", (e) => {
+          if (e.target.classList.contains("ficsit-switch-input")) {
+            const tabId = e.target.getAttribute("data-tab-id");
+            const isChecked = e.target.checked;
+            this.toggleTabVisibility(tabId, isChecked);
+          }
+        });
+      }
+    }
+  };
+
+  // =========================================================================
   // AFFICHAGE DES JALONS (TIERS 0 À 9)
   // =========================================================================
   function renderMilestones() {
     const container = document.getElementById("milestones-accordion");
     if (!container) return;
+
+    // Sous-navigation Jalons vs Ascenseur Spatial
+    const progSubnavBtns = document.querySelectorAll("[data-prog-subtab]");
+    progSubnavBtns.forEach(btn => {
+      btn.onclick = () => {
+        const targetSubtab = btn.getAttribute("data-prog-subtab");
+        switchProgressionSubtab(targetSubtab);
+      };
+    });
 
     // Boutons Tout Déplier / Tout Replier
     const expandAllBtn = document.getElementById("btn-expand-all-tiers");
@@ -337,7 +671,84 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }).join("");
 
+    // Panneau de Synchronisation / Import de Sauvegarde .SAV
+    let saveWidgetHtml = "";
+    if (STATE.saveSessionInfo) {
+      const s = STATE.saveSessionInfo;
+      saveWidgetHtml = `
+        <div class="card-panel" style="margin-bottom: 20px; border-left: 4px solid var(--ficsit-green); background: var(--bg-surface); padding: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 28px;">💾</span>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="background: var(--ficsit-green); color: #000; font-weight: 800; font-size: 10.5px; padding: 2px 7px; border-radius: 4px; font-family: var(--font-display);">SAUVEGARDE SYNCHRONISÉE</span>
+                  <h3 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: #fff;">${s.sessionName}</h3>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                  Temps de jeu : <strong style="color: var(--text-primary);">${s.playtime}</strong> • Version : <strong style="color: var(--text-primary);">${s.buildVersion}</strong>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-synth-resync-save" class="btn-ficsit" style="font-size: 11.5px; padding: 6px 12px; background: var(--ficsit-green); color: #000; font-weight: 700;">
+                <span>🔄</span> Remplacer la Sauvegarde
+              </button>
+              <button type="button" id="btn-synth-disconnect-save" class="btn-outline" style="font-size: 11.5px; padding: 6px 10px; border-color: rgba(239, 68, 68, 0.5); color: #f87171;">
+                <span>❌</span> Déconnecter
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 12px;">
+              <div style="font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Jalons Débloqués</div>
+              <div style="font-size: 17px; font-weight: 800; color: var(--ficsit-orange); font-family: var(--font-display);">${s.unlockedMilestonesCount} / 46</div>
+            </div>
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 12px;">
+              <div style="font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Phases Ascenseur</div>
+              <div style="font-size: 17px; font-weight: 800; color: var(--ficsit-amber); font-family: var(--font-display);">${s.unlockedPhasesCount} / 5</div>
+            </div>
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 12px;">
+              <div style="font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Recettes Alternatives</div>
+              <div style="font-size: 17px; font-weight: 800; color: #4ade80; font-family: var(--font-display);">${s.unlockedRecipesCount} / 41</div>
+            </div>
+          </div>
+          <input type="file" id="synth-save-file-input" accept=".sav" style="display: none;">
+        </div>
+      `;
+    } else {
+      saveWidgetHtml = `
+        <div id="synth-save-dropzone" class="card-panel" style="margin-bottom: 20px; border: 2px dashed var(--ficsit-green); background: rgba(16, 185, 129, 0.05); padding: 22px; cursor: pointer; transition: all 0.2s ease;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 280px;">
+              <div style="font-size: 34px; background: rgba(16, 185, 129, 0.15); width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.35);">📁</div>
+              <div>
+                <h3 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--ficsit-green);">
+                  💾 Importez votre Sauvegarde Satisfactory (.SAV)
+                </h3>
+                <p style="margin: 4px 0 0 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;">
+                  Glissez-déposez votre fichier <code>.sav</code> ici pour synchroniser instantanément vos jalons, phases, recherches du MAM et recettes de disques durs.
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-synth-upload-save" class="btn-ficsit" style="font-size: 12px; padding: 8px 16px; background: var(--ficsit-green); color: #000; font-weight: 800;">
+                <span>📂</span> Parcourir (.sav)...
+              </button>
+              <button type="button" id="btn-synth-copy-path" class="btn-outline" style="font-size: 12px; padding: 8px 14px;">
+                <span>📋</span> Copier l'Emplacement Windows
+              </button>
+            </div>
+          </div>
+          <input type="file" id="synth-save-file-input" accept=".sav" style="display: none;">
+        </div>
+      `;
+    }
+
     container.innerHTML = `
+      ${saveWidgetHtml}
+
       <div class="card-panel" style="margin-bottom: 20px; border-left: 4px solid var(--ficsit-orange);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h3 style="font-family: var(--font-display); font-size: 18px;">Progression Globale FICSIT</h3>
@@ -393,6 +804,87 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    // Câblage des événements du widget d'import de sauvegarde
+    const synthFileInput = document.getElementById("synth-save-file-input");
+    const synthUploadBtn = document.getElementById("btn-synth-upload-save");
+    const synthResyncBtn = document.getElementById("btn-synth-resync-save");
+    const synthDropzone = document.getElementById("synth-save-dropzone");
+    const synthCopyPathBtn = document.getElementById("btn-synth-copy-path");
+    const synthDisconnectBtn = document.getElementById("btn-synth-disconnect-save");
+
+    if (synthUploadBtn && synthFileInput) {
+      synthUploadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        synthFileInput.click();
+      });
+    }
+
+    if (synthResyncBtn && synthFileInput) {
+      synthResyncBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        synthFileInput.click();
+      });
+    }
+
+    if (synthFileInput) {
+      synthFileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0 && typeof window.processAndApplySaveFile === 'function') {
+          window.processAndApplySaveFile(e.target.files[0]);
+        }
+      });
+    }
+
+    if (synthDropzone) {
+      synthDropzone.addEventListener("click", () => {
+        if (synthFileInput) synthFileInput.click();
+      });
+
+      synthDropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        synthDropzone.style.borderColor = "#4ade80";
+        synthDropzone.style.background = "rgba(16, 185, 129, 0.15)";
+      });
+
+      synthDropzone.addEventListener("dragleave", () => {
+        synthDropzone.style.borderColor = "var(--ficsit-green)";
+        synthDropzone.style.background = "rgba(16, 185, 129, 0.05)";
+      });
+
+      synthDropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        synthDropzone.style.borderColor = "var(--ficsit-green)";
+        synthDropzone.style.background = "rgba(16, 185, 129, 0.05)";
+        if (e.dataTransfer.files.length > 0 && typeof window.processAndApplySaveFile === 'function') {
+          window.processAndApplySaveFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (synthCopyPathBtn) {
+      synthCopyPathBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const savePath = "%LOCALAPPDATA%\\FactoryGame\\Saved\\SaveGames\\";
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(savePath).then(() => {
+            showToast("Chemin copié ! Collez-le dans l'Explorateur Windows (Ctrl+V).");
+          }).catch(() => fallbackCopy(savePath));
+        } else {
+          fallbackCopy(savePath);
+        }
+      });
+    }
+
+    if (synthDisconnectBtn) {
+      synthDisconnectBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        STATE.saveSessionInfo = null;
+        STATE.recipeFilterMode = "all";
+        saveState();
+        renderSyntheticView();
+        showToast("Sauvegarde déconnectée.");
+      });
+    }
+
     // Écouteurs pour les boutons de calcul rapide dans la vue synthétique
     container.querySelectorAll(".btn-quick-calc-nm").forEach((btn, idx) => {
       btn.addEventListener("click", () => {
@@ -424,6 +916,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadMilestoneIntoCalculator(milestone, timeMinutes = 15) {
+    const msId = (milestone.id || "").toLowerCase();
+    const msName = (milestone.name || "").toLowerCase();
+
+    // Redirection intelligente si le jalon concerne l'énergie/centrales
+    if (msId.includes("coal_power") || msName.includes("charbon")) {
+      switchTab("energy");
+      if (typeof selectEnergyTechGlobal === 'function') {
+        selectEnergyTechGlobal("coal_standard");
+      }
+      showToast(`⚡ Centrale à Charbon dimensionnée pour le Jalon : "${milestone.name}"`);
+      return;
+    } else if (msId.includes("fuel_power") || msName.includes("carburant") || msName.includes("pétrole")) {
+      switchTab("energy");
+      if (typeof selectEnergyTechGlobal === 'function') {
+        selectEnergyTechGlobal("fuel_standard");
+      }
+      showToast(`⚡ Centrale au Carburant dimensionnée pour le Jalon : "${milestone.name}"`);
+      return;
+    } else if (msId.includes("nuclear") || msName.includes("nucléaire")) {
+      switchTab("energy");
+      if (typeof selectEnergyTechGlobal === 'function') {
+        selectEnergyTechGlobal("nuclear_uranium");
+      }
+      showToast(`⚡ Centrale Nucléaire dimensionnée pour le Jalon : "${milestone.name}"`);
+      return;
+    }
+
     const msSelect = document.getElementById("calc-ms-select");
     const timeSelect = document.getElementById("calc-ms-time-select");
     if (msSelect) msSelect.value = milestone.id;
@@ -445,6 +964,34 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Usine complète calculée pour : "${phase.name}" (${timeMinutes} min)`);
   }
 
+  function updateRecipeFilterModeUI() {
+    const mode = STATE.recipeFilterMode || "all";
+    document.querySelectorAll(".btn-alt-mode-toggle").forEach(btn => {
+      const bMode = btn.getAttribute("data-mode");
+      if (bMode === mode) {
+        btn.classList.add("active");
+        btn.style.background = bMode === 'save' ? 'var(--ficsit-green)' : (bMode === 'custom' ? 'var(--ficsit-blue)' : 'var(--ficsit-orange)');
+        btn.style.color = "#000";
+        btn.style.fontWeight = "800";
+        btn.style.border = "none";
+      } else {
+        btn.classList.remove("active");
+        btn.style.background = "var(--bg-surface-elevated)";
+        btn.style.color = "var(--text-secondary)";
+        btn.style.fontWeight = "normal";
+        btn.style.border = "1px solid var(--border-subtle)";
+      }
+    });
+  }
+
+  function updateAltRecipeCounters() {
+    const activeCount = Object.keys(STATE.activeAltRecipes || {}).length;
+    const countEl = document.getElementById("count-active-alts-label");
+    const countMsEl = document.getElementById("count-active-alts-label-ms");
+    if (countEl) countEl.innerText = `${activeCount}`;
+    if (countMsEl) countMsEl.innerText = `${activeCount}`;
+  }
+
   // =========================================================================
   // CALCULATEUR DE PRODUCTION & RECETTES ALTERNATIVES
   // =========================================================================
@@ -458,6 +1005,53 @@ document.addEventListener("DOMContentLoaded", () => {
     const rateControls = document.getElementById("calc-rate-controls");
     const runBtn = document.getElementById("btn-run-calc");
     const sendToChecklistBtn = document.getElementById("btn-send-checklist");
+
+    // Sous-navigation Pièces Uniques vs Usines Complètes
+    const calcSubnavBtns = document.querySelectorAll("[data-calc-subtab]");
+    calcSubnavBtns.forEach(btn => {
+      btn.onclick = () => {
+        const targetSubtab = btn.getAttribute("data-calc-subtab");
+        switchCalculatorSubtab(targetSubtab);
+      };
+    });
+
+    // Boutons de basculement de mode de recettes alternatives (all / save / custom)
+    document.querySelectorAll(".btn-alt-mode-toggle").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.getAttribute("data-mode") || "all";
+        if (mode === "save" && (!STATE.unlockedAltRecipes || STATE.unlockedAltRecipes.size === 0)) {
+          showToast("⚠️ Aucune sauvegarde chargée. Ouvrez '🔄 Synchroniser .SAV' pour charger votre fichier.");
+          const modal = document.getElementById("save-sync-modal");
+          if (modal) modal.style.display = "flex";
+          return;
+        }
+        STATE.recipeFilterMode = mode;
+        updateRecipeFilterModeUI();
+        saveState();
+        executeCalculation(true);
+        if (typeof executeMilestoneCalculation === "function") {
+          executeMilestoneCalculation(true);
+        }
+        showToast(`Mode recettes alternatives : ${mode === 'save' ? '💾 Ma Sauvegarde' : (mode === 'custom' ? '🛠️ Personnalisé' : '🌐 Toutes')}`);
+      });
+    });
+
+    const openAltModalBtn = document.getElementById("btn-open-alt-recipes-modal");
+    if (openAltModalBtn) {
+      openAltModalBtn.onclick = () => {
+        AltRecipesManager.open(STATE.recipeFilterMode === "save" ? "save" : "current");
+      };
+    }
+
+    const openMsAltModalBtn = document.getElementById("btn-open-ms-alt-recipes-modal");
+    if (openMsAltModalBtn) {
+      openMsAltModalBtn.onclick = () => {
+        AltRecipesManager.open(STATE.recipeFilterMode === "save" ? "save" : "current");
+      };
+    }
+
+    updateRecipeFilterModeUI();
+    updateAltRecipeCounters();
 
     if (!itemSelect) return;
 
@@ -558,13 +1152,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Envoyer vers la checklist
-    if (sendToChecklistBtn) {
-      sendToChecklistBtn.addEventListener("click", () => {
-        if (!STATE.lastCalculation) return;
-        addCalculationToChecklist(STATE.lastCalculation);
-        showToast("Chaîne de production envoyée à la Checklist de Chantier !");
-        // Basculer vers l'onglet checklist
-        switchTab("checklist");
+    const sendToChecklistAll = [sendToChecklistBtn, document.getElementById("btn-send-to-checklist")];
+    sendToChecklistAll.forEach(btn => {
+      if (btn) {
+        btn.addEventListener("click", () => {
+          if (!STATE.lastCalculation) executeCalculation(false);
+          if (!STATE.lastCalculation) return;
+          addCalculationToChecklist(STATE.lastCalculation);
+          showToast("Chaîne de production envoyée à la Checklist de Chantier !");
+          switchTab("checklist");
+        });
+      }
+    });
+
+    // Envoyer vers le module Logistique
+    const sendToLogisticsBtn = document.getElementById("btn-send-to-logistics");
+    if (sendToLogisticsBtn) {
+      sendToLogisticsBtn.addEventListener("click", () => {
+        if (!STATE.lastCalculation) executeCalculation(false);
+        const item = itemSelect ? itemSelect.value : "iron_plate";
+        const rate = (STATE.lastCalculation && STATE.lastCalculation.targetRate) ? STATE.lastCalculation.targetRate : 60;
+        if (typeof window.injectIntoLogistics === 'function') {
+          window.injectIntoLogistics(item, rate);
+        }
       });
     }
 
@@ -654,10 +1264,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const targets = [{ item: itemId, rate: targetRate }];
-    const opt = calculator.optimize(targets, "min_buildings");
+    
+    let allowedRecipeIds = null;
+    if (STATE.recipeFilterMode === "save") {
+      allowedRecipeIds = Array.from(STATE.unlockedAltRecipes || []);
+    } else if (STATE.recipeFilterMode === "custom") {
+      allowedRecipeIds = Object.values(STATE.activeAltRecipes || {});
+    }
+    
+    const opt = calculator.optimize(targets, "min_buildings", allowedRecipeIds);
 
     // Mettre à jour l'état local
     STATE.activeAltRecipes = { ...opt.recipeMap };
+    updateAltRecipeCounters();
     
     // Calculer avec les paramètres d'overclocking et somersloops actifs
     const optimizedResult = calculator.calculate(targets, {
@@ -1038,8 +1657,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return { item, rate: Math.max(rate, 0.1) };
     });
 
-    const opt = calculator.optimize(targets, "min_buildings");
+    let allowedRecipeIds = null;
+    if (STATE.recipeFilterMode === "save") {
+      allowedRecipeIds = Array.from(STATE.unlockedAltRecipes || []);
+    } else if (STATE.recipeFilterMode === "custom") {
+      allowedRecipeIds = Object.values(STATE.activeAltRecipes || {});
+    }
+
+    const opt = calculator.optimize(targets, "min_buildings", allowedRecipeIds);
     STATE.activeAltRecipes = { ...opt.recipeMap };
+    updateAltRecipeCounters();
 
     const ocSelect = document.getElementById("calc-ms-global-overclock");
     const slChk = document.getElementById("calc-ms-global-somersloop");
@@ -1361,6 +1988,8 @@ document.addEventListener("DOMContentLoaded", () => {
       countBadge.style.color = activeCount > 0 ? "var(--ficsit-orange)" : "var(--text-muted)";
       countBadge.style.borderColor = activeCount > 0 ? "var(--ficsit-orange)" : "var(--border-subtle)";
     }
+
+    DisplayPreferencesManager.initCollapsibleSections();
   }
 
   // =========================================================================
@@ -6186,6 +6815,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 4. Initialisation du Guide de Chantier Pas-à-Pas Interactif
     FactoryConstructionGuide.init(results);
+
+    DisplayPreferencesManager.initCollapsibleSections();
   }
 
   // =========================================================================
@@ -6344,6 +6975,16 @@ document.addEventListener("DOMContentLoaded", () => {
           return calculator.isAltRecipe(STATE.activeAltRecipes[itemId]);
         });
         candidateItems = Array.from(new Set(activeItems));
+      } else if (this.currentFilter === "save") {
+        const saveItems = [];
+        calculator.recipes.forEach(r => {
+          if (r.isAlt && STATE.unlockedAltRecipes && STATE.unlockedAltRecipes.has(r.id)) {
+            r.products.forEach(p => {
+              if (!saveItems.includes(p.item)) saveItems.push(p.item);
+            });
+          }
+        });
+        candidateItems = saveItems;
       } else {
         // "all" ou fallback
         const allItemsWithAlts = [];
@@ -6357,8 +6998,20 @@ document.addEventListener("DOMContentLoaded", () => {
         candidateItems = allItemsWithAlts;
       }
 
-      // Si le filtre actuel est "current" mais ne donne aucun item (ou aucun calcul actif), fallback sur tous
-      if (this.currentFilter === "current" && candidateItems.length === 0) {
+      // Si le filtre actuel est "current" ou "save" mais ne donne aucun item (ou aucun calcul actif), fallback informatif
+      if ((this.currentFilter === "current" || this.currentFilter === "save") && candidateItems.length === 0) {
+        if (this.currentFilter === "save") {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+              <div style="font-size: 36px; margin-bottom: 10px;">💾</div>
+              <div style="font-family: var(--font-display); font-size: 15px; color: var(--text-secondary); margin-bottom: 6px;">
+                Aucune recette alternative scannée dans la sauvegarde actuelle
+              </div>
+              <div style="font-size: 12px;">Chargez votre fichier .sav via le bouton <strong>🔄 Synchroniser .SAV</strong> dans l'en-tête.</div>
+            </div>
+          `;
+          return;
+        }
         calculator.recipes.forEach(r => {
           r.products.forEach(p => {
             if (calculator.getRecipesForItem(p.item).length > 1 && !candidateItems.includes(p.item)) {
@@ -6402,6 +7055,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const recipesCardsHtml = recipes.map(r => {
           const isSelected = activeRecipe && activeRecipe.id === r.id;
           const building = BUILDINGS[r.building] || { name: r.building, icon: "🏭", powerMW: 4 };
+          const isUnlockedInSave = STATE.unlockedAltRecipes && STATE.unlockedAltRecipes.has(r.id);
 
           const ingrStr = r.ingredients.map(ing => {
             const ingRate = Math.round((ing.amount * (60 / r.duration)) * 10) / 10;
@@ -6412,17 +7066,20 @@ document.addEventListener("DOMContentLoaded", () => {
           const prodRate = prod ? Math.round((prod.amount * (60 / r.duration)) * 10) / 10 : 0;
 
           return `
-            <div class="alt-recipe-card" data-item="${itemId}" data-recipe-id="${r.id}" style="border: ${isSelected ? '2px solid var(--ficsit-orange)' : '1px solid var(--border-subtle)'}; background: ${isSelected ? 'rgba(250, 149, 73, 0.12)' : 'rgba(0,0,0,0.3)'}; border-radius: var(--radius-sm); padding: 10px 12px; cursor: pointer; transition: all 0.15s ease; margin-bottom: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="alt-recipe-card" data-item="${itemId}" data-recipe-id="${r.id}" style="border: ${isSelected ? '2px solid var(--ficsit-orange)' : (isUnlockedInSave ? '1.5px solid rgba(16,185,129,0.5)' : '1px solid var(--border-subtle)')}; background: ${isSelected ? 'rgba(250, 149, 73, 0.12)' : 'rgba(0,0,0,0.3)'}; border-radius: var(--radius-sm); padding: 10px 12px; cursor: pointer; transition: all 0.15s ease; margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <input type="radio" name="radio_item_${itemId}" value="${r.id}" ${isSelected ? "checked" : ""} style="accent-color: var(--ficsit-orange); cursor: pointer;">
                   <strong style="font-size: 13px; color: ${isSelected ? 'var(--ficsit-orange)' : 'var(--text-primary)'};">
                     ${r.name}
                   </strong>
                 </div>
-                <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: ${r.isAlt ? 'rgba(250, 149, 73, 0.25)' : 'rgba(75, 179, 253, 0.2)'}; color: ${r.isAlt ? 'var(--ficsit-orange)' : 'var(--ficsit-blue)'}; border: 1px solid ${r.isAlt ? 'rgba(250,149,73,0.5)' : 'rgba(75,179,253,0.5)'};">
-                  ${r.isAlt ? '★ ALTERNATIVE' : 'OFFICIELLE / STD'}
-                </span>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  ${isUnlockedInSave ? '<span style="font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.25); color: #4ade80; border: 1px solid rgba(16,185,129,0.6);">✔ DANS MA SAVE</span>' : ''}
+                  <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: ${r.isAlt ? 'rgba(250, 149, 73, 0.25)' : 'rgba(75, 179, 253, 0.2)'}; color: ${r.isAlt ? 'var(--ficsit-orange)' : 'var(--ficsit-blue)'}; border: 1px solid ${r.isAlt ? 'rgba(250,149,73,0.5)' : 'rgba(75,179,253,0.5)'};">
+                    ${r.isAlt ? '★ ALTERNATIVE' : 'OFFICIELLE / STD'}
+                  </span>
+                </div>
               </div>
 
               <div style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
@@ -7523,18 +8180,781 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
-  // IMPORTEUR DE SAUVEGARDE .SAV
+  // SIMULATEUR DE CENTRALES & ÉNERGIE (1.0 / 1.2)
+  // =========================================================================
+  let powerCalcInstance = null;
+  let currentPowerCalcResult = null;
+
+  function initPowerCalculatorUI() {
+    if (typeof PowerPlantCalculator === 'undefined' || typeof POWER_TECHNOLOGIES === 'undefined') return;
+    powerCalcInstance = new PowerPlantCalculator(POWER_TECHNOLOGIES, BUILDINGS);
+
+    const techGrid = document.getElementById("energy-tech-grid");
+    const modeBtnTarget = document.getElementById("btn-energy-mode-target");
+    const modeBtnResource = document.getElementById("btn-energy-mode-resource");
+    const groupTarget = document.getElementById("energy-input-group-target");
+    const recipeSelect = document.getElementById("energy-recipe-select");
+    const recipeBadge = document.getElementById("energy-recipe-badge");
+    const catFilters = document.querySelectorAll(".energy-cat-filter");
+    const groupResource = document.getElementById("energy-input-group-resource");
+    const targetPowerInput = document.getElementById("energy-target-power-input");
+    const targetPowerLabel = document.getElementById("energy-target-power-label");
+    const resourceRateInput = document.getElementById("energy-resource-rate-input");
+    const resourceValLabel = document.getElementById("energy-resource-val-label");
+    const resourceInputLabel = document.getElementById("energy-resource-input-label");
+    const ocSlider = document.getElementById("energy-oc-slider");
+    const ocLabel = document.getElementById("energy-oc-label");
+    const somersloopChk = document.getElementById("energy-somersloop-chk");
+    const recalcBtn = document.getElementById("btn-recalc-energy");
+    const exportChecklistBtn = document.getElementById("btn-energy-export-checklist");
+    const resultsContainer = document.getElementById("energy-results-container");
+
+    if (!techGrid) return;
+
+    let selectedTechId = localStorage.getItem("ficsit_energy_tech") || "coal_standard";
+    if (!POWER_TECHNOLOGIES[selectedTechId]) selectedTechId = "coal_standard";
+    let activeMode = "target_power";
+    let activeCategory = "all";
+
+    // 0. Peuplement du sélecteur déroulant de recettes
+    function populateRecipeSelect() {
+      if (!recipeSelect) return;
+      recipeSelect.innerHTML = "";
+
+      const categories = {};
+      Object.entries(POWER_TECHNOLOGIES).forEach(([id, tech]) => {
+        const cat = tech.categoryLabel || "Autres";
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push({ id, ...tech });
+      });
+
+      Object.entries(categories).forEach(([catName, techs]) => {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = catName;
+        techs.forEach(t => {
+          const opt = document.createElement("option");
+          opt.value = t.id;
+          const tag = t.recipeType === "alternate" ? "⚡ [ALT]" : "📄 [STD]";
+          opt.innerText = `${tag} ${t.name} (${t.generatorPowerMW} MW/u)`;
+          if (t.id === selectedTechId) opt.selected = true;
+          optgroup.appendChild(opt);
+        });
+        recipeSelect.appendChild(optgroup);
+      });
+
+      updateRecipeBadge();
+    }
+
+    function updateRecipeBadge() {
+      const tech = POWER_TECHNOLOGIES[selectedTechId];
+      if (!recipeBadge || !tech) return;
+      if (tech.recipeType === "alternate") {
+        recipeBadge.className = "energy-recipe-tag alternate";
+        recipeBadge.innerHTML = "⚡ Recette Alternative FICSIT";
+      } else {
+        recipeBadge.className = "energy-recipe-tag standard";
+        recipeBadge.innerHTML = "📄 Recette Standard";
+      }
+    }
+
+    if (recipeSelect) {
+      recipeSelect.addEventListener("change", (e) => {
+        const newTechId = e.target.value;
+        if (POWER_TECHNOLOGIES[newTechId]) {
+          selectedTechId = newTechId;
+          localStorage.setItem("ficsit_energy_tech", newTechId);
+          renderTechGrid();
+          updateResourceInputLabel();
+          updateRecipeBadge();
+          runEnergyCalculation(true);
+        }
+      });
+    }
+
+    // Filtres de catégories
+    catFilters.forEach(btn => {
+      btn.addEventListener("click", () => {
+        catFilters.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeCategory = btn.getAttribute("data-cat") || "all";
+        renderTechGrid();
+      });
+    });
+
+    // 1. Rendu des cartes de technologie
+    function renderTechGrid() {
+      techGrid.innerHTML = "";
+      Object.entries(POWER_TECHNOLOGIES).forEach(([id, tech]) => {
+        // Filtrage par catégorie
+        if (activeCategory !== "all" && tech.category !== activeCategory) {
+          return;
+        }
+
+        const card = document.createElement("div");
+        card.className = `energy-tech-card ${id === selectedTechId ? "active" : ""}`;
+        card.dataset.techId = id;
+
+        const isAlt = tech.recipeType === "alternate";
+        const tagHtml = isAlt 
+          ? `<span class="energy-recipe-tag alternate">⚡ Alt</span>`
+          : `<span class="energy-recipe-tag standard">📄 Std</span>`;
+
+        card.innerHTML = `
+          <div class="energy-tech-header">
+            <div class="energy-tech-icon">
+              <img src="${tech.icon}" alt="${tech.name}" onerror="this.src='images/buildings/IconDesc_BiomassGenerator_256.png'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-bottom: 2px;">
+                <div class="energy-tech-tier">${tech.tier}</div>
+                ${tagHtml}
+              </div>
+              <div class="energy-tech-title">${tech.name}</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); line-height: 1.3; margin-top: 2px;">
+            ${tech.recipeName || tech.fuelItem}
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 6px;">
+            <div class="energy-tech-power-badge">⚡ ${tech.generatorPowerMW} MW / unité</div>
+            <span style="font-size: 11px; color: var(--ficsit-amber); font-weight: 600;">${tech.fuelItem}</span>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          selectedTechId = id;
+          localStorage.setItem("ficsit_energy_tech", id);
+          if (recipeSelect) recipeSelect.value = id;
+          document.querySelectorAll(".energy-tech-card").forEach(c => c.classList.remove("active"));
+          card.classList.add("active");
+          updateResourceInputLabel();
+          updateRecipeBadge();
+          runEnergyCalculation(true);
+        });
+
+        techGrid.appendChild(card);
+      });
+    }
+
+    function updateResourceInputLabel() {
+      const tech = POWER_TECHNOLOGIES[selectedTechId];
+      if (resourceInputLabel && tech) {
+        resourceInputLabel.innerText = `Débit de ${tech.fuelItem} disponible :`;
+      }
+    }
+
+    // 2. Gestion des modes
+    if (modeBtnTarget && modeBtnResource) {
+      modeBtnTarget.addEventListener("click", () => {
+        activeMode = "target_power";
+        modeBtnTarget.classList.add("active");
+        modeBtnResource.classList.remove("active");
+        groupTarget.style.display = "block";
+        groupResource.style.display = "none";
+        runEnergyCalculation();
+      });
+
+      modeBtnResource.addEventListener("click", () => {
+        activeMode = "resource_rate";
+        modeBtnResource.classList.add("active");
+        modeBtnTarget.classList.remove("active");
+        groupTarget.style.display = "none";
+        groupResource.style.display = "block";
+        updateResourceInputLabel();
+        runEnergyCalculation();
+      });
+    }
+
+    // 3. Presets & Événements inputs
+    document.querySelectorAll(".energy-quick-preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = parseFloat(btn.dataset.val);
+        targetPowerInput.value = val;
+        targetPowerLabel.innerText = `${val.toLocaleString()} MW`;
+        runEnergyCalculation();
+      });
+    });
+
+    document.querySelectorAll(".energy-quick-res-preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = parseFloat(btn.dataset.val);
+        resourceRateInput.value = val;
+        resourceValLabel.innerText = `${val.toLocaleString()} /min`;
+        runEnergyCalculation();
+      });
+    });
+
+    if (targetPowerInput) {
+      targetPowerInput.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        targetPowerLabel.innerText = `${val.toLocaleString()} MW`;
+      });
+      targetPowerInput.addEventListener("change", () => runEnergyCalculation());
+    }
+
+    if (resourceRateInput) {
+      resourceRateInput.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        resourceValLabel.innerText = `${val.toLocaleString()} /min`;
+      });
+      resourceRateInput.addEventListener("change", () => runEnergyCalculation());
+    }
+
+    if (ocSlider && ocLabel) {
+      ocSlider.addEventListener("input", (e) => {
+        const val = parseInt(e.target.value, 10);
+        let shardText = "Base";
+        if (val === 150) shardText = "1 Éclat";
+        else if (val === 200) shardText = "2 Éclats";
+        else if (val === 250) shardText = "3 Éclats";
+        ocLabel.innerText = `${val}% (${shardText})`;
+        runEnergyCalculation();
+      });
+    }
+
+    selectEnergyTechGlobal = function(techId) {
+      if (!POWER_TECHNOLOGIES[techId]) return;
+      selectedTechId = techId;
+      localStorage.setItem("ficsit_energy_tech", techId);
+      if (recipeSelect) recipeSelect.value = techId;
+      updateRecipeBadge();
+
+      if (activeCategory !== "all" && POWER_TECHNOLOGIES[techId].category !== activeCategory) {
+        activeCategory = "all";
+        catFilters.forEach(b => b.classList.toggle("active", b.getAttribute("data-cat") === "all"));
+        renderTechGrid();
+      } else {
+        document.querySelectorAll(".energy-tech-card").forEach(c => {
+          if (c.dataset.techId === techId) c.classList.add("active");
+          else c.classList.remove("active");
+        });
+      }
+
+      updateResourceInputLabel();
+      runEnergyCalculation(true);
+    };
+
+    if (recalcBtn) {
+      recalcBtn.addEventListener("click", () => {
+        recalcBtn.innerHTML = `<span>⏳</span> Calcul FICSIT en cours...`;
+        recalcBtn.style.opacity = "0.8";
+        try {
+          runEnergyCalculation(true);
+          recalcBtn.innerHTML = `<span>✅</span> Centrale Calculée !`;
+        } catch (err) {
+          console.error("Erreur de calcul de centrale:", err);
+          showToast(`⚠️ Erreur : ${err.message}`);
+          recalcBtn.innerHTML = `<span>⚠️</span> Erreur de calcul`;
+        } finally {
+          setTimeout(() => {
+            recalcBtn.innerHTML = `<span>⚡</span> Calculer la Centrale`;
+            recalcBtn.style.opacity = "1";
+          }, 900);
+        }
+      });
+    }
+
+    // 4. Calcul & Affichage
+    function runEnergyCalculation(isExplicitClick = false) {
+      const oc = parseInt(ocSlider?.value || "100", 10);
+      const loop = somersloopChk?.checked || false;
+
+      let res;
+      if (activeMode === "target_power") {
+        const targetMW = parseFloat(targetPowerInput?.value || "2500");
+        res = powerCalcInstance.calculateFromTargetPower(selectedTechId, targetMW, oc, loop);
+      } else {
+        const resRate = parseFloat(resourceRateInput?.value || "300");
+        res = powerCalcInstance.calculateFromResourceRate(selectedTechId, resRate, oc, loop);
+      }
+
+      currentPowerCalcResult = res;
+      renderEnergyResults(res);
+
+      if (resultsContainer) {
+        resultsContainer.classList.remove("calc-pulse");
+        void resultsContainer.offsetWidth; // Force reflow pour relancer l'animation
+        resultsContainer.classList.add("calc-pulse");
+
+        if (isExplicitClick) {
+          resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+
+      if (statPowerEl) {
+        statPowerEl.innerText = `${res.grossPowerMW.toLocaleString()} MW`;
+      }
+
+      if (isExplicitClick) {
+        const rawSummary = res.rawResourcesRequired && res.rawResourcesRequired.length > 0 
+          ? ` • Entrées : ${res.rawResourcesRequired.map(r => `${r.totalRate} ${r.unit} ${r.item}`).join(', ')}`
+          : '';
+        showToast(`⚡ Centrale ${res.tech.name} : ${res.grossPowerMW.toLocaleString()} MW (${res.exactGenerators} générateurs)${rawSummary}`);
+      }
+    }
+
+    function renderEnergyResults(res) {
+      if (!resultsContainer) return;
+
+      const tech = res.tech;
+      const gwStr = (res.grossPowerMW / 1000).toFixed(2);
+
+      // Bannière de statut de calcul
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      const statusBannerHtml = `
+        <div class="energy-status-banner">
+          <div class="energy-status-banner-text">
+            <span>✅</span> CENTRALE OPTIMISÉE — ${tech.name.toUpperCase()} (${res.grossPowerMW.toLocaleString()} MW)
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">
+            ⚡ Calculé à ${timeStr} • ${res.ceilGenerators} bâtiments • Prêt pour construction
+          </div>
+        </div>
+      `;
+
+      // Diagramme d'architecture et de flux
+      const rawResSummary = res.rawResourcesRequired && res.rawResourcesRequired.length > 0
+        ? res.rawResourcesRequired.map(r => `${r.totalRate} ${r.unit}`).join(', ')
+        : 'Passif';
+      const firstRawName = res.rawResourcesRequired && res.rawResourcesRequired.length > 0
+        ? res.rawResourcesRequired[0].item
+        : 'Geysers / Alien';
+
+      const flowDiagramHtml = `
+        <div class="energy-flow-diagram">
+          <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--ficsit-orange); display: flex; align-items: center; gap: 8px;">
+            <span>📐</span> SCHÉMA D'IMPLANTATION & FLUX DE PRODUCTION DE LA CENTRALE
+          </div>
+          <div class="energy-flow-steps">
+            <div class="energy-flow-step">
+              <div class="energy-flow-step-header"><span>⛏️</span> 1. Extraction</div>
+              <div class="energy-flow-step-title">${firstRawName}</div>
+              <div class="energy-flow-step-desc">${rawResSummary}</div>
+            </div>
+            <div class="energy-flow-arrow">➔</div>
+            <div class="energy-flow-step">
+              <div class="energy-flow-step-header"><span>⚙️</span> 2. Traitement / Fluides</div>
+              <div class="energy-flow-step-title">${res.totalWaterRate > 0 ? 'Eau & Plomberie' : (res.upstreamMachines?.length > 0 ? res.upstreamMachines[0].building : 'Convoyeurs')}</div>
+              <div class="energy-flow-step-desc">${res.totalWaterRate > 0 ? `${res.totalWaterRate} m³/min d'eau` : `${res.totalFuelRate} ${tech.fuelItem}/min`}</div>
+            </div>
+            <div class="energy-flow-arrow">➔</div>
+            <div class="energy-flow-step highlight">
+              <div class="energy-flow-step-header"><span>🏭</span> 3. Production Électrique</div>
+              <div class="energy-flow-step-title">${tech.generatorType}</div>
+              <div class="energy-flow-step-desc">${res.exactGenerators} × à ${res.effectiveGenMW} MW/u</div>
+            </div>
+            <div class="energy-flow-arrow">➔</div>
+            <div class="energy-flow-step">
+              <div class="energy-flow-step-header"><span>⚡</span> 4. Réseau FICSIT</div>
+              <div class="energy-flow-step-title">+${res.grossPowerMW.toLocaleString()} MW</div>
+              <div class="energy-flow-step-desc">${gwStr} GW de puissance active</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      let wasteHtml = "";
+      if (res.totalWasteRate > 0) {
+        wasteHtml = `
+          <div class="energy-stat-card" style="border-color: var(--ficsit-red);">
+            <div class="energy-stat-title" style="color: var(--ficsit-red);">☢️ Sous-produit / Déchet</div>
+            <div class="energy-stat-big-val" style="color: var(--ficsit-red);">${res.totalWasteRate} /min</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${tech.wasteItem}</div>
+          </div>
+        `;
+      }
+
+      let plumbingHtml = "";
+      if (res.plumbingAnalysis && res.plumbingAnalysis.hasFluid) {
+        let groupsHtml = res.plumbingAnalysis.pipeGroups.map(g => `
+          <div class="plumbing-group-card">
+            <div class="plumbing-group-title">
+              <span>${g.title}</span>
+              <strong style="color: var(--ficsit-cyan);">${g.pipeType}</strong>
+            </div>
+            <div class="plumbing-group-desc">💡 ${g.recommendation}</div>
+          </div>
+        `).join("");
+
+        plumbingHtml = `
+          <div class="plumbing-guide-box">
+            <div class="plumbing-guide-title">
+              <span>💧</span> Guide de Plomberie & Ratios Parfaits FICSIT
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
+              ${res.plumbingAnalysis.summary}
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${groupsHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      let upstreamHtml = "";
+      if (res.upstreamMachines && res.upstreamMachines.length > 0) {
+        const rows = res.upstreamMachines.map(m => `
+          <tr>
+            <td style="font-weight: 700; color: var(--text-primary);">${m.building}</td>
+            <td style="font-family: var(--font-display); font-weight: 700; color: var(--ficsit-orange); font-size: 15px;">×${m.count}</td>
+            <td style="color: var(--ficsit-amber);">${m.outputItem}</td>
+            <td style="color: var(--text-secondary);">${m.inputItem}</td>
+          </tr>
+        `).join("");
+
+        upstreamHtml = `
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px;">
+            <div style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ficsit-orange); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <span>🏭</span> Chaîne Amont Recommandée (Raffinage & Préparation)
+            </div>
+            <table class="energy-upstream-table">
+              <thead>
+                <tr>
+                  <th>Machine Amont</th>
+                  <th>Quantité</th>
+                  <th>Production</th>
+                  <th>Alimentation Requise</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      let shoppingHtml = "";
+      if (res.buildingShoppingList && Object.keys(res.buildingShoppingList).length > 0) {
+        const badges = Object.entries(res.buildingShoppingList).map(([mat, qty]) => `
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <span style="color: var(--text-secondary);">${mat}</span>
+            <strong style="font-family: var(--font-display); color: var(--ficsit-amber);">${qty} pcs</strong>
+          </div>
+        `).join("");
+
+        shoppingHtml = `
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px;">
+            <div style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ficsit-amber); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <span>🧱</span> Matériaux de Construction du Complexe Énergétique
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;">
+              ${badges}
+            </div>
+          </div>
+        `;
+      }
+
+      // Section Ressources Brutes Requises en Entrée
+      let rawInputsHtml = "";
+      if (res.rawResourcesRequired && res.rawResourcesRequired.length > 0) {
+        const inputCards = res.rawResourcesRequired.map(r => `
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid ${r.color || 'var(--ficsit-orange)'};">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">${r.item}</span>
+              <span style="font-size: 11px; color: var(--text-muted);">${r.isFluid ? '💧 Fluide' : '📦 Solide'}</span>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 22px; font-weight: 700; color: ${r.color || 'var(--ficsit-orange)'};">
+              ${r.totalRate} <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">${r.unit}</span>
+            </div>
+            ${r.miningNote ? `<div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">⛏️ <em>${r.miningNote}</em></div>` : ''}
+          </div>
+        `).join("");
+
+        rawInputsHtml = `
+          <div style="background: var(--bg-card); border: 2px solid var(--ficsit-orange); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--ficsit-orange); display: flex; align-items: center; gap: 8px;">
+                <span>📦</span> RESSOURCES BRUTES NÉCESSAIRES EN ENTRÉE (PAR MINUTE)
+              </div>
+              <span style="font-size: 12px; color: var(--text-secondary); background: var(--bg-surface); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                Alimentation continue à 100%
+              </span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+              Débits totaux de matières premières à extraire de la carte pour faire tourner l'ensemble du complexe énergétique sans interruption :
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+              ${inputCards}
+            </div>
+          </div>
+        `;
+      }
+
+      resultsContainer.innerHTML = `
+        ${statusBannerHtml}
+
+        <div class="energy-stats-row">
+          <div class="energy-stat-card highlight">
+            <div class="energy-stat-title">⚡ Puissance Brute Totale</div>
+            <div class="energy-stat-big-val amber">${res.grossPowerMW.toLocaleString()} MW</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">${gwStr} Gigawatts de capacité</div>
+          </div>
+
+          <div class="energy-stat-card">
+            <div class="energy-stat-title">🏭 Générateurs Requis</div>
+            <div class="energy-stat-big-val orange">${res.exactGenerators} ×</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">${tech.generatorType} (${res.effectiveGenMW} MW/u)</div>
+          </div>
+
+          <div class="energy-stat-card">
+            <div class="energy-stat-title">🛢️ Débit Combustible Direct</div>
+            <div class="energy-stat-big-val cyan">${res.totalFuelRate} /min</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">${tech.fuelItem}</div>
+          </div>
+
+          ${res.totalWaterRate > 0 ? `
+            <div class="energy-stat-card">
+              <div class="energy-stat-title">💧 Besoin en Eau Direct</div>
+              <div class="energy-stat-big-val cyan">${res.totalWaterRate} m³/min</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">${res.waterExtractorsCount} × Extracteurs d'eau (120 m³/min)</div>
+            </div>
+          ` : ''}
+
+          ${wasteHtml}
+        </div>
+
+        ${rawInputsHtml}
+        ${flowDiagramHtml}
+        ${plumbingHtml}
+        ${upstreamHtml}
+        ${shoppingHtml}
+      `;
+
+      // Rendu de l'Organigramme SCIM Multi-Produits Interactif de la Centrale
+      const flowViewport = document.getElementById("flowchart-energy-viewport");
+      const fullscreenBtn = document.getElementById("btn-open-energy-fullscreen");
+      const scimResults = convertPowerPlantToSCIMResults(res);
+
+      if (flowViewport && scimResults) {
+        SatisfactoryFlowchart.initInteractive(flowViewport, scimResults);
+
+        if (fullscreenBtn) {
+          fullscreenBtn.onclick = () => {
+            openBlueprintModal(`Organigramme SCIM : ${scimResults.milestoneName}`, SatisfactoryFlowchart.generateSVG(scimResults));
+            SatisfactoryFlowchart.attachInteractivity(document.getElementById("modal-bp-dynamic-svg"), scimResults);
+          };
+        }
+      }
+    }
+
+    function convertPowerPlantToSCIMResults(res) {
+      if (!res || !res.tech) return null;
+      const tech = res.tech;
+
+      // 1. Matières premières brutes (Rank 0)
+      const rawResources = {};
+      if (res.rawResourcesRequired && res.rawResourcesRequired.length > 0) {
+        res.rawResourcesRequired.forEach(r => {
+          rawResources[r.item] = r.totalRate;
+        });
+      } else {
+        rawResources[tech.fuelItem] = res.totalFuelRate;
+        if (res.totalWaterRate > 0) {
+          rawResources["Eau"] = res.totalWaterRate;
+        }
+      }
+
+      // 2. Étapes de production (Ranks 1+)
+      const productionSteps = [];
+
+      // A. Extracteurs d'eau
+      if (res.totalWaterRate > 0) {
+        productionSteps.push({
+          recipeId: "water_extraction",
+          recipeName: "Extraction Hydraulique",
+          itemId: "Eau",
+          rateProduced: res.totalWaterRate,
+          building: { id: "water_extractor", name: "Extracteur d'Eau", icon: "💧" },
+          physicalMachines: Math.ceil(res.waterExtractorsCount),
+          machinesCount: res.waterExtractorsCount,
+          overclock: 100,
+          powerMW: 20 * Math.ceil(res.waterExtractorsCount),
+          ingredients: [
+            { item: "Eau", rate: res.totalWaterRate }
+          ]
+        });
+      }
+
+      // B. Chaîne de raffinage amont
+      if (res.upstreamMachines && res.upstreamMachines.length > 0) {
+        res.upstreamMachines.forEach((m, idx) => {
+          productionSteps.push({
+            recipeId: `upstream_${idx}_${m.outputItem.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+            recipeName: `${m.building} (${m.outputItem})`,
+            itemId: m.outputItem,
+            rateProduced: res.totalFuelRate,
+            building: { id: m.building.toLowerCase().replace(/[^a-z0-9]/g, '_'), name: m.building, icon: "🏭" },
+            physicalMachines: m.count,
+            machinesCount: m.count,
+            overclock: res.overclockPercent,
+            powerMW: 30 * m.count,
+            ingredients: [
+              { item: m.inputItem, rate: res.totalFuelRate }
+            ]
+          });
+        });
+      }
+
+      // C. Générateurs / Centrale Électrique
+      const genIngredients = [];
+      genIngredients.push({ item: tech.fuelItem, rate: res.totalFuelRate });
+      if (res.totalWaterRate > 0) {
+        genIngredients.push({ item: "Eau", rate: res.totalWaterRate });
+      }
+
+      productionSteps.push({
+        recipeId: `gen_${tech.id}`,
+        recipeName: `Génération Électrique : ${tech.name}`,
+        itemId: `⚡ Puissance Réseau (+${res.grossPowerMW.toLocaleString()} MW)`,
+        rateProduced: res.grossPowerMW,
+        building: { id: tech.id, name: tech.generatorType, icon: "⚡" },
+        physicalMachines: res.ceilGenerators,
+        machinesCount: res.exactGenerators,
+        overclock: res.overclockPercent,
+        powerMW: -res.grossPowerMW,
+        ingredients: genIngredients
+      });
+
+      // 3. Cibles / Produits finaux (Réseau FICSIT & Sous-produits)
+      const targets = [
+        { item: `⚡ Puissance Réseau (+${res.grossPowerMW.toLocaleString()} MW)`, rate: res.grossPowerMW }
+      ];
+      if (res.totalWasteRate > 0) {
+        targets.push({
+          item: `☢️ Sous-produit : ${tech.wasteItem}`,
+          rate: res.totalWasteRate
+        });
+      }
+
+      return {
+        rawResources,
+        productionSteps,
+        targets,
+        totalPowerMW: -res.grossPowerMW,
+        milestoneName: `Centrale ${tech.name} (${res.grossPowerMW.toLocaleString()} MW)`
+      };
+    }
+
+    // 5. Export vers la Checklist
+    if (exportChecklistBtn) {
+      exportChecklistBtn.addEventListener("click", () => {
+        if (!currentPowerCalcResult) return;
+
+        const res = currentPowerCalcResult;
+        const tech = res.tech;
+        const items = [];
+
+        // Générateurs
+        items.push({
+          title: `🏭 Construire ${res.ceilGenerators} × ${tech.generatorType}`,
+          subtitle: `Centrale ${tech.name} (${res.grossPowerMW} MW)`,
+          qty: `${res.ceilGenerators} bâts`
+        });
+
+        // Extracteurs d'eau
+        if (res.waterExtractorsCount > 0) {
+          const extCount = Math.ceil(res.waterExtractorsCount);
+          items.push({
+            title: `💧 Installer ${extCount} × Extracteur d'Eau`,
+            subtitle: `Approvisionnement ${res.totalWaterRate} m³/min d'eau`,
+            qty: `${extCount} bâts`
+          });
+        }
+
+        // Machines amont
+        if (res.upstreamMachines) {
+          res.upstreamMachines.forEach(m => {
+            items.push({
+              title: `⚙️ Installer ${m.count} × ${m.building}`,
+              subtitle: `Production de ${m.outputItem}`,
+              qty: `${m.count} bâts`
+            });
+          });
+        }
+
+        // Ressources brutes à extraire / alimenter
+        if (res.rawResourcesRequired) {
+          res.rawResourcesRequired.forEach(r => {
+            items.push({
+              title: `⛏️ Raccorder ${r.totalRate} ${r.unit} de ${r.item}`,
+              subtitle: `Approvisionnement continu de la centrale (${r.miningNote || 'Gisement carte'})`,
+              qty: `${r.totalRate} ${r.unit}`
+            });
+          });
+        }
+
+        // Matériaux de construction
+        if (res.buildingShoppingList) {
+          for (const [mat, qty] of Object.entries(res.buildingShoppingList)) {
+            items.push({
+              title: `📦 Rassembler ${qty} × ${mat}`,
+              subtitle: `Matériau pour la centrale ${tech.name}`,
+              qty: `${qty} pcs`
+            });
+          }
+        }
+
+        localStorage.setItem("ficsit_checklist_items", JSON.stringify(items));
+        STATE.checkedChecklist.clear();
+        saveState();
+        renderChecklist();
+        switchTab("checklist");
+        showToast("⚡ Centrale exportée avec succès vers votre Checklist de Chantier !");
+      });
+    }
+
+    populateRecipeSelect();
+    renderTechGrid();
+    updateResourceInputLabel();
+    runEnergyCalculation();
+  }
+
+  // =========================================================================
+  // IMPORTEUR ET SYNCHRONISEUR DE SAUVEGARDE .SAV
   // =========================================================================
   function initSaveUploader() {
+    const modal = document.getElementById("save-sync-modal");
+    const openBtn = document.getElementById("btn-open-save-modal");
+    const closeBtn = document.getElementById("btn-close-save-modal");
+    const doneBtn = document.getElementById("btn-save-modal-done");
     const dropzone = document.getElementById("save-dropzone");
     const fileInput = document.getElementById("save-file-input");
     const saveReport = document.getElementById("save-report-panel");
     const browseBtn = document.getElementById("btn-browse-save");
     const copyPathBtn = document.getElementById("btn-copy-save-path");
 
-    if (!dropzone || !fileInput) return;
+    // Gestion de l'ouverture / fermeture de la modal
+    if (openBtn && modal) {
+      openBtn.addEventListener("click", () => {
+        modal.style.display = "flex";
+        // Si une session est déjà chargée en mémoire, réafficher son bilan
+        if (STATE.saveSessionInfo && saveReport) {
+          renderSaveReport(STATE.saveSessionInfo);
+        }
+      });
+    }
 
-    if (browseBtn) {
+    if (closeBtn && modal) {
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+    }
+
+    if (doneBtn && modal) {
+      doneBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+    }
+
+    if (browseBtn && fileInput) {
       browseBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         fileInput.click();
@@ -7571,74 +8991,214 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.removeChild(ta);
     }
 
-    dropzone.addEventListener("click", () => fileInput.click());
+    if (dropzone && fileInput) {
+      dropzone.addEventListener("click", () => fileInput.click());
 
-    dropzone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropzone.classList.add("dragover");
-    });
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = "var(--ficsit-green)";
+        dropzone.style.background = "rgba(16, 185, 129, 0.1)";
+      });
 
-    dropzone.addEventListener("dragleave", () => {
-      dropzone.classList.remove("dragover");
-    });
+      dropzone.addEventListener("dragleave", () => {
+        dropzone.style.borderColor = "var(--border-strong)";
+        dropzone.style.background = "rgba(0,0,0,0.3)";
+      });
 
-    dropzone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropzone.classList.remove("dragover");
-      if (e.dataTransfer.files.length > 0) {
-        handleSaveFile(e.dataTransfer.files[0]);
-      }
-    });
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = "var(--border-strong)";
+        dropzone.style.background = "rgba(0,0,0,0.3)";
+        if (e.dataTransfer.files.length > 0) {
+          handleSaveFile(e.dataTransfer.files[0]);
+        }
+      });
 
-    fileInput.addEventListener("change", (e) => {
-      if (e.target.files.length > 0) {
-        handleSaveFile(e.target.files[0]);
-      }
-    });
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          handleSaveFile(e.target.files[0]);
+        }
+      });
+    }
+
+    window.processAndApplySaveFile = handleSaveFile;
 
     async function handleSaveFile(file) {
-      showToast("Analyse du fichier de sauvegarde Satisfactory...");
-      const result = await SatisfactorySaveParser.parseSave(file);
+      if (modal) modal.style.display = "flex";
+      const dropzone = document.getElementById("save-dropzone");
+      const loader = document.getElementById("save-loader-overlay");
+      const loaderStatus = document.getElementById("save-loader-status");
+      const loaderProgressBar = document.getElementById("save-loader-progress-bar");
+      const loaderPercentage = document.getElementById("save-loader-percentage");
+      const saveReport = document.getElementById("save-report-panel");
 
-      if (result.success) {
-        // Appliquer les jalons trouvés
-        result.unlockedMilestones.forEach(mId => STATE.completedMilestones.add(mId));
-        result.unlockedPhases.forEach(pId => STATE.completedPhases.add(pId));
-        saveState();
+      if (dropzone) dropzone.style.display = "none";
+      if (saveReport) saveReport.style.display = "none";
+      if (loader) {
+        loader.style.display = "block";
+        if (loaderProgressBar) loaderProgressBar.style.width = "0%";
+        if (loaderPercentage) loaderPercentage.innerText = "0%";
+        if (loaderStatus) loaderStatus.innerText = "Initialisation et décompression de la sauvegarde Satisfactory...";
+      }
 
-        // Mettre à jour toutes les vues
-        renderMilestones();
-        renderPhases();
-        renderSyntheticView();
-        updateHUDStats();
+      showToast("⏳ Analyse du fichier de sauvegarde Satisfactory...");
 
-        // Afficher le rapport de sauvegarde
-        if (saveReport) {
-          saveReport.style.display = "block";
-          saveReport.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-              <span style="background: var(--ficsit-green); color: #000; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px;">SYNCHRONISÉ</span>
-              <h4 style="color: var(--ficsit-green); margin: 0; font-family: var(--font-display); font-size: 16px;">
-                ✔ Sauvegarde analysée avec succès !
-              </h4>
-            </div>
-            <div class="resource-row"><span>Nom de la Session :</span><strong>${result.sessionName}</strong></div>
-            <div class="resource-row"><span>Temps de Jeu :</span><strong>${result.playtime}</strong></div>
-            <div class="resource-row"><span>Build Version :</span><strong>${result.buildVersion}</strong></div>
-            <div class="resource-row"><span>Jalons Détectés & Cochés :</span><strong style="color: var(--ficsit-orange);">${result.unlockedMilestones.length} jalon(s)</strong></div>
-            <div class="resource-row"><span>Phases Ascenseur Validées :</span><strong style="color: var(--ficsit-amber);">${result.unlockedPhases.length} phase(s)</strong></div>
-
-            <div style="margin-top: 16px; padding: 12px; background: rgba(46, 204, 113, 0.1); border: 1px solid var(--ficsit-green); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-primary);">
-              ✨ <strong>Vos jalons et phases sont maintenant 100% synchronisés !</strong> Vous pouvez consulter l'onglet <em>Vue Synthétique</em> ou <em>Calculateur de Production</em>.
-            </div>
-          `;
+      const onProgress = (current, total) => {
+        const pct = Math.round((current / (total || 1)) * 100);
+        if (loaderProgressBar) loaderProgressBar.style.width = `${pct}%`;
+        if (loaderPercentage) loaderPercentage.innerText = `${pct}% (Blocs ${current} / ${total})`;
+        if (loaderStatus) {
+          if (pct < 30) loaderStatus.innerText = `Décompression des blocs de données Unreal Engine (${current}/${total})...`;
+          else if (pct < 75) loaderStatus.innerText = `Extraction des jalons, arbres MAM et schémas (${current}/${total})...`;
+          else loaderStatus.innerText = `Analyse et filtrage des 41 recettes alternatives (${current}/${total})...`;
         }
+      };
 
-        showToast(`Sauvegarde "${result.sessionName}" synchronisée avec succès !`);
-      } else {
-        alert("Erreur lors de la lecture du fichier .sav : " + result.error);
+      try {
+        const result = await SatisfactorySaveParser.parseSave(file, onProgress);
+
+        if (loader) loader.style.display = "none";
+        if (dropzone) dropzone.style.display = "block";
+
+        if (result.success) {
+          // Appliquer l'état exact de la sauvegarde
+          STATE.completedMilestones.clear();
+          STATE.completedPhases.clear();
+          result.unlockedMilestones.forEach(mId => STATE.completedMilestones.add(mId));
+          result.unlockedPhases.forEach(pId => STATE.completedPhases.add(pId));
+          
+          // Appliquer les recettes alternatives trouvées
+          STATE.unlockedAltRecipes = new Set(result.unlockedRecipes || []);
+          STATE.mamTrees = result.mamTrees || null;
+          STATE.saveSessionInfo = {
+            sessionName: result.sessionName,
+            playtime: result.playtime,
+            buildVersion: result.buildVersion,
+            unlockedMilestonesCount: result.unlockedMilestones.length,
+            unlockedPhasesCount: result.unlockedPhases.length,
+            unlockedRecipesCount: result.unlockedRecipes.length,
+            unlockedRecipesList: result.unlockedRecipes
+          };
+
+          // Par défaut, activer le mode "Recettes de ma sauvegarde" pour l'optimiseur
+          STATE.recipeFilterMode = "save";
+          updateRecipeFilterModeUI();
+          saveState();
+
+          // Mettre à jour toutes les vues du tableau de bord
+          renderMilestones();
+          renderPhases();
+          renderSyntheticView();
+          updateHUDStats();
+          updateAltRecipeCounters();
+
+          // Mettre à jour les calculateurs
+          if (typeof executeCalculation === "function") {
+            executeCalculation(true);
+          }
+          if (typeof executeMilestoneCalculation === "function") {
+            executeMilestoneCalculation(true);
+          }
+
+          // Afficher le rapport détaillé
+          renderSaveReport(STATE.saveSessionInfo);
+
+          showToast(`✔ Sauvegarde "${result.sessionName}" synchronisée avec succès (${result.unlockedMilestones.length} jalons, ${result.unlockedRecipes.length} recettes) !`);
+        } else {
+          alert("Erreur lors de la lecture du fichier .sav : " + result.error);
+        }
+      } catch (err) {
+        if (loader) loader.style.display = "none";
+        if (dropzone) dropzone.style.display = "block";
+        alert("Erreur inattendue lors de l'analyse : " + err.message);
       }
     }
+
+    function renderSaveReport(info) {
+      if (!saveReport) return;
+      saveReport.style.display = "block";
+
+      const mamBadges = STATE.mamTrees ? Object.entries(STATE.mamTrees).map(([key, tree]) => {
+        const pct = Math.round((tree.count / tree.total) * 100);
+        return `
+          <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 6px 10px; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center;">
+            <span>🔬 <strong>${tree.name}</strong></span>
+            <span style="color: ${pct === 100 ? 'var(--ficsit-green)' : 'var(--ficsit-amber)'}; font-weight: 700;">${tree.count}/${tree.total} (${pct}%)</span>
+          </div>
+        `;
+      }).join("") : "";
+
+      const recipesHtml = (info.unlockedRecipesList || []).map(rId => {
+        const rec = RECIPES.find(r => r.id === rId);
+        const name = rec ? rec.name : rId;
+        return `<span style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--ficsit-green); color: #4ade80; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px;">★ ${name}</span>`;
+      }).join(" ") || "<span style='color: var(--text-muted); font-size: 12px;'>Aucune recette alternative scannée dans cette sauvegarde.</span>";
+
+      saveReport.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--ficsit-green); color: #000; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px;">SYNCHRONISÉ</span>
+            <h4 style="color: var(--ficsit-green); margin: 0; font-family: var(--font-display); font-size: 16px;">
+              ✔ Sauvegarde active : ${info.sessionName}
+            </h4>
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary);">
+            Temps de jeu : <strong style="color: #fff;">${info.playtime}</strong> | Build : <strong>${info.buildVersion}</strong>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px;">
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 8px 12px;">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Jalons Débloqués</div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--ficsit-orange);">${info.unlockedMilestonesCount} jalon(s)</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 8px 12px;">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Phases Ascenseur</div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--ficsit-amber);">${info.unlockedPhasesCount} phase(s)</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 8px 12px;">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Recettes Alternatives</div>
+            <div style="font-size: 18px; font-weight: 800; color: #4ade80;">${info.unlockedRecipesCount} / 41</div>
+          </div>
+        </div>
+
+        ${mamBadges ? `
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Arbres de Recherche du MAM :</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px;">
+              ${mamBadges}
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="background: rgba(0,0,0,0.35); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 14px;">
+          <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+            Recettes Alternatives Détectées (${info.unlockedRecipesCount}) :
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; max-height: 120px; overflow-y: auto;">
+            ${recipesHtml}
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--ficsit-green); border-radius: var(--radius-sm);">
+          <div style="font-size: 12px; color: #fff;">
+            🎯 <strong>Mode Optimiseur Actif :</strong> Les calculateurs d'usines n'utiliseront QUE vos ${info.unlockedRecipesCount} recettes débloquées.
+          </div>
+          <button type="button" class="btn-ficsit" id="btn-goto-calc-from-save" style="font-size: 11.5px; padding: 5px 12px; background: var(--ficsit-orange); color: #000; font-weight: 700; border: none; cursor: pointer;">
+            🔩 Lancer le Calculateur d'Usine ➔
+          </button>
+        </div>
+      `;
+
+      const gotoCalcBtn = document.getElementById("btn-goto-calc-from-save");
+      if (gotoCalcBtn) {
+        gotoCalcBtn.onclick = () => {
+          if (modal) modal.style.display = "none";
+          switchTab("calculator");
+        };
+      }
+    }
+  }
 
     // Gestion des Boutons de Présélection Rapide de Palier
     document.querySelectorAll(".btn-preset-tier").forEach(btn => {
@@ -7681,7 +9241,6 @@ document.addEventListener("DOMContentLoaded", () => {
         showToast("Progression réinitialisée au début de partie (Palier 0).");
       });
     }
-  }
 
   // =========================================================================
   // UTILITAIRES & NOTIFICATIONS
@@ -7699,6 +9258,15 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("ficsit_milestones", JSON.stringify(Array.from(STATE.completedMilestones)));
     localStorage.setItem("ficsit_phases", JSON.stringify(Array.from(STATE.completedPhases)));
     localStorage.setItem("ficsit_alt_recipes", JSON.stringify(STATE.activeAltRecipes));
+    localStorage.setItem("ficsit_unlocked_alt_recipes", JSON.stringify(Array.from(STATE.unlockedAltRecipes || [])));
+    localStorage.setItem("ficsit_recipe_filter_mode", STATE.recipeFilterMode || "all");
+    if (STATE.saveSessionInfo) {
+      localStorage.setItem("ficsit_save_session", JSON.stringify(STATE.saveSessionInfo));
+    }
+    if (STATE.mamTrees) {
+      localStorage.setItem("ficsit_mam_trees", JSON.stringify(STATE.mamTrees));
+    }
+    localStorage.setItem("ficsit_mam_nodes", JSON.stringify(Array.from(STATE.researchedMAMNodes || [])));
     localStorage.setItem("ficsit_checklist", JSON.stringify(Array.from(STATE.checkedChecklist)));
     localStorage.setItem("ficsit_built_machines", JSON.stringify(Array.from(STATE.builtMachines)));
   }
@@ -7719,6 +9287,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
+  // GESTION DU THÈME FICSIT
+  // =========================================================================
+  function initThemeSelector() {
+    const themeSelect = document.getElementById("ficsit-theme-select");
+    const savedTheme = localStorage.getItem("ficsit_theme") || "ficsit-classic";
+
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    if (themeSelect) {
+      themeSelect.value = savedTheme;
+      themeSelect.addEventListener("change", (e) => {
+        const newTheme = e.target.value;
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("ficsit_theme", newTheme);
+        showToast(`Thème FICSIT appliqué : ${themeSelect.options[themeSelect.selectedIndex].text}`);
+      });
+    }
+  }
+
+  // =========================================================================
   // CARTE INTERACTIVE DES RESSOURCES
   // =========================================================================
   let mapEngineInstance = null;
@@ -7731,7 +9318,17 @@ document.addEventListener("DOMContentLoaded", () => {
       mapEngineInstance = new SatisfactoryMapEngine(canvas, {
         onNodeSelect: (node) => showNodeInspector(node),
         onRadiusUpdate: (data) => updateRadiusPanel(data),
-        onPinUpdate: () => showToast("Marqueur de base sauvegardé sur la carte !")
+        onPinUpdate: () => showToast("Marqueur de base sauvegardé sur la carte !"),
+        onRouteMeasured: (distMeters, p1, p2) => {
+          showToast(`📏 Distance mesurée : ${distMeters.toLocaleString()} m ! Injectée dans le simulateur logistique.`);
+          const distInput = document.getElementById("logistics-distance-input");
+          if (distInput) {
+            distInput.value = distMeters;
+          }
+          if (typeof recalculateLogistics === 'function') {
+            recalculateLogistics();
+          }
+        }
       });
     }
 
@@ -7804,10 +9401,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const toolSelectBtn = document.getElementById("tool-map-select");
     const toolRadiusBtn = document.getElementById("tool-map-radius");
     const toolPinBtn = document.getElementById("tool-map-pin");
+    const toolRouteBtn = document.getElementById("tool-map-route");
     const radiusPanel = document.getElementById("map-radius-panel");
 
     function setToolActive(toolName, activeBtn) {
-      [toolSelectBtn, toolRadiusBtn, toolPinBtn].forEach(b => b && b.classList.remove("active"));
+      [toolSelectBtn, toolRadiusBtn, toolPinBtn, toolRouteBtn].forEach(b => b && b.classList.remove("active"));
       if (activeBtn) activeBtn.classList.add("active");
       if (mapEngineInstance) mapEngineInstance.setTool(toolName);
       if (radiusPanel) {
@@ -7823,6 +9421,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (toolPinBtn) toolPinBtn.addEventListener("click", () => {
       setToolActive("custom_pin", toolPinBtn);
       showToast("Cliquez sur la carte pour poser un marqueur d'usine !");
+    });
+    if (toolRouteBtn) toolRouteBtn.addEventListener("click", () => {
+      setToolActive("route", toolRouteBtn);
+      showToast("Cliquez sur 2 points (ou gisements) de la carte pour tracer une ligne logistique !");
     });
 
     // Populate Resource Chips
@@ -8065,19 +9667,1065 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
+  // MODULE 🚚 LOGISTIQUE & TRANSPORTS FICSIT (1.0 / 1.2)
+  // =========================================================================
+  let lastLogisticsCalculation = null;
+
+  function initLogisticsUI() {
+    const subnavBtns = document.querySelectorAll(".logistics-subnav-btn");
+    const subtabViews = {
+      simulator: document.getElementById("logistics-subtab-simulator"),
+      matrix: document.getElementById("logistics-subtab-matrix"),
+      engineering: document.getElementById("logistics-subtab-engineering")
+    };
+
+    subnavBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        subnavBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const target = btn.getAttribute("data-subtab");
+        Object.entries(subtabViews).forEach(([key, view]) => {
+          if (view) view.style.display = key === target ? "block" : "none";
+        });
+        if (target === "matrix") renderLogisticsMatrix();
+        if (target === "engineering") renderLogisticsEngineering();
+      });
+    });
+
+    const modeSelect = document.getElementById("logistics-mode-select");
+    const itemSelect = document.getElementById("logistics-item-select");
+    const throughputInput = document.getElementById("logistics-throughput-input");
+    const distanceInput = document.getElementById("logistics-distance-input");
+    const unitLabel = document.getElementById("logistics-unit-label");
+    const optSlope = document.getElementById("opt-train-slope");
+    const optBidi = document.getElementById("opt-train-bidirectional");
+    const optFuel = document.getElementById("opt-road-fuel");
+    const slopeSelect = document.getElementById("logistics-slope-select");
+    const bidiCheck = document.getElementById("logistics-bidirectional-check");
+    const fuelSelect = document.getElementById("logistics-fuel-select");
+    const recalcBtn = document.getElementById("btn-calc-logistics");
+    const exportChecklistBtn = document.getElementById("btn-export-logistics-checklist");
+    const measureMapBtn = document.getElementById("btn-measure-on-map");
+
+    function updateFormVisibility() {
+      if (!modeSelect) return;
+      const mode = modeSelect.value;
+      const itemId = itemSelect ? itemSelect.value : "iron_ore";
+      const isFluid = typeof SatisfactoryLogisticsEngine !== 'undefined' ? SatisfactoryLogisticsEngine.isItemFluid(itemId) : false;
+
+      if (unitLabel) {
+        unitLabel.textContent = isFluid ? "m³ / min" : "pièces / min";
+      }
+
+      if (optSlope) optSlope.style.display = mode === "train" ? "block" : "none";
+      if (optBidi) optBidi.style.display = mode === "train" ? "block" : "none";
+      if (optFuel) optFuel.style.display = (mode === "truck" || mode === "tractor" || mode === "explorer") ? "block" : "none";
+    }
+
+    if (modeSelect) modeSelect.addEventListener("change", () => {
+      updateFormVisibility();
+      recalculateLogistics();
+    });
+
+    if (itemSelect) itemSelect.addEventListener("change", () => {
+      updateFormVisibility();
+      recalculateLogistics();
+    });
+
+    if (throughputInput) throughputInput.addEventListener("input", () => recalculateLogistics());
+    if (distanceInput) distanceInput.addEventListener("input", () => recalculateLogistics());
+    if (slopeSelect) slopeSelect.addEventListener("change", () => recalculateLogistics());
+    if (bidiCheck) bidiCheck.addEventListener("change", () => recalculateLogistics());
+    if (fuelSelect) fuelSelect.addEventListener("change", () => recalculateLogistics());
+    if (recalcBtn) recalcBtn.addEventListener("click", () => recalculateLogistics());
+
+    if (exportChecklistBtn) {
+      exportChecklistBtn.addEventListener("click", () => exportLogisticsToChecklist());
+    }
+
+    if (measureMapBtn) {
+      measureMapBtn.addEventListener("click", () => {
+        switchTab("map");
+        setTimeout(() => {
+          const toolRouteBtn = document.getElementById("tool-map-route");
+          if (toolRouteBtn) toolRouteBtn.click();
+        }, 100);
+      });
+    }
+
+    updateFormVisibility();
+    recalculateLogistics();
+  }
+
+  function recalculateLogistics() {
+    if (typeof SatisfactoryLogisticsEngine === 'undefined') return;
+
+    const modeSelect = document.getElementById("logistics-mode-select");
+    const itemSelect = document.getElementById("logistics-item-select");
+    const throughputInput = document.getElementById("logistics-throughput-input");
+    const distanceInput = document.getElementById("logistics-distance-input");
+    const slopeSelect = document.getElementById("logistics-slope-select");
+    const bidiCheck = document.getElementById("logistics-bidirectional-check");
+    const fuelSelect = document.getElementById("logistics-fuel-select");
+
+    const mode = modeSelect ? modeSelect.value : "train";
+    const itemId = itemSelect ? itemSelect.value : "iron_ore";
+    const throughput = parseFloat(throughputInput ? throughputInput.value : 600) || 600;
+    const distance = parseFloat(distanceInput ? distanceInput.value : 1200) || 1200;
+    const slope = slopeSelect ? slopeSelect.value : "flat";
+    const isBidi = bidiCheck ? bidiCheck.checked : false;
+    const fuelId = fuelSelect ? fuelSelect.value : "fuel";
+
+    const options = {
+      slope,
+      isBidirectional: isBidi,
+      fuelType: fuelId
+    };
+
+    let result = null;
+    if (mode === "train") {
+      result = SatisfactoryLogisticsEngine.calculateTrain(distance, throughput, itemId, options);
+    } else if (mode === "drone") {
+      result = SatisfactoryLogisticsEngine.calculateDrone(distance, throughput, itemId, options);
+    } else if (mode === "truck" || mode === "tractor" || mode === "explorer") {
+      result = SatisfactoryLogisticsEngine.calculateVehicle(distance, throughput, itemId, mode, fuelId, options);
+    } else if (mode === "belt") {
+      result = SatisfactoryLogisticsEngine.calculateBeltsAndPipes(distance, throughput, itemId, options);
+    }
+
+    lastLogisticsCalculation = {
+      mode,
+      itemId,
+      throughput,
+      distance,
+      options,
+      result
+    };
+
+    renderLogisticsSimulator(result);
+  }
+
+  function renderLogisticsSimulator(res) {
+    const container = document.getElementById("logistics-results-panel");
+    if (!container) return;
+    if (!res) {
+      container.innerHTML = `<div style="color: var(--text-secondary); padding: 20px;">Aucun calcul disponible.</div>`;
+      return;
+    }
+
+    if (res.error) {
+      container.innerHTML = `
+        <div class="dock-lockout-notice danger">
+          <span class="dock-lockout-icon">⚠️</span>
+          <div class="dock-lockout-text">
+            <strong>Incompatibilité FICSIT :</strong><br>
+            ${res.error}
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    let kpi1 = "", kpi2 = "", kpi3 = "", kpi4 = "";
+    let fleetHtml = "";
+    let alertHtml = "";
+
+    if (res.mode === "train") {
+      kpi1 = `
+        <div class="logistics-kpi-card">
+          <span class="logistics-kpi-label">Convoi Requis</span>
+          <span class="logistics-kpi-val">${res.locosRequired} Loco + ${res.wagonsRequired} Wagon${res.wagonsRequired > 1 ? 's' : ''}</span>
+          <span class="logistics-kpi-sub">Capacité : ${res.totalCapacity.toLocaleString()} ${res.isFluid ? 'm³' : 'pcs'}</span>
+        </div>
+      `;
+      kpi2 = `
+        <div class="logistics-kpi-card accent-cyan">
+          <span class="logistics-kpi-label">Temps de Cycle (A/R)</span>
+          <span class="logistics-kpi-val">${res.roundtripFormatted}</span>
+          <span class="logistics-kpi-sub">Dont 2x 25s de quai</span>
+        </div>
+      `;
+      kpi3 = `
+        <div class="logistics-kpi-card accent-amber">
+          <span class="logistics-kpi-label">Réseau Électrique</span>
+          <span class="logistics-kpi-val">${res.totalPowerAvgMW} MW</span>
+          <span class="logistics-kpi-sub">Pic max : ${res.totalPowerMaxMW} MW</span>
+        </div>
+      `;
+      kpi4 = `
+        <div class="logistics-kpi-card accent-green">
+          <span class="logistics-kpi-label">Débit Ligne Sécurisé</span>
+          <span class="logistics-kpi-val">${res.maxLineThroughputPerMin} /min</span>
+          <span class="logistics-kpi-sub">Saturation ligne : ${res.saturationPercent}%</span>
+        </div>
+      `;
+
+      // Visualisation Convoi
+      let carsUnits = "";
+      for (let i = 0; i < res.locosRequired; i++) {
+        carsUnits += `
+          <div class="train-car-unit locomotive">
+            <span class="train-car-icon">🚂</span>
+            <span class="train-car-label">Locomotive</span>
+            <span class="train-car-sub">65 MW</span>
+          </div>
+          <div class="train-coupler"></div>
+        `;
+      }
+      for (let i = 0; i < res.wagonsRequired; i++) {
+        carsUnits += `
+          <div class="train-car-unit ${res.isFluid ? 'fluid' : 'freight'}">
+            <span class="train-car-icon">${res.isFluid ? '🛢️' : '📦'}</span>
+            <span class="train-car-label">${res.isFluid ? 'Citerne' : 'Wagon Fret'}</span>
+            <span class="train-car-sub">${res.singleCarCapacity} ${res.isFluid ? 'm³' : 'pcs'}</span>
+          </div>
+          ${i < res.wagonsRequired - 1 ? '<div class="train-coupler"></div>' : ''}
+        `;
+      }
+
+      fleetHtml = `
+        <div class="fleet-visualizer-box">
+          <div style="font-size: 11.5px; font-family: var(--font-display); color: var(--ficsit-orange); margin-bottom: 8px; font-weight: 700;">
+            🚆 COMPOSITION DU CONVOI FERROVIAIRE FICSIT (2 Gares + ${res.wagonsRequired * 2} Quais)
+          </div>
+          <div class="train-consist">
+            ${carsUnits}
+          </div>
+        </div>
+      `;
+
+      // Alerte Gel de Quai 25s
+      alertHtml = `
+        <div class="dock-lockout-notice">
+          <span class="dock-lockout-icon">⏱️</span>
+          <div class="dock-lockout-text">
+            <strong>Gestion du Gel de Quai (25 secondes) :</strong><br>
+            Pendant l'animation de chargement/déchargement, la plateforme bloque les convoyeurs. Pour maintenir <strong>${res.throughputPerMin} pièces/min sans interruption</strong> :<br>
+            • Pertes cumulées par cycle : <strong>${res.freezeLossItems} pièces</strong><br>
+            • Solution recommandée : <strong>${res.doubleContainerBufferNeeded ? 'Brancher 2 SORTIES de la plateforme vers un Conteneur Industriel Tampon (Bande double vitesse requise).' : '1 Convoyeur standard suffit pour absorber le gel.'}</strong>
+          </div>
+        </div>
+      `;
+
+    } else if (res.mode === "drone") {
+      kpi1 = `
+        <div class="logistics-kpi-card accent-cyan">
+          <span class="logistics-kpi-label">Flotte Aérienne</span>
+          <span class="logistics-kpi-val">${res.dronesRequired} Drone${res.dronesRequired > 1 ? 's' : ''}</span>
+          <span class="logistics-kpi-sub">${res.portsRequired} Ports de Drones</span>
+        </div>
+      `;
+      kpi2 = `
+        <div class="logistics-kpi-card">
+          <span class="logistics-kpi-label">Temps de Vol (A/R)</span>
+          <span class="logistics-kpi-val">${res.roundtripFormatted}</span>
+          <span class="logistics-kpi-sub">Vitesse : 252 km/h (70 m/s)</span>
+        </div>
+      `;
+      kpi3 = `
+        <div class="logistics-kpi-card accent-amber">
+          <span class="logistics-kpi-label">Consommation Batteries</span>
+          <span class="logistics-kpi-val">${res.batteriesPerMin} /min</span>
+          <span class="logistics-kpi-sub">${res.batteriesPerHour} batteries / heure</span>
+        </div>
+      `;
+      kpi4 = `
+        <div class="logistics-kpi-card accent-green">
+          <span class="logistics-kpi-label">Puissance Ports</span>
+          <span class="logistics-kpi-val">${res.totalPowerAvgMW} MW</span>
+          <span class="logistics-kpi-sub">100 MW par port actif</span>
+        </div>
+      `;
+
+      let dronesUnits = "";
+      for (let i = 0; i < Math.min(res.dronesRequired, 6); i++) {
+        dronesUnits += `
+          <div class="train-car-unit freight" style="border-color: var(--ficsit-cyan); background: rgba(63, 224, 208, 0.1);">
+            <span class="train-car-icon">🛸</span>
+            <span class="train-car-label">Drone #${i + 1}</span>
+            <span class="train-car-sub">${res.singleDroneCapacity} pcs</span>
+          </div>
+        `;
+      }
+      if (res.dronesRequired > 6) {
+        dronesUnits += `<div style="display: flex; align-items: center; color: var(--text-secondary); font-size: 12px; padding: 0 10px;">+ ${res.dronesRequired - 6} autres drones...</div>`;
+      }
+
+      fleetHtml = `
+        <div class="fleet-visualizer-box">
+          <div style="font-size: 11.5px; font-family: var(--font-display); color: var(--ficsit-cyan); margin-bottom: 8px; font-weight: 700;">
+            🛸 FLOTTE DE DRONES AÉRIENS (${res.portsRequired} Ports Connectés)
+          </div>
+          <div class="train-consist">
+            ${dronesUnits}
+          </div>
+        </div>
+      `;
+
+      alertHtml = `
+        <div class="dock-lockout-notice">
+          <span class="dock-lockout-icon">🔋</span>
+          <div class="dock-lockout-text">
+            <strong>Ravitaillement en Batteries :</strong><br>
+            Chaque vol consomme <strong>${res.batteriesPerTrip} batteries</strong>. Pour alimenter en continu la ligne sans panne sèche, prévoyez une usine produisant au moins <strong>${res.batteriesPerMin} batteries/min</strong> acheminée sur le port de départ.
+          </div>
+        </div>
+      `;
+
+    } else if (res.mode === "vehicle") {
+      kpi1 = `
+        <div class="logistics-kpi-card">
+          <span class="logistics-kpi-label">Véhicules Requis</span>
+          <span class="logistics-kpi-val">${res.vehiclesRequired} × ${res.vehicleName}</span>
+          <span class="logistics-kpi-sub">Capacité : ${res.singleCapacity} pcs/véhicule</span>
+        </div>
+      `;
+      kpi2 = `
+        <div class="logistics-kpi-card accent-cyan">
+          <span class="logistics-kpi-label">Rotation Aller-Retour</span>
+          <span class="logistics-kpi-val">${res.roundtripFormatted}</span>
+          <span class="logistics-kpi-sub">Dont 2x 20s de quai</span>
+        </div>
+      `;
+      kpi3 = `
+        <div class="logistics-kpi-card accent-amber">
+          <span class="logistics-kpi-label">Consommation ${res.fuelIcon}</span>
+          <span class="logistics-kpi-val">${res.totalFuelPerMin} /min</span>
+          <span class="logistics-kpi-sub">${res.fuelName} (${res.totalFuelPerHour}/h)</span>
+        </div>
+      `;
+      kpi4 = `
+        <div class="logistics-kpi-card accent-green">
+          <span class="logistics-kpi-label">Gares Routières</span>
+          <span class="logistics-kpi-val">${res.stationsPowerMW} MW</span>
+          <span class="logistics-kpi-sub">2 gares (20 MW chacune)</span>
+        </div>
+      `;
+
+      let vehUnits = "";
+      for (let i = 0; i < Math.min(res.vehiclesRequired, 5); i++) {
+        vehUnits += `
+          <div class="train-car-unit freight" style="border-color: var(--ficsit-orange);">
+            <span class="train-car-icon">${res.icon}</span>
+            <span class="train-car-label">${res.vehicleName}</span>
+            <span class="train-car-sub">${res.singleCapacity} pcs</span>
+          </div>
+        `;
+      }
+      if (res.vehiclesRequired > 5) {
+        vehUnits += `<div style="display: flex; align-items: center; color: var(--text-secondary); font-size: 12px; padding: 0 10px;">+ ${res.vehiclesRequired - 5} autres...</div>`;
+      }
+
+      fleetHtml = `
+        <div class="fleet-visualizer-box">
+          <div style="font-size: 11.5px; font-family: var(--font-display); color: var(--ficsit-orange); margin-bottom: 8px; font-weight: 700;">
+            🚚 FLOTTE ROUTIÈRE AUTOMATISÉE
+          </div>
+          <div class="train-consist">
+            ${vehUnits}
+          </div>
+        </div>
+      `;
+
+      alertHtml = `
+        <div class="dock-lockout-notice">
+          <span class="dock-lockout-icon">⛽</span>
+          <div class="dock-lockout-text">
+            <strong>Ravitaillement Routier :</strong><br>
+            Chaque véhicule consomme <strong>${res.fuelUnitsPerTrip} unités de ${res.fuelName}</strong> par rotation. Assurez-vous qu'au moins une des deux gares routières dispose d'une alimentation dédiée sur le port carburant.
+          </div>
+        </div>
+      `;
+
+    } else {
+      // Convoyeur / Tuyau
+      kpi1 = `
+        <div class="logistics-kpi-card accent-green">
+          <span class="logistics-kpi-label">Infrastructure</span>
+          <span class="logistics-kpi-val">${res.linesRequired}x ${res.isFluid ? 'Ligne(s) Tuyau' : 'Convoyeur(s)'}</span>
+          <span class="logistics-kpi-sub">${res.recommendedTier}</span>
+        </div>
+      `;
+      kpi2 = `
+        <div class="logistics-kpi-card accent-cyan">
+          <span class="logistics-kpi-label">Consommation Énergie</span>
+          <span class="logistics-kpi-val">0 MW</span>
+          <span class="logistics-kpi-sub">Zéro carburant / électricité</span>
+        </div>
+      `;
+      kpi3 = `
+        <div class="logistics-kpi-card">
+          <span class="logistics-kpi-label">Distance Totale</span>
+          <span class="logistics-kpi-val">${res.distanceM.toLocaleString()} m</span>
+          <span class="logistics-kpi-sub">Liaison point à point</span>
+        </div>
+      `;
+      kpi4 = `
+        <div class="logistics-kpi-card accent-amber">
+          <span class="logistics-kpi-label">Flux Continu</span>
+          <span class="logistics-kpi-val">100% Constant</span>
+          <span class="logistics-kpi-sub">Aucun temps de gel de quai</span>
+        </div>
+      `;
+
+      alertHtml = `
+        <div class="dock-lockout-notice">
+          <span class="dock-lockout-icon">💡</span>
+          <div class="dock-lockout-text">
+            <strong>Diagnostic de portée FICSIT :</strong><br>
+            ${res.complexityNote}
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div class="logistics-card">
+        <div class="logistics-card-header">
+          <h3 class="logistics-card-title"><span>📊</span> Bilan de Dimensionnement & Performances</h3>
+          <span style="font-size: 11px; background: rgba(250, 149, 73, 0.15); color: var(--ficsit-orange); padding: 4px 8px; border-radius: 4px; font-weight: 700; font-family: var(--font-display);">
+            ${res.distanceM.toLocaleString()} m • ${res.throughputPerMin} ${res.isFluid ? 'm³/min' : 'pcs/min'}
+          </span>
+        </div>
+
+        <div class="logistics-kpi-grid">
+          ${kpi1}
+          ${kpi2}
+          ${kpi3}
+          ${kpi4}
+        </div>
+
+        ${fleetHtml}
+        ${alertHtml}
+      </div>
+    `;
+  }
+
+  function renderLogisticsMatrix() {
+    const container = document.getElementById("logistics-matrix-content");
+    if (!container || typeof SatisfactoryLogisticsEngine === 'undefined') return;
+
+    const itemSelect = document.getElementById("logistics-item-select");
+    const throughputInput = document.getElementById("logistics-throughput-input");
+    const distanceInput = document.getElementById("logistics-distance-input");
+
+    const itemId = itemSelect ? itemSelect.value : "iron_ore";
+    const throughput = parseFloat(throughputInput ? throughputInput.value : 600) || 600;
+    const distance = parseFloat(distanceInput ? distanceInput.value : 1200) || 1200;
+
+    const matrix = SatisfactoryLogisticsEngine.calculateDecisionMatrix(distance, throughput, itemId);
+
+    let cardsHtml = "";
+    matrix.evaluations.forEach((ev, idx) => {
+      const isWinner = idx === 0;
+      const prosHtml = ev.pros.map(p => `<li class="pro-con-item pro"><span>✔</span> <span>${p}</span></li>`).join("");
+      const consHtml = ev.cons.map(c => `<li class="pro-con-item con"><span>✖</span> <span>${c}</span></li>`).join("");
+
+      cardsHtml += `
+        <div class="matrix-card ${isWinner ? 'winner' : ''}">
+          ${isWinner ? '<span class="matrix-card-winner-badge">🏆 Choix Idéal FICSIT</span>' : ''}
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="font-size: 24px;">${ev.icon}</span>
+            <div>
+              <div style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text-primary);">${ev.name}</div>
+              <div style="font-size: 11px; color: ${isWinner ? 'var(--ficsit-green)' : 'var(--text-secondary)'}; font-weight: 600;">${ev.rating} (${ev.score}/100)</div>
+            </div>
+          </div>
+
+          <div class="matrix-score-bar-bg">
+            <div class="matrix-score-bar-fill" style="width: ${ev.score}%;"></div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-secondary);">
+            <span>Énergie : <strong style="color: var(--text-primary);">${ev.powerMW} MW</strong></span>
+            <span>Complexité : <strong style="color: var(--text-primary);">${ev.setupCost}</strong></span>
+          </div>
+
+          <ul class="pro-con-list">
+            ${prosHtml}
+            ${consHtml}
+          </ul>
+        </div>
+      `;
+    });
+
+    container.innerHTML = `
+      <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--ficsit-green); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: 16px;">
+        <div style="font-size: 14px; font-weight: 700; color: var(--ficsit-green); font-family: var(--font-display);">
+          🎯 RECOMMANDATION FICSIT POUR ${distance.toLocaleString()} m & ${throughput} ${matrix.trainDetails.isFluid ? 'm³/min' : 'pcs/min'} :
+        </div>
+        <div style="font-size: 13px; color: var(--text-primary); margin-top: 4px;">
+          Le mode le plus économique et performant est : <strong>${matrix.winner.name}</strong> (${matrix.winner.score}/100).
+        </div>
+      </div>
+
+      <div class="matrix-cards-grid">
+        ${cardsHtml}
+      </div>
+    `;
+  }
+
+  function renderLogisticsEngineering() {
+    const container = document.getElementById("logistics-engineering-content");
+    if (!container || typeof LOGISTICS_DATA === 'undefined') return;
+
+    container.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px;">
+        
+        <!-- Guide 1 : Signaux Ferroviaires -->
+        <div class="logistics-card">
+          <div class="logistics-card-header">
+            <h3 class="logistics-card-title"><span>🚦</span> Block Signal vs Path Signal</h3>
+            <span style="font-size: 11px; color: var(--ficsit-orange); font-weight: 700;">Règle d'or</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin: 0 0 10px 0;">
+            Un <strong>Block Signal</strong> réserve tout le tronçon pour 1 train. Un <strong>Path Signal</strong> lit la trajectoire exacte du train dans le carrefour et permet les passages simultanés sans collision.
+          </p>
+
+          <div class="schematic-box">
+            <svg viewBox="0 0 400 160" width="100%" height="150" style="display: block;">
+              <!-- Rail horizontal -->
+              <line x1="20" y1="80" x2="380" y2="80" stroke="#3e4d62" stroke-width="6" />
+              <!-- Rail vertical -->
+              <line x1="200" y1="20" x2="200" y2="140" stroke="#3e4d62" stroke-width="6" />
+              <!-- Zone d'intersection -->
+              <rect x="175" y="55" width="50" height="50" fill="rgba(250, 149, 73, 0.15)" stroke="#fa9549" stroke-dasharray="4,4" stroke-width="1.5" rx="4" />
+              
+              <!-- Signaux Path (Entrée) -->
+              <circle cx="140" cy="80" r="7" fill="#3fe0d0" stroke="#fff" stroke-width="2" />
+              <text x="140" y="65" fill="#3fe0d0" font-size="10" font-family="Chakra Petch" font-weight="700" text-anchor="middle">PATH</text>
+
+              <circle cx="200" cy="40" r="7" fill="#3fe0d0" stroke="#fff" stroke-width="2" />
+              <text x="230" y="44" fill="#3fe0d0" font-size="10" font-family="Chakra Petch" font-weight="700">PATH</text>
+
+              <!-- Signaux Block (Sortie) -->
+              <circle cx="260" cy="80" r="7" fill="#2ecc71" stroke="#fff" stroke-width="2" />
+              <text x="260" y="65" fill="#2ecc71" font-size="10" font-family="Chakra Petch" font-weight="700" text-anchor="middle">BLOCK</text>
+
+              <circle cx="200" cy="120" r="7" fill="#2ecc71" stroke="#fff" stroke-width="2" />
+              <text x="235" y="124" fill="#2ecc71" font-size="10" font-family="Chakra Petch" font-weight="700">BLOCK</text>
+            </svg>
+          </div>
+
+          <div class="golden-rule-banner">
+            ⭐ <strong>Règle d'or :</strong> Signal PATH à chaque entrée de croisement, Signal BLOCK à chaque sortie !
+          </div>
+        </div>
+
+        <!-- Guide 2 : Tampon anti-gel 25s -->
+        <div class="logistics-card">
+          <div class="logistics-card-header">
+            <h3 class="logistics-card-title"><span>📦</span> Tampon Anti-Gel de Quai (25s)</h3>
+            <span style="font-size: 11px; color: var(--ficsit-cyan); font-weight: 700;">Débit 100%</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin: 0 0 10px 0;">
+            Le bras mécanique fige la gare pendant 25 secondes. Reliez <strong>les 2 sorties</strong> de la plateforme à un Conteneur Industriel Tampon pour alimenter l'usine en continu.
+          </p>
+
+          <div class="schematic-box">
+            <svg viewBox="0 0 400 160" width="100%" height="150" style="display: block;">
+              <!-- Plateforme de gare -->
+              <rect x="30" y="40" width="100" height="80" fill="#161c24" stroke="#4bb3fd" stroke-width="2" rx="4" />
+              <text x="80" y="75" fill="#4bb3fd" font-size="11" font-family="Chakra Petch" font-weight="700" text-anchor="middle">PLATEFORME</text>
+              <text x="80" y="92" fill="#8ea8cc" font-size="9" text-anchor="middle">DE FRET (Gare)</text>
+
+              <!-- 2 Convoyeurs Sortie -->
+              <line x1="130" y1="60" x2="220" y2="60" stroke="#fa9549" stroke-width="4" />
+              <line x1="130" y1="100" x2="220" y2="100" stroke="#fa9549" stroke-width="4" />
+              <text x="175" y="52" fill="#fa9549" font-size="9" text-anchor="middle">Mk.5 (780)</text>
+              <text x="175" y="115" fill="#fa9549" font-size="9" text-anchor="middle">Mk.5 (780)</text>
+
+              <!-- Conteneur Tampon -->
+              <rect x="220" y="40" width="90" height="80" fill="#161c24" stroke="#2ecc71" stroke-width="2" rx="4" />
+              <text x="265" y="75" fill="#2ecc71" font-size="11" font-family="Chakra Petch" font-weight="700" text-anchor="middle">CONTENEUR</text>
+              <text x="265" y="92" fill="#8ea8cc" font-size="9" text-anchor="middle">INDUSTRIEL</text>
+
+              <!-- Sortie vers Usine -->
+              <line x1="310" y1="80" x2="380" y2="80" stroke="#2ecc71" stroke-width="4" />
+              <text x="345" y="72" fill="#2ecc71" font-size="9" text-anchor="middle">Flux 100%</text>
+            </svg>
+          </div>
+
+          <div class="golden-rule-banner">
+            ⭐ <strong>Règle d'or :</strong> Débit Usine = Débit Moyen Constant. Les 2 bandes vident la gare à 2x la vitesse !
+          </div>
+        </div>
+
+        <!-- Guide 3 : Ratio Locomotives / Wagons -->
+        <div class="logistics-card">
+          <div class="logistics-card-header">
+            <h3 class="logistics-card-title"><span>⛰️</span> Ratio de Traction & Dénivelé</h3>
+            <span style="font-size: 11px; color: var(--ficsit-amber); font-weight: 700;">Traction</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin: 0 0 10px 0;">
+            Le poids des wagons pleins ralentit considérablement les trains dans les rampes. Adaptez la composition de votre train selon le profil altimétrique :
+          </p>
+          <div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+            <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              🟢 <strong>Terrain plat & ponts :</strong> 1 Loco pour 4 Wagons de fret
+            </div>
+            <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              🟡 <strong>Rampes 2m standard :</strong> 1 Loco pour 3 Wagons
+            </div>
+            <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              🔴 <strong>Rampes raides 4m / hélicoïdes :</strong> 1 Loco pour 2 Wagons (Formation 2-4 recommandée)
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  function exportLogisticsToChecklist() {
+    if (!lastLogisticsCalculation || !lastLogisticsCalculation.result) {
+      showToast("Veuillez d'abord calculer une ligne logistique !");
+      return;
+    }
+
+    const { mode, result, throughput, itemId, distance } = lastLogisticsCalculation;
+    const items = JSON.parse(localStorage.getItem("ficsit_checklist_items") || "[]");
+
+    if (mode === "train") {
+      items.push({
+        title: `🚂 Construire ${result.locosRequired} × Locomotive Électrique`,
+        subtitle: `Ligne Monorail ${distance}m (${throughput} pcs/min)`,
+        qty: `${result.locosRequired} pcs`
+      });
+      items.push({
+        title: `📦 Poser ${result.wagonsRequired} × ${result.isFluid ? 'Wagon-Citerne' : 'Wagon de Fret'}`,
+        subtitle: `Capacité totale : ${result.totalCapacity} ${result.isFluid ? 'm³' : 'pcs'}`,
+        qty: `${result.wagonsRequired} pcs`
+      });
+      items.push({
+        title: `🏢 Poser 2 × Gare Ferroviaire & ${result.wagonsRequired * 2} × Plateforme de Fret`,
+        subtitle: `Gares de départ et d'arrivée connectées au réseau électrique`,
+        qty: `${2 + result.wagonsRequired * 2} bâtiments`
+      });
+      const railsCount = Math.ceil(distance / 50);
+      items.push({
+        title: `🛤️ Poser ~${distance}m de Rails Monorail (${railsCount} segments)`,
+        subtitle: `Voie ferrée principale et raccordements`,
+        qty: `${railsCount} segments`
+      });
+    } else if (mode === "drone") {
+      items.push({
+        title: `🛸 Construire ${result.dronesRequired} × Drone FICSIT`,
+        subtitle: `Liaison aérienne ${distance}m (${throughput} pcs/min)`,
+        qty: `${result.dronesRequired} pcs`
+      });
+      items.push({
+        title: `🏢 Construire ${result.portsRequired} × Port de Drone`,
+        subtitle: `Ports de départ, arrivée et alimentation batteries`,
+        qty: `${result.portsRequired} ports`
+      });
+    } else if (mode === "vehicle") {
+      items.push({
+        title: `🚛 Fabriquer ${result.vehiclesRequired} × ${result.vehicleName}`,
+        subtitle: `Liaison routière ${distance}m`,
+        qty: `${result.vehiclesRequired} pcs`
+      });
+      items.push({
+        title: `🏢 Poser 2 × Gare Routière avec Ravitaillement ${result.fuelName}`,
+        subtitle: `Gares de chargement et déchargement`,
+        qty: `2 gares`
+      });
+    } else {
+      items.push({
+        title: `📦 Installer Ligne ${result.recommendedTier} sur ${distance}m`,
+        subtitle: `Débit requis : ${throughput} /min`,
+        qty: `1 ligne`
+      });
+    }
+
+    localStorage.setItem("ficsit_checklist_items", JSON.stringify(items));
+    renderChecklist();
+    showToast(`🏗️ Matériel logistique ajouté à la Checklist de Chantier !`);
+  }
+
+  // Pont externe pour injecter depuis le Calculateur
+  window.injectIntoLogistics = function(itemId, throughputPerMin) {
+    switchTab("logistics");
+    setTimeout(() => {
+      const itemSelect = document.getElementById("logistics-item-select");
+      const throughputInput = document.getElementById("logistics-throughput-input");
+      if (itemSelect && itemId) itemSelect.value = itemId;
+      if (throughputInput && throughputPerMin) throughputInput.value = throughputPerMin;
+      recalculateLogistics();
+      showToast(`🚚 Flux de ${throughputPerMin}/min (${itemId}) injecté dans le module Logistique !`);
+    }, 150);
+  };
+
+  // =========================================================================
+  // MODULE 🔬 M.A.M. & DISQUES DURS (1.0 / 1.2)
+  // =========================================================================
+  let activeMAMBranch = "alien_tech";
+  let activeMAMTierFilter = "all";
+  let mamSearchQuery = "";
+
+  function initMAMUI() {
+    if (typeof MAM_DATA === 'undefined') return;
+
+    // 1. Sous-navigation MAM
+    const subnavBtns = document.querySelectorAll("[data-mam-subtab]");
+    const subtabs = {
+      trees: document.getElementById("mam-subtab-trees"),
+      picker: document.getElementById("mam-subtab-picker"),
+      tierlist: document.getElementById("mam-subtab-tierlist")
+    };
+
+    subnavBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        subnavBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const target = btn.getAttribute("data-mam-subtab");
+        Object.entries(subtabs).forEach(([k, el]) => {
+          if (el) el.style.display = k === target ? "block" : "none";
+        });
+        if (target === "trees") renderMAMTree();
+        if (target === "picker") initMAMPicker();
+        if (target === "tierlist") renderMAMTierList();
+      });
+    });
+
+    renderMAMBranchChips();
+    renderMAMTree();
+    initMAMPicker();
+    renderMAMTierList();
+  }
+
+  function renderMAMBranchChips() {
+    const container = document.getElementById("mam-branch-chips-container");
+    if (!container || typeof MAM_DATA === 'undefined') return;
+    container.innerHTML = "";
+
+    Object.entries(MAM_DATA.trees).forEach(([treeId, tree]) => {
+      const prog = SatisfactoryMAMEngine.getTreeProgress(treeId, STATE.researchedMAMNodes);
+      const chip = document.createElement("div");
+      chip.className = `mam-branch-chip ${treeId === activeMAMBranch ? 'active' : ''}`;
+      chip.innerHTML = `
+        <div class="mam-branch-header">
+          <span style="font-size: 18px;">${tree.icon}</span>
+          <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${tree.name}</span>
+          <span style="font-size: 11px; color: ${prog.pct === 100 ? 'var(--ficsit-green)' : 'var(--text-secondary)'}; font-family: var(--font-display);">${prog.pct}%</span>
+        </div>
+        <div class="mam-branch-progress-bar">
+          <div class="mam-branch-progress-fill" style="width: ${prog.pct}%; background: ${tree.color || 'var(--ficsit-green)'};"></div>
+        </div>
+      `;
+
+      chip.addEventListener("click", () => {
+        activeMAMBranch = treeId;
+        renderMAMBranchChips();
+        renderMAMTree();
+      });
+
+      container.appendChild(chip);
+    });
+  }
+
+  function renderMAMTree() {
+    const headerEl = document.getElementById("mam-active-branch-header");
+    const nodesContainer = document.getElementById("mam-nodes-container");
+    if (!headerEl || !nodesContainer || typeof MAM_DATA === 'undefined') return;
+
+    const tree = MAM_DATA.trees[activeMAMBranch];
+    if (!tree) return;
+
+    const prog = SatisfactoryMAMEngine.getTreeProgress(activeMAMBranch, STATE.researchedMAMNodes);
+    
+    // Header
+    headerEl.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 28px;">${tree.icon}</span>
+        <div>
+          <h3 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: ${tree.color || 'var(--ficsit-orange)'};">
+            ${tree.name}
+          </h3>
+          <p style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-secondary);">
+            ${tree.description}
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <div style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary);">
+          Recherches : <strong style="color: ${prog.pct === 100 ? 'var(--ficsit-green)' : 'var(--ficsit-orange)'};">${prog.completed} / ${prog.total} (${prog.pct}%)</strong>
+        </div>
+        <button class="btn-outline" id="btn-toggle-all-mam-branch" style="font-size: 11px; padding: 4px 10px;">
+          ${prog.completed === prog.total ? '🔄 Tout Décocher' : '✔ Tout Valider'}
+        </button>
+      </div>
+    `;
+
+    const toggleAllBtn = document.getElementById("btn-toggle-all-mam-branch");
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener("click", () => {
+        const isAll = prog.completed === prog.total;
+        tree.nodes.forEach(n => {
+          if (isAll) {
+            STATE.researchedMAMNodes.delete(n.id);
+          } else {
+            STATE.researchedMAMNodes.add(n.id);
+          }
+        });
+        saveState();
+        renderMAMBranchChips();
+        renderMAMTree();
+      });
+    }
+
+    // Nodes
+    nodesContainer.innerHTML = "";
+    tree.nodes.forEach(node => {
+      const isResearched = STATE.researchedMAMNodes.has(node.id);
+      
+      // Check if parents are researched
+      let isAvailable = true;
+      if (node.parents && node.parents.length > 0) {
+        isAvailable = node.parents.every(pId => STATE.researchedMAMNodes.has(pId));
+      }
+
+      const statusClass = isResearched ? 'researched' : (isAvailable ? 'available' : 'locked');
+      const statusLabel = isResearched ? '✔ Recherché' : (isAvailable ? '⚡ Disponible' : '🔒 Verrouillé');
+
+      const costBadges = Object.entries(node.cost || {}).map(([item, qty]) => {
+        return `<span style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 2px 6px; border-radius: 4px; font-size: 11px;">${qty}x ${item.replace(/_/g, " ")}</span>`;
+      }).join(" ");
+
+      const card = document.createElement("div");
+      card.className = `mam-node-card ${statusClass}`;
+      card.innerHTML = `
+        <span class="mam-node-status-badge ${statusClass}">${statusLabel}</span>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <span style="font-size: 24px;">${node.icon}</span>
+          <div>
+            <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-primary);">${node.name}</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Palier ${node.tierReq}+ • ⏱️ ${node.timeSec}s</div>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; color: var(--text-primary); margin: 8px 0; line-height: 1.4;">
+          ${node.unlocks}
+        </div>
+
+        <div style="margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            ${costBadges}
+          </div>
+          <button class="btn-${isResearched ? 'outline' : 'ficsit'} btn-toggle-mam-node" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">
+            ${isResearched ? 'Annuler' : 'Rechercher'}
+          </button>
+        </div>
+      `;
+
+      const btn = card.querySelector(".btn-toggle-mam-node");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          if (STATE.researchedMAMNodes.has(node.id)) {
+            STATE.researchedMAMNodes.delete(node.id);
+          } else {
+            STATE.researchedMAMNodes.add(node.id);
+          }
+          saveState();
+          renderMAMBranchChips();
+          renderMAMTree();
+        });
+      }
+
+      nodesContainer.appendChild(card);
+    });
+  }
+
+  function initMAMPicker() {
+    const pick1 = document.getElementById("mam-pick-1");
+    const pick2 = document.getElementById("mam-pick-2");
+    const pick3 = document.getElementById("mam-pick-3");
+    const evalBtn = document.getElementById("btn-eval-hard-drive");
+    const resultsContainer = document.getElementById("mam-picker-results");
+
+    if (!pick1 || !pick2 || !pick3 || typeof MAM_DATA === 'undefined') return;
+
+    if (pick1.children.length === 0) {
+      const optionsHtml = MAM_DATA.alternateTierList.map(r => {
+        return `<option value="${r.id}">[Tier ${r.tier}] ${r.name}</option>`;
+      }).join("");
+
+      pick1.innerHTML = `<option value="">-- Choisir 1ère Recette --</option>` + optionsHtml;
+      pick2.innerHTML = `<option value="">-- Choisir 2ème Recette --</option>` + optionsHtml;
+      pick3.innerHTML = `<option value="">-- Choisir 3ème Recette --</option>` + optionsHtml;
+
+      // Valeurs par défaut
+      if (pick1.options.length > 1) pick1.selectedIndex = 1;
+      if (pick2.options.length > 2) pick2.selectedIndex = 2;
+      if (pick3.options.length > 3) pick3.selectedIndex = 6;
+    }
+
+    if (evalBtn) {
+      evalBtn.onclick = () => {
+        const r1 = pick1.value;
+        const r2 = pick2.value;
+        const r3 = pick3.value;
+
+        if (!r1 && !r2 && !r3) {
+          showToast("Veuillez sélectionner au moins une recette alternative.");
+          return;
+        }
+
+        const evaluation = SatisfactoryMAMEngine.evaluateHardDriveChoices(r1, r2, r3);
+        renderPickerResults(evaluation);
+      };
+    }
+
+    function renderPickerResults(ev) {
+      if (!resultsContainer) return;
+      let cardsHtml = "";
+
+      ev.choices.forEach(ch => {
+        const isRec = ev.winner && ev.winner.id === ch.id;
+        const tierClass = `tier-${ch.tier.toLowerCase()}`;
+
+        cardsHtml += `
+          <div class="hard-drive-card ${isRec ? 'recommended' : ''}">
+            ${isRec ? '<span class="matrix-card-winner-badge">🏆 Meilleur Choix FICSIT</span>' : ''}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="tier-badge ${tierClass}">Rang ${ch.tier}</span>
+              <span style="font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--ficsit-orange);">${ch.score}/100</span>
+            </div>
+            <h4 style="font-family: var(--font-display); font-size: 15px; color: var(--text-primary); margin: 0 0 6px 0;">
+              ${ch.name}
+            </h4>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 8px 0; line-height: 1.4;">
+              ${ch.description}
+            </p>
+            <div style="background: var(--bg-card); padding: 8px 10px; border-radius: var(--radius-sm); font-size: 11.5px; color: var(--ficsit-cyan); margin-top: auto;">
+              💡 <strong>Avantage :</strong> ${ch.advantage}
+            </div>
+            <button class="btn-${isRec ? 'ficsit' : 'outline'} btn-pick-alt-recipe" data-recipe="${ch.id}" style="margin-top: 12px; width: 100%; justify-content: center; font-size: 12px; font-weight: 700;">
+              <span>⚡</span> Activer cette Recette
+            </button>
+          </div>
+        `;
+      });
+
+      resultsContainer.innerHTML = `
+        <div style="background: rgba(250, 149, 73, 0.1); border-left: 4px solid var(--ficsit-orange); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: 16px;">
+          <div style="font-size: 14px; font-weight: 700; color: var(--ficsit-orange); font-family: var(--font-display);">
+            📋 VERDICT FICSIT :
+          </div>
+          <div style="font-size: 13px; color: var(--text-primary); margin-top: 4px;">
+            ${ev.recommendationSummary}
+          </div>
+        </div>
+
+        <div class="hard-drive-picker-grid">
+          ${cardsHtml}
+        </div>
+      `;
+
+      resultsContainer.querySelectorAll(".btn-pick-alt-recipe").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const recId = btn.getAttribute("data-recipe");
+          STATE.unlockedAltRecipes.add(recId);
+          saveState();
+          showToast(`Recette débloquée enregistrée !`);
+        });
+      });
+    }
+  }
+
+  function renderMAMTierList() {
+    const container = document.getElementById("mam-tierlist-content");
+    const searchInput = document.getElementById("mam-tier-search");
+    if (!container || typeof MAM_DATA === 'undefined') return;
+
+    const tierChips = document.querySelectorAll(".mam-tier-chip");
+    tierChips.forEach(chip => {
+      chip.onclick = () => {
+        tierChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeMAMTierFilter = chip.getAttribute("data-tier");
+        renderMAMTierList();
+      };
+    });
+
+    if (searchInput) {
+      searchInput.oninput = () => {
+        mamSearchQuery = searchInput.value;
+        renderMAMTierList();
+      };
+    }
+
+    const recipes = SatisfactoryMAMEngine.filterRecipes({
+      tier: activeMAMTierFilter,
+      search: mamSearchQuery
+    });
+
+    if (recipes.length === 0) {
+      container.innerHTML = `<div style="color: var(--text-secondary); padding: 30px; text-align: center;">Aucune recette ne correspond à ces critères.</div>`;
+      return;
+    }
+
+    let rowsHtml = "";
+    recipes.forEach(r => {
+      const tierClass = `tier-${r.tier.toLowerCase()}`;
+      const isUnlocked = STATE.unlockedAltRecipes.has(r.id);
+
+      rowsHtml += `
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px;">
+            <span class="tier-badge ${tierClass}" style="min-width: 45px;">${r.tier}</span>
+            <div>
+              <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-primary);">${r.name}</div>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${r.advantage}</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="font-size: 11px; background: var(--bg-surface-elevated); padding: 3px 8px; border-radius: 4px; color: var(--text-muted); font-family: var(--font-display);">Palier ${r.minTier}+</span>
+            <button class="btn-${isUnlocked ? 'outline' : 'ficsit'} btn-toggle-alt-unlock" data-recipe="${r.id}" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">
+              ${isUnlocked ? '✔ Débloquée' : '🔒 Verrouillée'}
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = rowsHtml;
+
+    container.querySelectorAll(".btn-toggle-alt-unlock").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const rId = btn.getAttribute("data-recipe");
+        if (STATE.unlockedAltRecipes.has(rId)) {
+          STATE.unlockedAltRecipes.delete(rId);
+        } else {
+          STATE.unlockedAltRecipes.add(rId);
+        }
+        saveState();
+        renderMAMTierList();
+      });
+    });
+  }
+
+  // =========================================================================
   // DÉMARRAGE & INITIALISATION DE L'APPLICATION
   // =========================================================================
+  initThemeSelector();
   initNavigation();
+  initSaveUploader();
   renderMilestones();
   renderPhases();
+  initMAMUI();
   renderSyntheticView();
   initCalculatorUI();
   initMilestoneCalculatorUI();
+  initPowerCalculatorUI();
+  initLogisticsUI();
   renderBlueprints();
   renderChecklist();
-  initSaveUploader();
   initPrintModal();
   initInteractiveMap();
+  DisplayPreferencesManager.init();
   updateHUDStats();
 });
+
+
 
