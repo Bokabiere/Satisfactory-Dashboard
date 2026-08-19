@@ -353,7 +353,7 @@ class Factory3DViewer {
       this.hoveredObject = foundInteractable;
       if (this.hoveredObject) {
         this.renderer.domElement.style.cursor = "pointer";
-        this.showTooltip(this.hoveredObject.userData.ficsitData, mouseX, mouseY);
+        this.showTooltip(this.hoveredObject, mouseX, mouseY);
       } else {
         this.renderer.domElement.style.cursor = "default";
         if (!this.selectedObject) {
@@ -384,31 +384,55 @@ class Factory3DViewer {
     return customImage || null;
   }
 
-  showTooltip(mesh, x, y) {
-    if (!this.tooltipEl || !mesh.userData?.ficsitData) return;
-    const data = mesh.userData.ficsitData;
+  showTooltip(meshOrData, x, y) {
+    if (!this.tooltipEl || !meshOrData) return;
+    const data = meshOrData.userData?.ficsitData || meshOrData;
+    if (!data) return;
 
     let traceHtml = "";
     if (data.pathway) {
       const p = data.pathway;
       traceHtml = `
         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(250,149,73,0.3); font-size: 11px;">
-          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 3px;">🔵 SOURCE : <strong>${p.sourceName}</strong></div>
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 3px;">🔵 ENTRÉE / SOURCE : <strong>${p.sourceName}</strong></div>
           <div style="color: #fa9549; font-weight: 700; margin-bottom: 3px;">🛤️ CHEMINEMENT :</div>
           <div style="color: #cbd5e1; margin-left: 10px; margin-bottom: 4px; line-height: 1.4;">${p.pathDescription || 'Parcours technique sécurisé'}</div>
-          <div style="color: #10b981; font-weight: 700;">🟢 DESTINATION : <strong>${p.targetName}</strong></div>
+          <div style="color: #10b981; font-weight: 700;">🟢 SORTIE / DESTINATION : <strong>${p.targetName}</strong></div>
         </div>
       `;
     } else if (data.links) {
-      const srcList = data.links.sources && data.links.sources.length ? data.links.sources.map(s => `<li>🔵 <strong>${s.name}</strong> <span style="color:#94a3b8;">(${s.item ? s.item.replace(/_/g, ' ') : ''} ${s.rate ? s.rate + '/min' : ''})</span></li>`).join("") : `<li style="color:#64748b;">(Gisement brut / Entrée initiale)</li>`;
-      const tgtList = data.links.targets && data.links.targets.length ? data.links.targets.map(t => `<li>🟢 <strong>${t.name}</strong> <span style="color:#94a3b8;">(${t.item ? t.item.replace(/_/g, ' ') : ''} ${t.rate ? t.rate + '/min' : ''})</span></li>`).join("") : `<li style="color:#64748b;">(Stockage final / Sortie usine)</li>`;
+      const srcList = data.links.sources && data.links.sources.length 
+        ? data.links.sources.map(s => `<li>🔵 <strong>${s.name}</strong> <span style="color:#94a3b8;">(${s.item ? s.item.replace(/_/g, ' ') : ''} ${s.rate ? s.rate + '/min' : ''})</span></li>`).join("") 
+        : `<li style="color:#64748b;">(Gisement brut / Entrée initiale)</li>`;
+      const tgtList = data.links.targets && data.links.targets.length 
+        ? data.links.targets.map(t => `<li>🟢 <strong>${t.name}</strong> <span style="color:#94a3b8;">(${t.item ? t.item.replace(/_/g, ' ') : ''} ${t.rate ? t.rate + '/min' : ''})</span></li>`).join("") 
+        : `<li style="color:#64748b;">(Stockage final / Sortie usine)</li>`;
 
       traceHtml = `
         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(250,149,73,0.3); font-size: 11px;">
-          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 2px;">📥 ALIMENTÉ PAR (AMONT) :</div>
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 2px;">📥 ENTRÉES / AMONT :</div>
           <ul style="margin: 0 0 6px 14px; padding: 0;">${srcList}</ul>
-          <div style="color: #10b981; font-weight: 700; margin-bottom: 2px;">📤 ALIMENTE (AVAL) :</div>
+          <div style="color: #10b981; font-weight: 700; margin-bottom: 2px;">📤 SORTIES / AVAL :</div>
           <ul style="margin: 0 0 0 14px; padding: 0;">${tgtList}</ul>
+        </div>
+      `;
+    }
+
+    if (data.inputs && data.inputs.length > 0 && !data.pathway && (!data.links || !data.links.sources || data.links.sources.length === 0)) {
+      const inItems = data.inputs.map(i => `<li>🔵 <strong>${i.name || i.item}</strong> <span style="color:#94a3b8;">(${i.rate ? i.rate + '/min' : ''})</span></li>`).join("");
+      traceHtml += `
+        <div style="margin-top: 6px; font-size: 11px;">
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 2px;">📥 ENTRÉES :</div>
+          <ul style="margin: 0 0 6px 14px; padding: 0;">${inItems}</ul>
+        </div>
+      `;
+    }
+    if (data.outputs && data.outputs.length > 0 && !data.pathway && (!data.links || !data.links.targets || data.links.targets.length === 0)) {
+      const outItems = data.outputs.map(o => `<li>🟢 <strong>${o.name || o.item}</strong> <span style="color:#94a3b8;">(${o.rate ? o.rate + '/min' : ''})</span></li>`).join("");
+      traceHtml += `
+        <div style="margin-top: 6px; font-size: 11px;">
+          <div style="color: #10b981; font-weight: 700; margin-bottom: 2px;">📤 SORTIES :</div>
+          <ul style="margin: 0 0 0 14px; padding: 0;">${outItems}</ul>
         </div>
       `;
     }
@@ -444,15 +468,18 @@ class Factory3DViewer {
     let left = x + padding;
     let top = y + padding;
 
-    if (left + 350 > this.container.clientWidth) {
+    const contWidth = this.container.clientWidth || window.innerWidth;
+    const contHeight = this.container.clientHeight || window.innerHeight;
+
+    if (left + 350 > contWidth) {
       left = x - 350 - padding;
     }
-    if (top + 230 > this.container.clientHeight) {
+    if (top + 230 > contHeight) {
       top = y - 230 - padding;
     }
 
-    this.tooltipEl.style.left = `${Math.max(10, left)}px`;
-    this.tooltipEl.style.top = `${Math.max(10, top)}px`;
+    this.tooltipEl.style.left = `${Math.max(8, left)}px`;
+    this.tooltipEl.style.top = `${Math.max(8, top)}px`;
   }
 
   hideTooltip() {

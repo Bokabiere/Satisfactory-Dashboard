@@ -1281,8 +1281,25 @@ body {
 }
 
 .ficsit-3d-canvas-container {
+  position: relative;
   width: 100%;
   height: 100%;
+}
+
+.ficsit-3d-tooltip {
+  position: absolute;
+  z-index: 99999 !important;
+  pointer-events: none;
+  background: rgba(11, 15, 22, 0.95);
+  border: 1.5px solid var(--ficsit-orange);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 16px rgba(250, 149, 73, 0.3);
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #f0f4f8;
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  backdrop-filter: blur(8px);
+  max-width: 360px;
 }
 
 .ficsit-3d-overlay-bar {
@@ -1673,6 +1690,137 @@ body {
   object-fit: contain;
 }
 
+/* ==========================================================================
+   MODES GRAND ÉCRAN (PLEIN ÉCRAN) - NOTICE DE MONTAGE & CHANTIER
+   ========================================================================== */
+
+/* 1. Grand Écran Notice de Montage (Pièces Uniques & Jalons) */
+#calc-construction-guide-section.is-guide-fullscreen,
+#calc-ms-construction-guide-section.is-guide-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  z-index: 9999999 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #080d15 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+#calc-construction-guide-section.is-guide-fullscreen > div:first-child,
+#calc-ms-construction-guide-section.is-guide-fullscreen > div:first-child {
+  padding: 12px 24px !important;
+  background: #0d1522 !important;
+  border-bottom: 2px solid var(--ficsit-orange) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+#calc-construction-guide-section.is-guide-fullscreen #guide-step-body,
+#calc-ms-construction-guide-section.is-guide-fullscreen #guide-ms-step-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 16px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+  height: calc(100vh - 130px) !important;
+}
+
+#calc-construction-guide-section.is-guide-fullscreen #guide-step-body > div:first-child,
+#calc-ms-construction-guide-section.is-guide-fullscreen #guide-ms-step-body > div:first-child {
+  width: 100% !important;
+}
+
+#calc-construction-guide-section.is-guide-fullscreen #guide-step-svg-viewport,
+#calc-ms-construction-guide-section.is-guide-fullscreen #guide-ms-step-svg-viewport {
+  min-height: 58vh !important;
+  height: 58vh !important;
+  max-height: 700px !important;
+}
+
+#calc-construction-guide-section.is-guide-fullscreen .ficsit-3d-viewport-wrapper,
+#calc-ms-construction-guide-section.is-guide-fullscreen .ficsit-3d-viewport-wrapper {
+  min-height: 58vh !important;
+  height: 58vh !important;
+  max-height: 700px !important;
+}
+
+#calc-construction-guide-section.is-guide-fullscreen .ficsit-3d-2d-inset,
+#calc-ms-construction-guide-section.is-guide-fullscreen .ficsit-3d-2d-inset {
+  top: 54px;
+  right: 16px;
+}
+
+/* Bloc texte et instructions positionné sous le visuel en grand écran */
+#calc-construction-guide-section.is-guide-fullscreen #guide-step-body > div:last-child,
+#calc-ms-construction-guide-section.is-guide-fullscreen #guide-ms-step-body > div:last-child {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+.guide-machine-inspector-container:empty {
+  display: none !important;
+}
+
+/* 2. Grand Écran Checklist de Chantier */
+#view-checklist.is-checklist-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  z-index: 9999999 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: #080d15 !important;
+  overflow-y: auto !important;
+  padding: 24px 36px !important;
+  display: block !important;
+}
+
+#view-checklist.is-checklist-fullscreen .card-panel {
+  max-width: 1600px;
+  margin: 0 auto;
+  border: 2px solid var(--ficsit-orange);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+  background: #0c121d;
+}
+
+#view-checklist.is-checklist-fullscreen .checklist-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 14px;
+}
+
+/* 3. Grand Écran Modal Fiche de Chantier FICSIT */
+.is-print-box-fullscreen {
+  max-width: 100vw !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+/* Animation douce de transition */
+#calc-construction-guide-section,
+#calc-ms-construction-guide-section,
+#view-checklist {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
 
 
 
@@ -1984,6 +2132,9 @@ body {
             </div>
             <!-- Contrôles d'étapes & Export Blueprint -->
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-guide-toggle-fullscreen" class="btn-guide-fullscreen-toggle btn-ficsit" style="font-size: 11.5px; padding: 5px 12px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" title="Afficher la notice de montage en grand écran (Plein Écran)">
+                ⛶ Grand Écran
+              </button>
               <button type="button" id="btn-guide-download-sbp" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 14px; background: var(--ficsit-orange); color: #000; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(250,149,73,0.35); border: none; border-radius: var(--radius-sm); cursor: pointer;" title="Télécharger le blueprint (.sbp et .sbpcfg) prêt à importer dans Satisfactory">
                 📥 Télécharger le Blueprint (.sbp) (En cours de dev)
               </button>
@@ -2438,6 +2589,9 @@ body {
             </div>
             <!-- Contrôles d'étapes & Export Blueprint -->
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-guide-ms-toggle-fullscreen" class="btn-guide-fullscreen-toggle btn-ficsit" style="font-size: 11.5px; padding: 5px 12px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" title="Afficher la notice de montage du jalon en grand écran (Plein Écran)">
+                ⛶ Grand Écran
+              </button>
               <button type="button" id="btn-guide-ms-download-sbp" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 14px; background: var(--ficsit-orange); color: #000; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(250,149,73,0.35); border: none; border-radius: var(--radius-sm); cursor: pointer;" title="Télécharger le blueprint (.sbp et .sbpcfg) prêt à importer dans Satisfactory">
                 📥 Télécharger le Blueprint (.sbp) (En cours de dev)
               </button>
@@ -2836,6 +2990,9 @@ body {
         <div class="panel-header">
           <h2 class="panel-title"><i>🏗️</i> Checklist de Chantier & Inventaire Embarqué</h2>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn-outline" id="btn-checklist-toggle-fullscreen" style="font-size: 12px; padding: 6px 14px; border-color: #38bdf8; color: #38bdf8; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" title="Afficher la checklist de chantier en grand écran">
+              <span>⛶</span> Grand Écran Chantier
+            </button>
             <button class="btn-ficsit" id="btn-print-checklist">
               <span>📋</span> Afficher la Fiche Récapitulative
             </button>
@@ -3038,6 +3195,9 @@ body {
           <h3 style="font-family: var(--font-display); font-size: 15px; color: var(--ficsit-orange); margin: 0;">Fiche Récapitulative Officielle FICSIT</h3>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button id="btn-toggle-print-fullscreen" class="btn-outline" style="font-size: 12px; padding: 6px 12px; border-color: #38bdf8; color: #38bdf8; cursor: pointer;" title="Afficher en grand écran">
+            ⛶ Grand Écran
+          </button>
           <button id="btn-copy-print-sheet" class="btn-ficsit" style="font-size: 12px; padding: 6px 14px; font-weight: 700; background: var(--ficsit-orange); color: #000;">
             📋 Copier dans le Presse-Papier
           </button>
@@ -7769,7 +7929,7 @@ class Factory3DViewer {
       this.hoveredObject = foundInteractable;
       if (this.hoveredObject) {
         this.renderer.domElement.style.cursor = "pointer";
-        this.showTooltip(this.hoveredObject.userData.ficsitData, mouseX, mouseY);
+        this.showTooltip(this.hoveredObject, mouseX, mouseY);
       } else {
         this.renderer.domElement.style.cursor = "default";
         if (!this.selectedObject) {
@@ -7800,31 +7960,55 @@ class Factory3DViewer {
     return customImage || null;
   }
 
-  showTooltip(mesh, x, y) {
-    if (!this.tooltipEl || !mesh.userData?.ficsitData) return;
-    const data = mesh.userData.ficsitData;
+  showTooltip(meshOrData, x, y) {
+    if (!this.tooltipEl || !meshOrData) return;
+    const data = meshOrData.userData?.ficsitData || meshOrData;
+    if (!data) return;
 
     let traceHtml = "";
     if (data.pathway) {
       const p = data.pathway;
       traceHtml = `
         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(250,149,73,0.3); font-size: 11px;">
-          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 3px;">🔵 SOURCE : <strong>${p.sourceName}</strong></div>
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 3px;">🔵 ENTRÉE / SOURCE : <strong>${p.sourceName}</strong></div>
           <div style="color: #fa9549; font-weight: 700; margin-bottom: 3px;">🛤️ CHEMINEMENT :</div>
           <div style="color: #cbd5e1; margin-left: 10px; margin-bottom: 4px; line-height: 1.4;">${p.pathDescription || 'Parcours technique sécurisé'}</div>
-          <div style="color: #10b981; font-weight: 700;">🟢 DESTINATION : <strong>${p.targetName}</strong></div>
+          <div style="color: #10b981; font-weight: 700;">🟢 SORTIE / DESTINATION : <strong>${p.targetName}</strong></div>
         </div>
       `;
     } else if (data.links) {
-      const srcList = data.links.sources && data.links.sources.length ? data.links.sources.map(s => `<li>🔵 <strong>${s.name}</strong> <span style="color:#94a3b8;">(${s.item ? s.item.replace(/_/g, ' ') : ''} ${s.rate ? s.rate + '/min' : ''})</span></li>`).join("") : `<li style="color:#64748b;">(Gisement brut / Entrée initiale)</li>`;
-      const tgtList = data.links.targets && data.links.targets.length ? data.links.targets.map(t => `<li>🟢 <strong>${t.name}</strong> <span style="color:#94a3b8;">(${t.item ? t.item.replace(/_/g, ' ') : ''} ${t.rate ? t.rate + '/min' : ''})</span></li>`).join("") : `<li style="color:#64748b;">(Stockage final / Sortie usine)</li>`;
+      const srcList = data.links.sources && data.links.sources.length 
+        ? data.links.sources.map(s => `<li>🔵 <strong>${s.name}</strong> <span style="color:#94a3b8;">(${s.item ? s.item.replace(/_/g, ' ') : ''} ${s.rate ? s.rate + '/min' : ''})</span></li>`).join("") 
+        : `<li style="color:#64748b;">(Gisement brut / Entrée initiale)</li>`;
+      const tgtList = data.links.targets && data.links.targets.length 
+        ? data.links.targets.map(t => `<li>🟢 <strong>${t.name}</strong> <span style="color:#94a3b8;">(${t.item ? t.item.replace(/_/g, ' ') : ''} ${t.rate ? t.rate + '/min' : ''})</span></li>`).join("") 
+        : `<li style="color:#64748b;">(Stockage final / Sortie usine)</li>`;
 
       traceHtml = `
         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(250,149,73,0.3); font-size: 11px;">
-          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 2px;">📥 ALIMENTÉ PAR (AMONT) :</div>
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 2px;">📥 ENTRÉES / AMONT :</div>
           <ul style="margin: 0 0 6px 14px; padding: 0;">${srcList}</ul>
-          <div style="color: #10b981; font-weight: 700; margin-bottom: 2px;">📤 ALIMENTE (AVAL) :</div>
+          <div style="color: #10b981; font-weight: 700; margin-bottom: 2px;">📤 SORTIES / AVAL :</div>
           <ul style="margin: 0 0 0 14px; padding: 0;">${tgtList}</ul>
+        </div>
+      `;
+    }
+
+    if (data.inputs && data.inputs.length > 0 && !data.pathway && (!data.links || !data.links.sources || data.links.sources.length === 0)) {
+      const inItems = data.inputs.map(i => `<li>🔵 <strong>${i.name || i.item}</strong> <span style="color:#94a3b8;">(${i.rate ? i.rate + '/min' : ''})</span></li>`).join("");
+      traceHtml += `
+        <div style="margin-top: 6px; font-size: 11px;">
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 2px;">📥 ENTRÉES :</div>
+          <ul style="margin: 0 0 6px 14px; padding: 0;">${inItems}</ul>
+        </div>
+      `;
+    }
+    if (data.outputs && data.outputs.length > 0 && !data.pathway && (!data.links || !data.links.targets || data.links.targets.length === 0)) {
+      const outItems = data.outputs.map(o => `<li>🟢 <strong>${o.name || o.item}</strong> <span style="color:#94a3b8;">(${o.rate ? o.rate + '/min' : ''})</span></li>`).join("");
+      traceHtml += `
+        <div style="margin-top: 6px; font-size: 11px;">
+          <div style="color: #10b981; font-weight: 700; margin-bottom: 2px;">📤 SORTIES :</div>
+          <ul style="margin: 0 0 0 14px; padding: 0;">${outItems}</ul>
         </div>
       `;
     }
@@ -7860,15 +8044,18 @@ class Factory3DViewer {
     let left = x + padding;
     let top = y + padding;
 
-    if (left + 350 > this.container.clientWidth) {
+    const contWidth = this.container.clientWidth || window.innerWidth;
+    const contHeight = this.container.clientHeight || window.innerHeight;
+
+    if (left + 350 > contWidth) {
       left = x - 350 - padding;
     }
-    if (top + 230 > this.container.clientHeight) {
+    if (top + 230 > contHeight) {
       top = y - 230 - padding;
     }
 
-    this.tooltipEl.style.left = `${Math.max(10, left)}px`;
-    this.tooltipEl.style.top = `${Math.max(10, top)}px`;
+    this.tooltipEl.style.left = `${Math.max(8, left)}px`;
+    this.tooltipEl.style.top = `${Math.max(8, top)}px`;
   }
 
   hideTooltip() {
@@ -15872,6 +16059,38 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
 
+      // Bascule Grand Écran pour toute la notice de montage
+      const guideToggleFullscreenBtn = document.getElementById(isMs ? "btn-guide-ms-toggle-fullscreen" : "btn-guide-toggle-fullscreen");
+      if (guideToggleFullscreenBtn && section) {
+        guideToggleFullscreenBtn.onclick = () => {
+          const isFull = section.classList.toggle("is-guide-fullscreen");
+          if (isFull) {
+            guideToggleFullscreenBtn.innerHTML = "✕ Quitter Grand Écran";
+            guideToggleFullscreenBtn.style.background = "rgba(239, 68, 68, 0.2)";
+            guideToggleFullscreenBtn.style.borderColor = "#ef4444";
+            guideToggleFullscreenBtn.style.color = "#fca5a5";
+            showToast("🖥️ Notice de montage en mode Grand Écran (Échap pour quitter)");
+            try {
+              if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+              }
+            } catch(e) {}
+          } else {
+            guideToggleFullscreenBtn.innerHTML = "⛶ Grand Écran";
+            guideToggleFullscreenBtn.style.background = "rgba(56, 189, 248, 0.15)";
+            guideToggleFullscreenBtn.style.borderColor = "#38bdf8";
+            guideToggleFullscreenBtn.style.color = "#38bdf8";
+            try {
+              if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+              }
+            } catch(e) {}
+          }
+          const viewerInstance = isMs ? this.ms3DViewer : this.single3DViewer;
+          if (viewerInstance) setTimeout(() => viewerInstance.resize(), 100);
+        };
+      }
+
       if (fullscreenBtn) {
         fullscreenBtn.onclick = () => {
           const targetItem = (results.targets && results.targets[0]) || { item: "Usine", rate: 10 };
@@ -15910,11 +16129,69 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
 
-      // Raccourcis Clavier Globaux (Flèche Droite = Suivant, Flèche Gauche = Précédent, Espace = Valider & Enchaîner)
+      // Raccourcis Clavier Globaux (Flèche Droite = Suivant, Flèche Gauche = Précédent, Espace = Valider & Enchaîner, Échap = Quitter Grand Écran)
       if (!window._ficsitGuideKeydownAttached) {
         window._ficsitGuideKeydownAttached = true;
         window.addEventListener("keydown", (e) => {
           if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+
+          if (e.key === "Escape") {
+            const singleGuide = document.getElementById("calc-construction-guide-section");
+            const msGuide = document.getElementById("calc-ms-construction-guide-section");
+            const checklist = document.getElementById("view-checklist");
+            const printBox = document.querySelector("#ficsit-print-modal > div");
+
+            let closedAny = false;
+            if (singleGuide && singleGuide.classList.contains("is-guide-fullscreen")) {
+              singleGuide.classList.remove("is-guide-fullscreen");
+              const btn = document.getElementById("btn-guide-toggle-fullscreen");
+              if (btn) {
+                btn.innerHTML = "⛶ Grand Écran";
+                btn.style.background = "rgba(56, 189, 248, 0.15)";
+                btn.style.borderColor = "#38bdf8";
+                btn.style.color = "#38bdf8";
+              }
+              if (FactoryConstructionGuide.single3DViewer) setTimeout(() => FactoryConstructionGuide.single3DViewer.resize(), 100);
+              closedAny = true;
+            }
+            if (msGuide && msGuide.classList.contains("is-guide-fullscreen")) {
+              msGuide.classList.remove("is-guide-fullscreen");
+              const btn = document.getElementById("btn-guide-ms-toggle-fullscreen");
+              if (btn) {
+                btn.innerHTML = "⛶ Grand Écran";
+                btn.style.background = "rgba(56, 189, 248, 0.15)";
+                btn.style.borderColor = "#38bdf8";
+                btn.style.color = "#38bdf8";
+              }
+              if (FactoryConstructionGuide.ms3DViewer) setTimeout(() => FactoryConstructionGuide.ms3DViewer.resize(), 100);
+              closedAny = true;
+            }
+            if (checklist && checklist.classList.contains("is-checklist-fullscreen")) {
+              checklist.classList.remove("is-checklist-fullscreen");
+              const btn = document.getElementById("btn-checklist-toggle-fullscreen");
+              if (btn) {
+                btn.innerHTML = "<span>⛶</span> Grand Écran Chantier";
+                btn.style.borderColor = "#38bdf8";
+                btn.style.color = "#38bdf8";
+              }
+              closedAny = true;
+            }
+            if (printBox && printBox.classList.contains("is-print-box-fullscreen")) {
+              printBox.classList.remove("is-print-box-fullscreen");
+              const btn = document.getElementById("btn-toggle-print-fullscreen");
+              if (btn) btn.innerHTML = "⛶ Grand Écran";
+              closedAny = true;
+            }
+            if (closedAny) {
+              try {
+                if (document.fullscreenElement && document.exitFullscreen) {
+                  document.exitFullscreen().catch(() => {});
+                }
+              } catch(err) {}
+            }
+            return;
+          }
+
           const isMsActive = document.getElementById("calc-ms-construction-guide-section")?.style.display !== "none";
           const activeSec = isMsActive ? "calc-ms-construction-guide-section" : "calc-construction-guide-section";
           const secEl = document.getElementById(activeSec);
@@ -17403,6 +17680,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   // CHECKLIST DE CHANTIER INTERACTIVE
   // =========================================================================
+  let checklistFilter = "all";
+  let checklistSearchQuery = "";
+
   function renderChecklist() {
     const container = document.getElementById("checklist-items-list");
     const clearBtn = document.getElementById("btn-clear-checklist");
@@ -17421,7 +17701,47 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    container.innerHTML = savedItems.map((item, idx) => {
+    const totalCount = savedItems.length;
+    let checkedCount = 0;
+    savedItems.forEach((_, idx) => {
+      if (STATE.checkedChecklist.has(`chk_${idx}`)) checkedCount++;
+    });
+    const pct = Math.round((checkedCount / Math.max(totalCount, 1)) * 100);
+
+    const filteredIndices = [];
+    savedItems.forEach((item, idx) => {
+      const isChecked = STATE.checkedChecklist.has(`chk_${idx}`);
+      if (checklistFilter === "todo" && isChecked) return;
+      if (checklistFilter === "done" && !isChecked) return;
+      if (checklistSearchQuery) {
+        const q = checklistSearchQuery.toLowerCase();
+        const text = `${item.title} ${item.subtitle || ""} ${item.qty || ""}`.toLowerCase();
+        if (!text.includes(q)) return;
+      }
+      filteredIndices.push(idx);
+    });
+
+    const hudHtml = `
+      <div style="grid-column: 1 / -1; margin-bottom: 14px; background: rgba(14, 21, 32, 0.85); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">
+            🏗️ Avancement du Chantier : <span style="color: ${checkedCount === totalCount ? 'var(--ficsit-green)' : 'var(--ficsit-orange)'};">${checkedCount} / ${totalCount} validés (${pct}%)</span>
+          </div>
+          <div style="flex: 1; min-width: 140px; max-width: 320px; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+            <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <input type="text" id="checklist-search-input" value="${checklistSearchQuery}" placeholder="🔍 Filtrer le matériel..." style="background: #080d14; border: 1px solid var(--border-subtle); border-radius: 4px; padding: 4px 10px; color: #fff; font-size: 11.5px; width: 160px;">
+          <button type="button" class="btn-outline btn-chk-filter ${checklistFilter === 'all' ? 'active' : ''}" data-filter="all" style="font-size: 11px; padding: 3px 8px;">Tous</button>
+          <button type="button" class="btn-outline btn-chk-filter ${checklistFilter === 'todo' ? 'active' : ''}" data-filter="todo" style="font-size: 11px; padding: 3px 8px;">À faire (${totalCount - checkedCount})</button>
+          <button type="button" class="btn-outline btn-chk-filter ${checklistFilter === 'done' ? 'active' : ''}" data-filter="done" style="font-size: 11px; padding: 3px 8px;">Validés (${checkedCount})</button>
+        </div>
+      </div>
+    `;
+
+    const itemsHtml = filteredIndices.map(idx => {
+      const item = savedItems[idx];
       const isChecked = STATE.checkedChecklist.has(`chk_${idx}`);
       return `
         <div class="checklist-item ${isChecked ? "checked" : ""}">
@@ -17433,7 +17753,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="item-qty">${item.qty || ""}</span>
         </div>
       `;
-    }).join("");
+    }).join("") || `<div style="grid-column: 1 / -1; text-align: center; padding: 24px; color: var(--text-muted);">Aucun élément ne correspond au filtre.</div>`;
+
+    container.innerHTML = hudHtml + itemsHtml;
 
     // Écouteurs de cases à cocher
     container.querySelectorAll(".checklist-chk").forEach(chk => {
@@ -17448,8 +17770,31 @@ document.addEventListener("DOMContentLoaded", () => {
           parent.classList.remove("checked");
         }
         saveState();
+        renderChecklist();
       });
     });
+
+    // Filtres
+    container.querySelectorAll(".btn-chk-filter").forEach(btn => {
+      btn.onclick = () => {
+        checklistFilter = btn.getAttribute("data-filter");
+        renderChecklist();
+      };
+    });
+
+    // Recherche
+    const searchInput = document.getElementById("checklist-search-input");
+    if (searchInput) {
+      searchInput.oninput = (e) => {
+        checklistSearchQuery = e.target.value;
+        renderChecklist();
+        const freshInput = document.getElementById("checklist-search-input");
+        if (freshInput) {
+          freshInput.focus();
+          freshInput.selectionStart = freshInput.selectionEnd = freshInput.value.length;
+        }
+      };
+    }
 
     if (clearBtn) {
       clearBtn.onclick = () => {
@@ -17468,6 +17813,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("ficsit-print-modal");
     const closeBtn = document.getElementById("btn-close-print-modal");
     const copyBtn = document.getElementById("btn-copy-print-sheet");
+
+    // Bouton Grand Écran Checklist de Chantier
+    const checklistFullscreenBtn = document.getElementById("btn-checklist-toggle-fullscreen");
+    const checklistView = document.getElementById("view-checklist");
+    if (checklistFullscreenBtn && checklistView) {
+      checklistFullscreenBtn.onclick = () => {
+        const isFull = checklistView.classList.toggle("is-checklist-fullscreen");
+        if (isFull) {
+          checklistFullscreenBtn.innerHTML = "<span>✕</span> Quitter Grand Écran";
+          checklistFullscreenBtn.style.borderColor = "#ef4444";
+          checklistFullscreenBtn.style.color = "#fca5a5";
+          showToast("🏗️ Checklist de Chantier en mode Grand Écran (Échap pour quitter)");
+          try {
+            if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(() => {});
+            }
+          } catch(e) {}
+        } else {
+          checklistFullscreenBtn.innerHTML = "<span>⛶</span> Grand Écran Chantier";
+          checklistFullscreenBtn.style.borderColor = "#38bdf8";
+          checklistFullscreenBtn.style.color = "#38bdf8";
+          try {
+            if (document.fullscreenElement && document.exitFullscreen) {
+              document.exitFullscreen().catch(() => {});
+            }
+          } catch(e) {}
+        }
+      };
+    }
+
+    // Bouton Grand Écran Modal Fiche de Chantier
+    const printFullscreenBtn = document.getElementById("btn-toggle-print-fullscreen");
+    const printModalBox = document.querySelector("#ficsit-print-modal > div");
+    if (printFullscreenBtn && printModalBox) {
+      printFullscreenBtn.onclick = () => {
+        const isFull = printModalBox.classList.toggle("is-print-box-fullscreen");
+        printFullscreenBtn.innerHTML = isFull ? "✕ Quitter Grand Écran" : "⛶ Grand Écran";
+      };
+    }
 
     // Écouteur Affichage Fiche Checklist
     const printChecklistBtn = document.getElementById("btn-print-checklist");
