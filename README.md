@@ -1,18 +1,18 @@
 # 🏭 FICSIT Factory Companion — Satisfactory Dashboard
 
-[![Satisfactory Version](https://img.shields.io/badge/Satisfactory-1.0%20%2B%20%7C%201.2-fa9549?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.satisfactorygame.com/)
+[![Satisfactory Version](https://img.shields.io/badge/Satisfactory-1.2-fa9549?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.satisfactorygame.com/)
 [![Statut du Projet](https://img.shields.io/badge/Statut-En%20cours%20de%20d%C3%A9veloppement%20(WIP)-f3c11b?style=for-the-badge&logo=git&logoColor=black)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 [![Application](https://img.shields.io/badge/Application-100%25%20Standalone-4bb3fd?style=for-the-badge&logo=javascript&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 [![Visualiseur 3D](https://img.shields.io/badge/Moteur%203D-Three.js%20WebGL-3fe0d0?style=for-the-badge&logo=three.js&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 [![Déploiement](https://img.shields.io/badge/GitHub%20Pages-Pr%C3%AAt-2ecc71?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 
-> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.0+** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, générateur de blueprints natifs `.sbp`, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, carte interactive des gisements et checklist de chantier.
+> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.2** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, carte interactive des gisements et checklist de chantier.
 
 ---
 
 > [!WARNING]
 > ### 🚧 PROJET EN COURS DE DÉVELOPPEMENT (Work In Progress)
-> Ce projet est **activement développé**. De nouvelles fonctionnalités, modèles 3D, blueprints, schémas d'usines et optimisations d'interface sont ajoutés et ajustés en continu pour Satisfactory 1.0+.  
+> Ce projet est **activement développé** pour la version 1.2 de Satisfactory. De nouvelles fonctionnalités, modèles 3D, schémas d'usines et optimisations d'interface sont ajoutés et ajustés en continu.  
 > Les retours et suggestions d'amélioration sont les bienvenus !
 
 ---
@@ -43,7 +43,7 @@ Le tableau de bord regroupe **7 modules spécialisés** directement accessibles 
 ---
 
 ### 🚀 3. Ascenseur Spatial (Phases 1 à 5)
-* Suivi complet des 5 grandes phases du **Projet Assemblée** (jusqu'à la phase finale de Satisfactory 1.0 : Sauvetage de la Terre).
+* Suivi complet des 5 grandes phases du **Projet Assemblée** (jusqu'à la phase finale de Satisfactory 1.2 : Sauvetage de la Terre).
 * Détail des pièces d'ascenseur spatial requises (*Placage intelligent*, *Structure polyvalente*, *Câblage automatisé*, *Système de propulsion thermique*, etc.).
 * Calcul automatique de la ligne de fabrication complète pour terminer n'importe quelle phase selon la cadence choisie.
 
@@ -54,13 +54,12 @@ Le tableau de bord regroupe **7 modules spécialisés** directement accessibles 
 * **Deux modes d'objectifs** :
   * *Cadence continue* (quantité par minute).
   * *Fabrication par lot* (nombre total de pièces à produire en un temps donné).
-* **Optimisation IA (Minimum de Bâtiments)** : sélectionne automatiquement la meilleure combinaison de recettes alternatives 1.0 pour réduire l'encombrement au sol.
+* **Optimisation IA (Minimum de Bâtiments)** : sélectionne automatiquement la meilleure combinaison de recettes alternatives 1.2 pour réduire l'encombrement au sol.
 * **Organigramme Interactif SCIM (Satisfactory-Calculator)** :
   * Arbre de production vectoriel zoomable et déplaçable.
   * Déplacement libre des blocs de machines (drag & drop) et mode heatmap de diagnostic énergétique.
   * Basculement d'orientation Haut ➔ Bas ou Gauche ➔ Droite.
-* **Micro-Usines Intégrées Mk.3** (6×6 Fondations) : vue top-down 2D avec raccordements et suivi de chantier machine par machine.
-* **Téléchargement direct 1-clic de Blueprints natifs du jeu (`.sbp` & `.sbpcfg`)** directement accessible dans l'en-tête de la Notice de montage, prêt à importer dans votre dossier de sauvegarde Satisfactory 1.0+.
+* **Micro-Usines Intégrées** : vue top-down 2D avec raccordements et suivi de chantier machine par machine.
 * **Guide de Montage Interactif 3D WebGL (Three.js) & 2D CAD** :
   * Notice de montage étape par étape (Fondations ➔ Logistique ➔ Implantation des Machines ➔ Réseau Électrique).
   * Rendu 3D temps réel avec caméra orbitale 360°, vue éclatée/transparence, zoom et perspectives.
@@ -73,7 +72,7 @@ Le tableau de bord regroupe **7 modules spécialisés** directement accessibles 
 * **Sélecteur de Jalon / Phase** avec aperçu immédiat des sous-objectifs de fabrication.
 * **Cadence temporelle ajustable** : calculez les débits nécessaires pour boucler l'objectif en 10 min, 15 min, 30 min, 45 min ou 1h.
 * **Optimisation IA Multi-Chaînes** : minimise le nombre total de machines requises en croisant l'intégralité des recettes alternatives sur toutes les branches du complexe.
-* **Schéma interactif SCIM multi-sorties**, intégration complète des blueprints Mk.3, **Notice de Chantier 3D / 2D pas-à-pas** et **Bouton d'Export Blueprint `.sbp` du complexe complet**.
+* **Schéma interactif SCIM multi-sorties**, intégration complète des modules de production, **Notice de Chantier 3D / 2D pas-à-pas**.
 * **Export instantané vers la Checklist de Chantier** pour préparer l'expédition des matériaux.
 
 ---
@@ -101,9 +100,8 @@ Le tableau de bord regroupe **7 modules spécialisés** directement accessibles 
 ## 🛠️ Stack Technique
 
 * **Interface & Rendu** : HTML5, CSS3 Moderne (*FICSIT Dark Industrial Theme*), Canvas 2D, SVG vectoriel interactif.
-* **Moteur 3D WebGL** : [Three.js](https://threejs.org/) & OrbitControls pour la visualisation spatiale des blueprints et complexes industriels.
+* **Moteur 3D WebGL** : [Three.js](https://threejs.org/) & OrbitControls pour la visualisation spatiale des complexes industriels.
 * **Logique & Algorithmes** : JavaScript ES6+ Vanilla (zéro dépendance lourde, exécution ultra-rapide).
-* **Moteur Blueprint Natif** : Générateur binaire Unreal Engine `.sbp` / `.sbpcfg` compatible Satisfactory 1.0+.
 * **Format & Déploiement** : Page web 100% autonome (*Single File Standalone* via `bundle.js`), utilisable hors-ligne ou hébergée sur GitHub Pages.
 
 ---
@@ -124,11 +122,10 @@ Activez GitHub Pages dans les options de votre dépôt GitHub (`Settings > Pages
 
 ## 🗺️ Feuille de Route (Roadmap)
 
-- [x] Suivi complet des Paliers 0 à 9 et Phases 1 à 5 de l'Ascenseur Spatial.
+- [x] Suivi complet des Paliers 0 à 9 et Phases 1 à 5 de l'Ascenseur Spatial (Satisfactory 1.2).
 - [x] Calculateur dédié pour Pièces Uniques et Calculateur dédié pour Usines Complètes de Jalons.
 - [x] Organigramme interactif SCIM avec déplacement libre de blocs et mode heatmap.
 - [x] Moteur d'optimisation automatique des recettes alternatives (Minimum de machines).
-- [x] Export binaire natif de Blueprints `.sbp` / `.sbpcfg` (Designer Mk.3 6×6).
 - [x] Visualiseur 3D temps réel WebGL (Three.js) avec modèle interactif des usines.
 - [x] Guide de construction visuel 2D CAD étape par étape.
 - [x] Carte Canvas interactive avec inspecteur de foreuses et radar de zone.

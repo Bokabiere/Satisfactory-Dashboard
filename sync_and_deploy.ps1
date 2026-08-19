@@ -1,73 +1,86 @@
-param (
-    [string]$CommitMessage = "Mise à jour Satisfactory Companion"
+﻿param (
+    [string]$CommitMessage = ""
 )
 
-# Assurer l'accès à git.exe
-$gitCustomPath = "$env:LOCALAPPDATA\Programs\Git\cmd"
-if (Test-Path $gitCustomPath) {
-    $env:Path = "$gitCustomPath;$env:Path"
+# 1. Detection automatique et ajout de Git au PATH
+$possibleGitPaths = @(
+    "$env:LOCALAPPDATA\Programs\Git\cmd",
+    "C:\Program Files\Git\cmd",
+    "C:\Program Files (x86)\Git\cmd"
+)
+
+$ghdGit = Get-ChildItem -Path "$env:LOCALAPPDATA\GitHubDesktop\app-*\resources\app\git\cmd" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+if ($ghdGit) {
+    $possibleGitPaths += $ghdGit
 }
 
-Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host "   FICSIT Companion - Synchronisation & Déploiement" -ForegroundColor Yellow
-Write-Host "==================================================" -ForegroundColor Cyan
+foreach ($p in $possibleGitPaths) {
+    if (Test-Path $p) {
+        $env:Path = "$p;$env:Path"
+        break
+    }
+}
 
-# 1. Synchronisation locale vers le Tableau de bord PC (Mobro)
-Write-Host "`n[1/3] Synchronisation vers le Tableau de bord PC..." -ForegroundColor Cyan
+Write-Host "================================================================" -ForegroundColor Cyan
+Write-Host "   FICSIT COMPANION - AUTOMATISATION & SYNCHRO GITHUB           " -ForegroundColor Yellow
+Write-Host "================================================================" -ForegroundColor Cyan
+
+# 2. Synchronisation locale vers le Tableau de bord PC (Mobro)
 $src = "c:\IA\Projets\Satisfactory-Dashboard"
 $dest = "c:\IA\Projets\Mobro-configuration\satisfactory"
 
+Write-Host ""
+Write-Host "[1/3] Synchronisation vers le Tableau de bord PC..." -ForegroundColor Cyan
 if (Test-Path $dest) {
-    robocopy $src $dest /E /XD ".git" "node_modules" "scratch" /XO /FFT /NDL /NFL /NJH /NJS
-    Write-Host "   -> Synchronisation Mobro terminée avec succès." -ForegroundColor Green
+    robocopy $src $dest /E /XD ".git" "node_modules" "scratch" "graphify-out" /XO /FFT /NDL /NFL /NJH /NJS | Out-Null
+    Write-Host "   [OK] Synchronisation Mobro terminee." -ForegroundColor Green
 } else {
-    Write-Host "   -> Dossier Mobro non trouvé, étape ignorée." -ForegroundColor Yellow
+    Write-Host "   [INFO] Dossier Mobro non configure, etape ignoree." -ForegroundColor Gray
 }
 
-# 2. Vérification de Git
-Write-Host "`n[2/3] Préparation de Git..." -ForegroundColor Cyan
+# 3. Verification de Git
+Write-Host ""
+Write-Host "[2/3] Verification de l'environnement Git / GitHub..." -ForegroundColor Cyan
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Host "   [!] Git est introuvable." -ForegroundColor Red
+    Write-Host "   [ERREUR] Git est introuvable. Veuillez verifier l'installation de Git ou GitHub Desktop." -ForegroundColor Red
     exit 1
 }
 
-# Initialisation git si besoin
-if (-not (Test-Path "$src\.git")) {
-    Write-Host "   -> Initialisation du dépôt Git local..." -ForegroundColor Cyan
-    git init -b main
+# 4. Commit & Envoi des modifications
+if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
+    $dateStr = Get-Date -Format "yyyy-MM-dd HH:mm"
+    $CommitMessage = "Mise a jour Satisfactory Companion - $dateStr"
 }
 
-# Vérifier si remote origin existe
-$remotes = git remote
-if ($remotes -notcontains "origin") {
-    Write-Host "`n[INFO] Aucun dépôt GitHub distant associé ('origin')." -ForegroundColor Yellow
-    Write-Host "Pour associer votre dépôt GitHub, exécutez :" -ForegroundColor White
-    Write-Host "git remote add origin https://github.com/<VOTRE-PSEUDO>/Satisfactory-Dashboard.git" -ForegroundColor Green
-    Write-Host "Puis relancez ce script." -ForegroundColor White
-    
-    # On commit quand même en local
-    git add .
-    git commit -m "Commit initial local - Satisfactory Companion"
-    Write-Host "`n[OK] Commit local enregistré." -ForegroundColor Green
-    exit 0
-}
+Write-Host "   -> Analyse des fichiers modifies..." -ForegroundColor Gray
+git add -A
 
-# 3. Commit & Push vers GitHub
-git add .
 $status = git status --porcelain
 if ($status) {
-    git commit -m "$CommitMessage - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-    Write-Host "   -> Modifications enregistrées localement." -ForegroundColor Green
+    Write-Host "   -> Enregistrement du commit : '$CommitMessage'..." -ForegroundColor Gray
+    git commit -m "$CommitMessage"
+    Write-Host "   [OK] Modifications enregistrees en local." -ForegroundColor Green
 } else {
-    Write-Host "   -> Aucun nouveau fichier modifié en local." -ForegroundColor Gray
+    Write-Host "   [INFO] Aucun fichier modifie en local a commiter." -ForegroundColor Yellow
 }
 
-Write-Host "`n[3/3] Déploiement vers GitHub Pages..." -ForegroundColor Cyan
-git push origin main
+# 5. Push vers GitHub
+Write-Host ""
+Write-Host "[3/3] Envoi vers GitHub (Push vers origin/main)..." -ForegroundColor Cyan
+$pushOutput = git push origin main 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "`n[SUCCES] Déploiement GitHub terminé ! Votre site se met à jour en ligne." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "================================================================" -ForegroundColor Green
+    Write-Host "   SUCCES : Vos modifications sont en ligne sur GitHub !        " -ForegroundColor Green
+    Write-Host "   Depot : https://github.com/Bokabiere/Satisfactory-Dashboard   " -ForegroundColor Cyan
+    Write-Host "================================================================" -ForegroundColor Green
 } else {
-    Write-Host "`n[!] Échec du push vers GitHub. Vérifiez que vous êtes connecté ou que la branche est synchronisée." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "   [ERREUR] Echec lors du push vers GitHub :" -ForegroundColor Red
+    Write-Host "   $pushOutput" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "   Astuce : Vous pouvez ouvrir GitHub Desktop pour verifier vos identifiants." -ForegroundColor Yellow
 }
 
-Write-Host "`nTerminé !" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "[Fin du processus]" -ForegroundColor Gray

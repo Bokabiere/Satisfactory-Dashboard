@@ -1,4 +1,4 @@
-// Données des Jalons du HUB et Phases de l'Ascenseur Spatial (Satisfactory 1.0+)
+// Données des Jalons du HUB et Phases de l'Ascenseur Spatial (Satisfactory 1.2)
 
 const MILESTONES_DATA = {
   phases: [
@@ -10,37 +10,37 @@ const MILESTONES_DATA = {
       cost: {
         smart_plating: 50
       },
-      unlocks: "Débloque les Paliers (Tiers) 3 et 4 au HUB"
+      unlocks: "Débloque les Paliers 3 & 4 (Charbon, Acier, Logistique Mk.3)"
     },
     {
       id: "phase_2",
       name: "Phase 2 - Expansion industrielle",
       tierRequirement: "Tier 3 - 4",
-      description: "Production de composants automatisés et modulaires.",
+      description: "Deuxième cargaison pour lancer les technologies pétrolières.",
       cost: {
         smart_plating: 500,
         versatile_framework: 500,
         automated_wiring: 100
       },
-      unlocks: "Débloque les Paliers (Tiers) 5 et 6 au HUB (Pétrole, Plastique, Trains)"
+      unlocks: "Débloque les Paliers 5 & 6 (Pétrole, Plastique, Caoutchouc, Carburant)"
     },
     {
       id: "phase_3",
-      name: "Phase 3 - Technologie lourde",
+      name: "Phase 3 - Consolidation avancée",
       tierRequirement: "Tier 5 - 6",
-      description: "Systèmes moteurs et de contrôle avancés.",
+      description: "Troisième cargaison pour accéder au nucléaire et à l'aluminium.",
       cost: {
         versatile_framework: 2500,
         modular_engine: 500,
         adaptive_control_unit: 100
       },
-      unlocks: "Débloque les Paliers (Tiers) 7 et 8 au HUB (Bauxite, Aluminium, Nucléaire)"
+      unlocks: "Débloque les Paliers 7 & 8 (Aluminium, Nucléaire, Accélérateur de particules)"
     },
     {
       id: "phase_4",
-      name: "Phase 4 - Propulsion & Accélération",
+      name: "Phase 4 - Propulsion & Contrôle",
       tierRequirement: "Tier 7 - 8",
-      description: "Composants de haute technologie pour l'assemblée finale.",
+      description: "Quatrième cargaison majeure pour débloquer l'ère quantique 1.2.",
       cost: {
         assembly_director_system: 4000,
         magnetic_field_generator: 4000,
@@ -51,7 +51,7 @@ const MILESTONES_DATA = {
     },
     {
       id: "phase_5",
-      name: "Phase 5 - Sauvetage de la Terre (1.0 Finale)",
+      name: "Phase 5 - Sauvetage de la Terre (1.2 Finale)",
       tierRequirement: "Tier 9",
       description: "L'ultime expédition pour compléter la mission de la FICSIT.",
       cost: {
@@ -60,7 +60,7 @@ const MILESTONES_DATA = {
         ai_expansion_server: 250,
         ballistic_warp_drive: 200
       },
-      unlocks: "Achèvement de Satisfactory 1.0 & Victoire FICSIT !"
+      unlocks: "Achèvement de Satisfactory 1.2 & Victoire FICSIT !"
     }
   ],
 
@@ -338,7 +338,7 @@ const MILESTONES_DATA = {
     },
     {
       tier: 9,
-      name: "Palier 9 - Technologie Quantique (Satisfactory 1.0)",
+      name: "Palier 9 - Technologie Quantique (Satisfactory 1.2)",
       milestones: [
         {
           id: "tier_9_matter_conversion",

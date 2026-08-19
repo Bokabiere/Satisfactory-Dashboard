@@ -1,4 +1,4 @@
-// Moteur de Calcul de Production Satisfactory 1.0+
+// Moteur de Calcul de Production Satisfactory 1.2
 // Supporte calculs récursifs, recettes alternatives, bilan énergétique et checklist chantier
 
 class ProductionCalculator {

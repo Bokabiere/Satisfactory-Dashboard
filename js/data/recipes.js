@@ -1,4 +1,4 @@
-// Base de données des recettes standards et alternatives de Satisfactory 1.0+
+// Base de données des recettes standards et alternatives de Satisfactory 1.2
 // items/min et débits basés sur le temps de cycle standard
 
 const RECIPES = [
@@ -814,7 +814,7 @@ const RECIPES = [
   },
 
   // ==========================================
-  // PHASE 5 & TECHNOLOGIES QUANTIQUES (1.0)
+  // PHASE 5 & TECHNOLOGIES QUANTIQUES (1.2)
   // ==========================================
   {
     id: "recipe_ballistic_warp_drive",

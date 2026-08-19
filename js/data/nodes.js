@@ -1,7 +1,7 @@
 /**
- * FICSIT FACTORY COMPANION - SATISFACTORY CALCULATOR (SCIM 1.0) DATASET
+ * FICSIT FACTORY COMPANION - SATISFACTORY CALCULATOR (SCIM 1.2) DATASET
  * Sourced directly from https://satisfactory-calculator.com/fr/interactive-map
- * Total World Nodes in SCIM 1.0: 608 nodes
+ * Total World Nodes in SCIM 1.2: 608 nodes
  */
 
 const RESOURCE_TYPES = {

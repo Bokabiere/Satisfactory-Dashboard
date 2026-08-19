@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FICSIT Factory Companion - Satisfactory 1.0+ Dashboard</title>
-  <meta name="description" content="Tableau de bord de progression, calculateur de ratios avec recettes alternatives, gestionnaire de jalons, architecture Grand Palais et blueprints pour Satisfactory 1.0.">
+  <title>FICSIT Factory Companion - Satisfactory 1.2 Dashboard</title>
+  <meta name="description" content="Tableau de bord de progression, calculateur de ratios avec recettes alternatives, gestionnaire de jalons, guide de construction et carte des ressources pour Satisfactory 1.2.">
   <!-- Moteur 3D WebGL Three.js & Contrôles Orbit -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -1761,10 +1761,10 @@ body {
     <!-- 3. ASCENSEUR SPATIAL (PHASES 1 À 5) -->
     <section id="view-phases" class="tab-view">
       <div class="panel-header">
-        <h2 class="panel-title"><i>🚀</i> Projet Assemblée - Phases de l'Ascenseur Spatial (1.0)</h2>
+        <h2 class="panel-title"><i>🚀</i> Projet Assemblée - Phases de l'Ascenseur Spatial (1.2)</h2>
       </div>
       <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
-        Suivez les livraisons orbitales requises pour débloquer les paliers technologiques majeurs jusqu'au dénouement de Satisfactory 1.0.
+        Suivez les livraisons orbitales requises pour débloquer les paliers technologiques majeurs jusqu'au dénouement de Satisfactory 1.2.
       </p>
       <div id="phases-container">
         <!-- Rempli dynamiquement par app.js -->
@@ -2269,7 +2269,7 @@ body {
                 <strong style="color: var(--ficsit-cyan);" id="calc-total-shards-val">0</strong>
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                <span>🌀 Somersloops 1.0 :</span>
+                <span>🌀 Somersloops 1.2 :</span>
                 <strong style="color: #c084fc;" id="calc-total-somersloops-val">0</strong>
               </div>
             </div>
@@ -2362,7 +2362,7 @@ body {
           <!-- Rempli par app.js -->
         </div>
 
-        <!-- Panneau d'Overclocking & Somersloops 1.0 pour Usine de Jalon -->
+        <!-- Panneau d'Overclocking & Somersloops 1.2 pour Usine de Jalon -->
         <div style="background: linear-gradient(135deg, rgba(142, 68, 173, 0.15), rgba(75, 179, 253, 0.15)); border: 1px solid rgba(168, 85, 247, 0.4); padding: 14px 16px; border-radius: var(--radius-sm); margin-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
             <div>
@@ -2796,7 +2796,7 @@ body {
                 <strong style="color: var(--ficsit-cyan);" id="calc-ms-total-shards-val">0</strong>
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                <span>🌀 Somersloops 1.0 :</span>
+                <span>🌀 Somersloops 1.2 :</span>
                 <strong style="color: #c084fc;" id="calc-ms-total-somersloops-val">0</strong>
               </div>
             </div>
@@ -2857,7 +2857,7 @@ body {
     <section id="view-map" class="tab-view">
       <div class="card-panel">
         <div class="panel-header">
-          <h2 class="panel-title"><i>🗺️</i> Carte Interactive des Ressources & Gisements (Satisfactory 1.0+)</h2>
+          <h2 class="panel-title"><i>🗺️</i> Carte Interactive des Ressources & Gisements (Satisfactory 1.2)</h2>
           <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <div style="display: flex; background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); overflow: hidden;">
               <button type="button" class="map-layer-btn active" data-layer="satellite" style="padding: 6px 12px; font-size: 12px; font-family: var(--font-display); background: var(--ficsit-orange); color: #000; font-weight: 700; border: none; cursor: pointer;">
@@ -2953,7 +2953,7 @@ body {
 
                 <label class="somersloop-toggle" id="node-somersloop-label">
                   <input type="checkbox" id="node-somersloop-chk">
-                  <span>🌀 Doubler avec Somersloop (x2 en 1.0+)</span>
+                  <span>🌀 Doubler avec Somersloop (x2 en 1.2)</span>
                 </label>
 
                 <button class="btn-ficsit" id="btn-send-node-to-calc" style="width: 100%; justify-content: center; font-size: 13px; margin-top: 6px;">
@@ -3118,7 +3118,7 @@ body {
 
   <!-- SCRIPTS -->
   <script>
-// Données des bâtiments de production et logistique Satisfactory 1.0+
+// Données des bâtiments de production et logistique Satisfactory 1.2
 const BUILDINGS = {
   // Extraction & Minage
   miner_mk1: {
@@ -3379,7 +3379,7 @@ const ITEM_NAMES = {
   biochemical_sculptor: "Sculpteur biochimique",
   ai_expansion_server: "Serveur d'extension d'IA",
 
-  // Technologies Quantiques & Endgame 1.0
+  // Technologies Quantiques & Endgame 1.2
   dark_matter_residue: "Résidu de matière noire",
   dark_matter_crystal: "Cristal de matière noire",
   time_crystal: "Cristal temporel",
@@ -3411,7 +3411,7 @@ if (typeof module !== "undefined") {
 }
 
 
-// Base de données des recettes standards et alternatives de Satisfactory 1.0+
+// Base de données des recettes standards et alternatives de Satisfactory 1.2
 // items/min et débits basés sur le temps de cycle standard
 
 const RECIPES = [
@@ -4227,7 +4227,7 @@ const RECIPES = [
   },
 
   // ==========================================
-  // PHASE 5 & TECHNOLOGIES QUANTIQUES (1.0)
+  // PHASE 5 & TECHNOLOGIES QUANTIQUES (1.2)
   // ==========================================
   {
     id: "recipe_ballistic_warp_drive",
@@ -4309,7 +4309,7 @@ if (typeof module !== "undefined") {
 }
 
 
-// Données des Jalons du HUB et Phases de l'Ascenseur Spatial (Satisfactory 1.0+)
+// Données des Jalons du HUB et Phases de l'Ascenseur Spatial (Satisfactory 1.2)
 
 const MILESTONES_DATA = {
   phases: [
@@ -4321,37 +4321,37 @@ const MILESTONES_DATA = {
       cost: {
         smart_plating: 50
       },
-      unlocks: "Débloque les Paliers (Tiers) 3 et 4 au HUB"
+      unlocks: "Débloque les Paliers 3 & 4 (Charbon, Acier, Logistique Mk.3)"
     },
     {
       id: "phase_2",
       name: "Phase 2 - Expansion industrielle",
       tierRequirement: "Tier 3 - 4",
-      description: "Production de composants automatisés et modulaires.",
+      description: "Deuxième cargaison pour lancer les technologies pétrolières.",
       cost: {
         smart_plating: 500,
         versatile_framework: 500,
         automated_wiring: 100
       },
-      unlocks: "Débloque les Paliers (Tiers) 5 et 6 au HUB (Pétrole, Plastique, Trains)"
+      unlocks: "Débloque les Paliers 5 & 6 (Pétrole, Plastique, Caoutchouc, Carburant)"
     },
     {
       id: "phase_3",
-      name: "Phase 3 - Technologie lourde",
+      name: "Phase 3 - Consolidation avancée",
       tierRequirement: "Tier 5 - 6",
-      description: "Systèmes moteurs et de contrôle avancés.",
+      description: "Troisième cargaison pour accéder au nucléaire et à l'aluminium.",
       cost: {
         versatile_framework: 2500,
         modular_engine: 500,
         adaptive_control_unit: 100
       },
-      unlocks: "Débloque les Paliers (Tiers) 7 et 8 au HUB (Bauxite, Aluminium, Nucléaire)"
+      unlocks: "Débloque les Paliers 7 & 8 (Aluminium, Nucléaire, Accélérateur de particules)"
     },
     {
       id: "phase_4",
-      name: "Phase 4 - Propulsion & Accélération",
+      name: "Phase 4 - Propulsion & Contrôle",
       tierRequirement: "Tier 7 - 8",
-      description: "Composants de haute technologie pour l'assemblée finale.",
+      description: "Quatrième cargaison majeure pour débloquer l'ère quantique 1.2.",
       cost: {
         assembly_director_system: 4000,
         magnetic_field_generator: 4000,
@@ -4362,7 +4362,7 @@ const MILESTONES_DATA = {
     },
     {
       id: "phase_5",
-      name: "Phase 5 - Sauvetage de la Terre (1.0 Finale)",
+      name: "Phase 5 - Sauvetage de la Terre (1.2 Finale)",
       tierRequirement: "Tier 9",
       description: "L'ultime expédition pour compléter la mission de la FICSIT.",
       cost: {
@@ -4371,7 +4371,7 @@ const MILESTONES_DATA = {
         ai_expansion_server: 250,
         ballistic_warp_drive: 200
       },
-      unlocks: "Achèvement de Satisfactory 1.0 & Victoire FICSIT !"
+      unlocks: "Achèvement de Satisfactory 1.2 & Victoire FICSIT !"
     }
   ],
 
@@ -4649,7 +4649,7 @@ const MILESTONES_DATA = {
     },
     {
       tier: 9,
-      name: "Palier 9 - Technologie Quantique (Satisfactory 1.0)",
+      name: "Palier 9 - Technologie Quantique (Satisfactory 1.2)",
       milestones: [
         {
           id: "tier_9_matter_conversion",
@@ -5706,9 +5706,9 @@ if (typeof module !== "undefined") {
 
 
 /**
- * FICSIT FACTORY COMPANION - SATISFACTORY CALCULATOR (SCIM 1.0) DATASET
+ * FICSIT FACTORY COMPANION - SATISFACTORY CALCULATOR (SCIM 1.2) DATASET
  * Sourced directly from https://satisfactory-calculator.com/fr/interactive-map
- * Total World Nodes in SCIM 1.0: 608 nodes
+ * Total World Nodes in SCIM 1.2: 608 nodes
  */
 
 const RESOURCE_TYPES = {
@@ -6102,7 +6102,7 @@ if (typeof module !== "undefined") {
 }
 
 
-// Moteur de Calcul de Production Satisfactory 1.0+
+// Moteur de Calcul de Production Satisfactory 1.2
 // Supporte calculs récursifs, recettes alternatives, bilan énergétique et checklist chantier
 
 class ProductionCalculator {
@@ -11055,7 +11055,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </h3>
             </div>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
-              L'algorithme a comparé toutes les combinaisons alternatives de l'arbre technologique 1.0.
+              L'algorithme a comparé toutes les combinaisons alternatives de l'arbre technologique 1.2.
             </p>
           </div>
           <div style="display: flex; gap: 14px; text-align: right;">
@@ -16819,7 +16819,7 @@ document.addEventListener("DOMContentLoaded", () => {
           type: "megablueprint",
           name: "Grand Campus 1900 des Cascades",
           author: "FICSIT Imperial Architecture",
-          gameVersion: "1.0+",
+          gameVersion: "1.2+",
           data: {
             blueprintName: "🏛️ Le Grand Campus Industriel 1900 des Cascades",
             targetBiome: "Western Waterfall Plateau / Prairies Verdoyantes",
@@ -16847,10 +16847,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (downloadScimBtn) {
       downloadScimBtn.onclick = () => {
         const scimData = {
-          scimVersion: "1.0+",
+          scimVersion: "1.2+",
           blueprintName: "🏛️ Le Grand Campus Industriel 1900 des Cascades (MegaBlueprint)",
           author: "FICSIT Imperial Architecture & Engineering",
-          gameVersion: "Satisfactory 1.0",
+          gameVersion: "Satisfactory 1.2",
           category: "Mega-Structures & Industrial Complexes",
           targetBiome: "Western Waterfall Plateau / Prairies Verdoyantes",
           worldCoordinates: {
@@ -17547,7 +17547,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h1 style="font-family: var(--font-display); font-size: 20px; color: var(--ficsit-orange); margin: 6px 0 2px 0;">
               🏗️ BORDEREAU DE CHANTIER & MATÉRIAUX EMBARQUÉS
             </h1>
-            <div style="font-size: 11px; color: var(--text-secondary);">Généré le ${now} | Directive Industrielle Pionnier 1.0</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Généré le ${now} | Directive Industrielle Pionnier 1.2</div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Statut de mission</div>
@@ -17580,7 +17580,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </table>
 
         <div style="margin-top: 24px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.0</div>
+          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.2</div>
           <div>Page 1 / 1 - Document Officiel de Chantier</div>
         </div>
       `;
@@ -17608,7 +17608,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="ficsit-spec-badge">FICSIT INC. // USINE COMPLÈTE</span>
-              <span style="font-size: 11px; color: var(--text-muted);">REF: FICSIT-PROD-PLAN-1.0</span>
+              <span style="font-size: 11px; color: var(--text-muted);">REF: FICSIT-PROD-PLAN-1.2</span>
             </div>
             <h1 style="font-family: var(--font-display); font-size: 20px; color: var(--ficsit-orange); margin: 6px 0 2px 0;">
               🏭 FICHE TECHNIQUE DE PRODUCTION & PLANS DE MONTAGE
@@ -17640,7 +17640,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ${stepsHtml}
 
         <div style="margin-top: 24px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.0</div>
+          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.2</div>
           <div>Document Officiel de Chantier & Plans d'Apparat</div>
         </div>
       `;
@@ -17682,7 +17682,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (calcResults.totalSomersloops > 0) {
       items.push({
-        title: `🌀 Rassembler ${calcResults.totalSomersloops} × Somersloop Alien 1.0`,
+        title: `🌀 Rassembler ${calcResults.totalSomersloops} × Somersloop Alien 1.2`,
         subtitle: `Amplification technologique alien (+100% bonus)`,
         qty: `${calcResults.totalSomersloops} pcs`
       });

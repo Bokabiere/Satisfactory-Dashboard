@@ -686,7 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </h3>
             </div>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
-              L'algorithme a comparé toutes les combinaisons alternatives de l'arbre technologique 1.0.
+              L'algorithme a comparé toutes les combinaisons alternatives de l'arbre technologique 1.2.
             </p>
           </div>
           <div style="display: flex; gap: 14px; text-align: right;">
@@ -6450,7 +6450,7 @@ document.addEventListener("DOMContentLoaded", () => {
           type: "megablueprint",
           name: "Grand Campus 1900 des Cascades",
           author: "FICSIT Imperial Architecture",
-          gameVersion: "1.0+",
+          gameVersion: "1.2+",
           data: {
             blueprintName: "🏛️ Le Grand Campus Industriel 1900 des Cascades",
             targetBiome: "Western Waterfall Plateau / Prairies Verdoyantes",
@@ -6478,10 +6478,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (downloadScimBtn) {
       downloadScimBtn.onclick = () => {
         const scimData = {
-          scimVersion: "1.0+",
+          scimVersion: "1.2+",
           blueprintName: "🏛️ Le Grand Campus Industriel 1900 des Cascades (MegaBlueprint)",
           author: "FICSIT Imperial Architecture & Engineering",
-          gameVersion: "Satisfactory 1.0",
+          gameVersion: "Satisfactory 1.2",
           category: "Mega-Structures & Industrial Complexes",
           targetBiome: "Western Waterfall Plateau / Prairies Verdoyantes",
           worldCoordinates: {
@@ -7178,7 +7178,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h1 style="font-family: var(--font-display); font-size: 20px; color: var(--ficsit-orange); margin: 6px 0 2px 0;">
               🏗️ BORDEREAU DE CHANTIER & MATÉRIAUX EMBARQUÉS
             </h1>
-            <div style="font-size: 11px; color: var(--text-secondary);">Généré le ${now} | Directive Industrielle Pionnier 1.0</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Généré le ${now} | Directive Industrielle Pionnier 1.2</div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Statut de mission</div>
@@ -7211,7 +7211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </table>
 
         <div style="margin-top: 24px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.0</div>
+          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.2</div>
           <div>Page 1 / 1 - Document Officiel de Chantier</div>
         </div>
       `;
@@ -7239,7 +7239,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="ficsit-spec-badge">FICSIT INC. // USINE COMPLÈTE</span>
-              <span style="font-size: 11px; color: var(--text-muted);">REF: FICSIT-PROD-PLAN-1.0</span>
+              <span style="font-size: 11px; color: var(--text-muted);">REF: FICSIT-PROD-PLAN-1.2</span>
             </div>
             <h1 style="font-family: var(--font-display); font-size: 20px; color: var(--ficsit-orange); margin: 6px 0 2px 0;">
               🏭 FICHE TECHNIQUE DE PRODUCTION & PLANS DE MONTAGE
@@ -7271,7 +7271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ${stepsHtml}
 
         <div style="margin-top: 24px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.0</div>
+          <div>FICSIT Industrial Automation Protocol - Satisfactory 1.2</div>
           <div>Document Officiel de Chantier & Plans d'Apparat</div>
         </div>
       `;
@@ -7313,7 +7313,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (calcResults.totalSomersloops > 0) {
       items.push({
-        title: `🌀 Rassembler ${calcResults.totalSomersloops} × Somersloop Alien 1.0`,
+        title: `🌀 Rassembler ${calcResults.totalSomersloops} × Somersloop Alien 1.2`,
         subtitle: `Amplification technologique alien (+100% bonus)`,
         qty: `${calcResults.totalSomersloops} pcs`
       });

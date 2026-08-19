@@ -1,4 +1,4 @@
-// Données des bâtiments de production et logistique Satisfactory 1.0+
+// Données des bâtiments de production et logistique Satisfactory 1.2
 const BUILDINGS = {
   // Extraction & Minage
   miner_mk1: {
@@ -259,7 +259,7 @@ const ITEM_NAMES = {
   biochemical_sculptor: "Sculpteur biochimique",
   ai_expansion_server: "Serveur d'extension d'IA",
 
-  // Technologies Quantiques & Endgame 1.0
+  // Technologies Quantiques & Endgame 1.2
   dark_matter_residue: "Résidu de matière noire",
   dark_matter_crystal: "Cristal de matière noire",
   time_crystal: "Cristal temporel",
