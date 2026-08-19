@@ -46,23 +46,73 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# 4. Commit & Envoi des modifications
-if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
-    $dateStr = Get-Date -Format "yyyy-MM-dd HH:mm"
-    $CommitMessage = "Mise a jour Satisfactory Companion - $dateStr"
-}
-
-Write-Host "   -> Analyse des fichiers modifies..." -ForegroundColor Gray
+# Analyse des fichiers modifies
+Write-Host "   -> Analyse des modifications en cours..." -ForegroundColor Gray
 git add -A
+$statusLines = git status --porcelain
 
-$status = git status --porcelain
-if ($status) {
-    Write-Host "   -> Enregistrement du commit : '$CommitMessage'..." -ForegroundColor Gray
-    git commit -m "$CommitMessage"
-    Write-Host "   [OK] Modifications enregistrees en local." -ForegroundColor Green
-} else {
-    Write-Host "   [INFO] Aucun fichier modifie en local a commiter." -ForegroundColor Yellow
+if (-not $statusLines) {
+    Write-Host "   [INFO] Aucun fichier modifie a enregistrer." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "[Fin du processus]" -ForegroundColor Gray
+    exit 0
 }
+
+# 4. Construction du message de commit avec les modifications apportees
+if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
+    $modified = @()
+    $added = @()
+    $deleted = @()
+    $renamed = @()
+    $details = @()
+
+    foreach ($line in $statusLines) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        $code = $line.Substring(0, 2).Trim()
+        $file = $line.Substring(2).Trim().Trim('"')
+
+        if ($code -match 'M') {
+            $modified += $file
+            $details += "- Modifie : $file"
+        } elseif ($code -match '\?|A') {
+            $added += $file
+            $details += "- Ajoute  : $file"
+        } elseif ($code -match 'D') {
+            $deleted += $file
+            $details += "- Supprime: $file"
+        } elseif ($code -match 'R') {
+            $renamed += $file
+            $details += "- Renomme : $file"
+        } else {
+            $details += "- Modif ($code) : $file"
+        }
+    }
+
+    $summaryParts = @()
+    if ($modified.Count -gt 0) { $summaryParts += "Modif: $($modified.Count)" }
+    if ($added.Count -gt 0) { $summaryParts += "Ajout: $($added.Count)" }
+    if ($deleted.Count -gt 0) { $summaryParts += "Suppr: $($deleted.Count)" }
+    if ($renamed.Count -gt 0) { $summaryParts += "Renom: $($renamed.Count)" }
+
+    $summaryStats = $summaryParts -join ", "
+    $allFiles = @($modified + $added + $deleted + $renamed)
+    $firstFiles = $allFiles | Select-Object -First 3
+    $filesOverview = ($firstFiles | ForEach-Object { [System.IO.Path]::GetFileName($_) }) -join ", "
+    if ($allFiles.Count -gt 3) {
+        $filesOverview += " (+$( $allFiles.Count - 3 ) autres)"
+    }
+
+    $commitTitle = "MAJ: $filesOverview ($summaryStats)"
+    $CommitMessage = "$commitTitle`n`nDetails des changements :`n" + ($details -join "`n")
+}
+
+Write-Host "   -> Enregistrement du commit :" -ForegroundColor Gray
+Write-Host "----------------------------------------------------" -ForegroundColor DarkGray
+Write-Host $CommitMessage -ForegroundColor White
+Write-Host "----------------------------------------------------" -ForegroundColor DarkGray
+
+git commit -m "$CommitMessage"
+Write-Host "   [OK] Modifications enregistrees en local." -ForegroundColor Green
 
 # 5. Push vers GitHub
 Write-Host ""
