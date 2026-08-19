@@ -10738,11 +10738,244 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
+  // MANUEL & DOCUMENTATION FICSIT 1.2 (README)
+  // =========================================================================
+  function initReadmeModal() {
+    const modal = document.getElementById("readme-modal");
+    const openBtn = document.getElementById("btn-open-readme-modal");
+    const closeBtn = document.getElementById("btn-close-readme-modal");
+    const doneBtn = document.getElementById("btn-readme-modal-done");
+    const bodyContainer = document.getElementById("readme-modal-body");
+    const rawContainer = document.getElementById("readme-raw-container");
+    const rawTextElem = document.getElementById("readme-raw-text");
+    const toggleViewBtn = document.getElementById("btn-toggle-readme-view");
+    const searchInput = document.getElementById("readme-search-input");
+    const copyBtn = document.getElementById("btn-copy-readme-text");
+    const tocBtns = document.querySelectorAll(".readme-toc-btn");
+
+    if (!modal) return;
+
+    // Contenu markdown (injecté via bundle.js ou fallback)
+    const markdownContent = (typeof window.FICSIT_README_MARKDOWN === "string" && window.FICSIT_README_MARKDOWN.trim()) 
+      ? window.FICSIT_README_MARKDOWN 
+      : "# 🏭 FICSIT Factory Companion — Satisfactory Dashboard\n\nCompagnon industriel 1.2 pour la planification et l'optimisation de vos usines.";
+
+    let isRawView = false;
+
+    function parseMarkdown(md) {
+      if (!md) return "<p style='color: var(--text-secondary);'>Aucun contenu disponible.</p>";
+
+      // 1. Sauvegarde et masquage des blocs de code
+      const codeBlocks = [];
+      let html = md.replace(/```([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const id = `___CODE_BLOCK_${codeBlocks.length}___`;
+        const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        codeBlocks.push(`<pre><code class="language-${lang || 'text'}">${escaped}</code></pre>`);
+        return id;
+      });
+
+      // 2. Headings avec IDs d'ancres
+      html = html.replace(/^# (.*$)/gim, '<h1 id="readme-sec-intro">$1</h1>');
+      html = html.replace(/^## (.*$)/gim, (match, title) => {
+        let secId = "sec-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        if (/module|fonctionnalit/i.test(title)) secId = "readme-sec-modules";
+        else if (/blueprint/i.test(title)) secId = "readme-sec-blueprints";
+        else if (/stack|architecture|structure/i.test(title)) secId = "readme-sec-stack";
+        else if (/utilisation|démarrage|astuce|feuille/i.test(title)) secId = "readme-sec-tips";
+        return `<h2 id="${secId}">${title}</h2>`;
+      });
+      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+
+      // 3. Callouts GitHub Alerts (> [!NOTE], > [!WARNING], > [!TIP], > [!IMPORTANT])
+      html = html.replace(/> \[!NOTE\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout callout-note"><div class="ficsit-callout-title" style="color: var(--ficsit-cyan);">ℹ️ NOTE FICSIT</div><div>${clean}</div></div>`;
+      });
+      html = html.replace(/> \[!WARNING\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout callout-warn"><div class="ficsit-callout-title" style="color: var(--ficsit-amber);">⚠️ AVERTISSEMENT / EXPÉRIMENTAL</div><div>${clean}</div></div>`;
+      });
+      html = html.replace(/> \[!TIP\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout"><div class="ficsit-callout-title" style="color: var(--ficsit-blue);">💡 ASTUCE PIONNIER</div><div>${clean}</div></div>`;
+      });
+      html = html.replace(/> \[!IMPORTANT\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout callout-warn"><div class="ficsit-callout-title" style="color: var(--ficsit-orange);">⚡ IMPORTANT</div><div>${clean}</div></div>`;
+      });
+
+      // 4. Blockquotes standards
+      html = html.replace(/^> (.*$)/gim, '<blockquote style="border-left: 3px solid var(--ficsit-orange); padding-left: 12px; margin: 10px 0; color: var(--text-secondary);">$1</blockquote>');
+
+      // 5. Badges Shields [![...](...)]
+      html = html.replace(/\[!\[(.*?)\]\((.*?)\)\]\((.*?)\)/gim, '<a href="$3" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; margin: 2px;"><img src="$2" alt="$1" style="vertical-align: middle; border-radius: 3px;" /></a>');
+
+      // 6. Tableaux Markdown
+      html = html.replace(/^\|(.+)\|\r?\n^\|[-:| ]+\|\r?\n((?:^\|.+\|\r?\n?)+)/gm, (match, headerLine, rowsBlock) => {
+        const headers = headerLine.split('|').filter(c => c.trim() !== '').map(c => `<th>${c.trim()}</th>`).join('');
+        const rows = rowsBlock.trim().split(/\r?\n/).map(row => {
+          const cells = row.split('|').filter(c => c.trim() !== '').map(c => `<td>${c.trim()}</td>`).join('');
+          return `<tr>${cells}</tr>`;
+        }).join('');
+        return `<table class="readme-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+      });
+
+      // 7. Checklists et listes à puces
+      html = html.replace(/^- \[x\] (.*$)/gim, '<li style="list-style:none;">✅ <span style="color: var(--ficsit-green); font-weight:600;">$1</span></li>');
+      html = html.replace(/^- \[ \] (.*$)/gim, '<li style="list-style:none;">⏳ <span style="color: var(--text-secondary);">$1</span></li>');
+      html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
+      html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+
+      // 8. Formatage Inline
+      html = html.replace(/\*\*(.*?)\*\*/gim, '<strong style="color: var(--text-primary);">$1</strong>');
+      html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+      html = html.replace(/`([^`]+)`/gim, '<code>$1</code>');
+      html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--ficsit-blue); text-decoration: underline;">$1</a>');
+      html = html.replace(/^---$/gim, '<hr>');
+
+      // 9. Restaurer les blocs de code
+      codeBlocks.forEach((block, i) => {
+        html = html.replace(`___CODE_BLOCK_${i}___`, block);
+      });
+
+      return html;
+    }
+
+    function initContent() {
+      if (rawTextElem) rawTextElem.textContent = markdownContent;
+      if (bodyContainer) bodyContainer.innerHTML = parseMarkdown(markdownContent);
+    }
+
+    initContent();
+
+    // Ouverture du modal
+    if (openBtn) {
+      openBtn.addEventListener("click", () => {
+        modal.style.display = "flex";
+        if (searchInput) {
+          searchInput.value = "";
+          searchInput.focus();
+        }
+      });
+    }
+
+    // Fermeture du modal
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (doneBtn) doneBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.style.display === "flex") {
+        closeModal();
+      }
+    });
+
+    // Bascule vue Formattée / Markdown Brut
+    if (toggleViewBtn) {
+      toggleViewBtn.addEventListener("click", () => {
+        isRawView = !isRawView;
+        if (isRawView) {
+          bodyContainer.style.display = "none";
+          rawContainer.style.display = "block";
+          toggleViewBtn.innerHTML = "📖 Mode Formatté";
+          toggleViewBtn.style.color = "var(--ficsit-orange)";
+        } else {
+          bodyContainer.style.display = "block";
+          rawContainer.style.display = "none";
+          toggleViewBtn.innerHTML = "📄 Mode Markdown Brut";
+          toggleViewBtn.style.color = "";
+        }
+      });
+    }
+
+    // Navigation par chapitres / Quick TOC
+    tocBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        if (isRawView) {
+          isRawView = false;
+          bodyContainer.style.display = "block";
+          rawContainer.style.display = "none";
+          if (toggleViewBtn) toggleViewBtn.innerHTML = "📄 Mode Markdown Brut";
+        }
+        const targetElem = document.getElementById(targetId);
+        if (targetElem && bodyContainer) {
+          bodyContainer.scrollTo({
+            top: targetElem.offsetTop - 15,
+            behavior: "smooth"
+          });
+        }
+      });
+    });
+
+    // Recherche en direct
+    if (searchInput && bodyContainer) {
+      let searchTimeout;
+      searchInput.addEventListener("input", (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          const query = e.target.value.trim().toLowerCase();
+          if (!query) {
+            bodyContainer.innerHTML = parseMarkdown(markdownContent);
+            return;
+          }
+
+          const rawHtml = parseMarkdown(markdownContent);
+          const temp = document.createElement("div");
+          temp.innerHTML = rawHtml;
+
+          const walker = document.createTreeWalker(temp, NodeFilter.SHOW_TEXT, null, false);
+          const nodesToReplace = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue.toLowerCase().includes(query) && node.parentNode.nodeName !== "CODE" && node.parentNode.nodeName !== "SCRIPT") {
+              nodesToReplace.push(node);
+            }
+          }
+
+          nodesToReplace.forEach(textNode => {
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            const span = document.createElement("span");
+            span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="readme-highlight-match">$1</mark>');
+            textNode.parentNode.replaceChild(span, textNode);
+          });
+
+          bodyContainer.innerHTML = temp.innerHTML;
+
+          const firstMatch = bodyContainer.querySelector(".readme-highlight-match");
+          if (firstMatch) {
+            firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 150);
+      });
+    }
+
+    // Copier le Markdown brut
+    if (copyBtn) {
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(markdownContent).then(() => {
+          showToast("📋 Documentation README.md copiée dans le presse-papier !");
+        }).catch(() => {
+          showToast("❌ Impossible de copier le texte.");
+        });
+      });
+    }
+  }
+
+  // =========================================================================
   // DÉMARRAGE & INITIALISATION DE L'APPLICATION
   // =========================================================================
   initThemeSelector();
   initNavigation();
   initSaveUploader();
+  initReadmeModal();
   renderMilestones();
   renderPhases();
   initMAMUI();

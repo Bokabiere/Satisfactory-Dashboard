@@ -3382,6 +3382,234 @@ body {
   accent-color: var(--ficsit-orange);
 }
 
+/* ==========================================================================
+   BOUTON D'INFORMATION "i" DANS L'EN-TÊTE & MODAL DU MANUEL / README
+   ========================================================================== */
+.btn-info-header {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-info-header:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--ficsit-blue);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(75, 179, 253, 0.35);
+  transform: translateY(-1px);
+}
+
+.info-icon-badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: rgba(75, 179, 253, 0.2);
+  border: 1.5px solid var(--ficsit-blue);
+  color: var(--ficsit-blue);
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-weight: bold;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1;
+  box-shadow: 0 0 6px rgba(75, 179, 253, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-info-header:hover .info-icon-badge {
+  background: var(--ficsit-blue);
+  color: #0e1217;
+  box-shadow: 0 0 10px var(--ficsit-blue);
+}
+
+/* Modal README */
+#readme-modal .readme-toc-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+#readme-modal .readme-toc-btn:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--ficsit-blue);
+  color: var(--text-primary);
+}
+
+#readme-modal-body h1 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--ficsit-orange);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+#readme-modal-body h2 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--ficsit-blue);
+  margin-top: 24px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#readme-modal-body h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--ficsit-amber);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+#readme-modal-body p {
+  margin-bottom: 10px;
+}
+
+#readme-modal-body hr {
+  border: 0;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 20px 0;
+}
+
+#readme-modal-body ul, #readme-modal-body ol {
+  margin-left: 20px;
+  margin-bottom: 12px;
+}
+
+#readme-modal-body li {
+  margin-bottom: 4px;
+}
+
+#readme-modal-body code {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  color: var(--ficsit-amber);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+#readme-modal-body pre {
+  background: #05080c;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+#readme-modal-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #8ea8cc;
+  font-size: 12px;
+  display: block;
+}
+
+#readme-modal-body .ficsit-callout {
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--ficsit-blue);
+  background: rgba(75, 179, 253, 0.08);
+}
+
+#readme-modal-body .ficsit-callout.callout-warn {
+  border-left-color: var(--ficsit-amber);
+  background: rgba(243, 193, 27, 0.08);
+}
+
+#readme-modal-body .ficsit-callout.callout-note {
+  border-left-color: var(--ficsit-cyan);
+  background: rgba(63, 224, 208, 0.08);
+}
+
+#readme-modal-body .ficsit-callout-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#readme-modal-body .readme-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+#readme-modal-body .readme-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+}
+
+#readme-modal-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+}
+
+#readme-modal-body th, #readme-modal-body td {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+#readme-modal-body th {
+  background: var(--bg-surface-elevated);
+  color: var(--ficsit-orange);
+  font-family: var(--font-display);
+}
+
+#readme-modal-body tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.readme-highlight-match {
+  background: rgba(250, 149, 73, 0.4);
+  color: #fff;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
 
 
 </style>
@@ -3443,6 +3671,11 @@ body {
           </div>
         </div>
       </div>
+      <!-- Bouton "i" Information / Manuel FICSIT (README) -->
+      <button type="button" id="btn-open-readme-modal" class="btn-info-header" title="Documentation & Manuel FICSIT (README.md)" aria-label="Documentation et Manuel FICSIT">
+        <span class="info-icon-badge">i</span>
+        <span class="info-btn-text">Manuel / README</span>
+      </button>
     </div>
   </header>
 
@@ -5622,6 +5855,74 @@ body {
         <button type="button" id="btn-apply-alt-modal" class="btn-ficsit" style="font-size: 12.5px; padding: 7px 20px; background: var(--ficsit-orange); color: #000; font-weight: 800; cursor: pointer;">
           💾 Appliquer & Recalculer l'Usine
         </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Documentation & Manuel FICSIT (README.md) -->
+  <div id="readme-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 999999; justify-content: center; align-items: center; padding: 20px;">
+    <div onclick="event.stopPropagation()" style="background: #0d1117; border: 2px solid var(--ficsit-blue); border-radius: var(--radius-md); max-width: 1060px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.9);">
+      
+      <!-- En-tête du Modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="info-icon-badge" style="width: 28px; height: 28px; font-size: 18px;">i</div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--ficsit-blue); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+              Manuel & Documentation FICSIT (README.md)
+            </h3>
+            <span style="font-size: 11.5px; color: var(--text-secondary);">
+              Compagnon industriel 1.2 • Fonctionnalités, architecture, raccourcis et guide d'utilisation
+            </span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" id="btn-toggle-readme-view" class="btn-outline" style="font-size: 11.5px; padding: 5px 12px;" title="Basculer entre vue formattée et Markdown brut">
+            📄 Mode Markdown Brut
+          </button>
+          <button type="button" id="btn-close-readme-modal" style="background: none; border: none; color: #fff; font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px;" title="Fermer (Échap)">&times;</button>
+        </div>
+      </div>
+
+      <!-- Barre d'outils et recherche instantanée -->
+      <div style="padding: 10px 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-subtle); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 260px;">
+          <input type="text" id="readme-search-input" placeholder="🔍 Rechercher dans le guide (ex: disques durs, 3D, trains, sauvegardes...)" style="width: 100%; background: #080d14; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 7px 12px; color: #fff; font-size: 12px;">
+        </div>
+        <div class="readme-quick-nav" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;">
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-intro">🏠 Présentation</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-modules">🖥️ 8 Modules</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-blueprints">📦 Blueprints</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-stack">🛠️ Stack & Fichiers</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-tips">🚀 Démarrage Rapide</button>
+        </div>
+      </div>
+
+      <!-- Corps du Modal avec rendu formaté -->
+      <div id="readme-modal-body" style="padding: 22px 26px; overflow-y: auto; flex: 1; max-height: calc(92vh - 165px); background: #090d14; color: var(--text-primary); line-height: 1.6; font-size: 13.5px;">
+        <!-- Injecté dynamiquement par app.js -->
+      </div>
+
+      <!-- Vue Markdown Brut (masquée par défaut) -->
+      <div id="readme-raw-container" style="display: none; padding: 20px; overflow-y: auto; flex: 1; max-height: calc(92vh - 165px); background: #06090e;">
+        <pre id="readme-raw-text" style="font-family: monospace; font-size: 12px; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin: 0; user-select: text;"></pre>
+      </div>
+
+      <!-- Pied de page du Modal -->
+      <div style="padding: 12px 20px; border-top: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ficsit-green);"></span>
+          <span>100% Autonome & Local • Sans Crédit • Aucune connexion externe requise</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" id="btn-copy-readme-text" class="btn-outline" style="font-size: 12px; padding: 6px 14px;">
+            📋 Copier le README
+          </button>
+          <button type="button" id="btn-readme-modal-done" class="btn-ficsit" style="font-size: 12px; padding: 6px 18px; background: var(--ficsit-blue); color: #000; font-weight: 800; cursor: pointer;">
+            Fermer le Manuel
+          </button>
+        </div>
       </div>
 
     </div>
@@ -15993,6 +16294,8 @@ window.ControlRoomEngine = (function() {
   };
 })();
 
+
+window.FICSIT_README_MARKDOWN = "# 🏭 FICSIT Factory Companion — Satisfactory Dashboard\n\n[![Satisfactory Version](https://img.shields.io/badge/Satisfactory-1.2-fa9549?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.satisfactorygame.com/)\n[![Statut du Projet](https://img.shields.io/badge/Statut-En%20cours%20de%20d%C3%A9veloppement%20(WIP)-f3c11b?style=for-the-badge&logo=git&logoColor=black)](https://github.com/Bokabiere/Satisfactory-Dashboard)\n[![Application](https://img.shields.io/badge/Application-100%25%20Standalone-4bb3fd?style=for-the-badge&logo=javascript&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)\n[![Visualiseur 3D](https://img.shields.io/badge/Moteur%203D-Three.js%20WebGL-3fe0d0?style=for-the-badge&logo=three.js&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)\n[![Déploiement](https://img.shields.io/badge/GitHub%20Pages-Pr%C3%AAt-2ecc71?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)\n\n> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.2** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, générateur & bibliothèque de Blueprints `.sbp` *(en cours de développement)*, simulateur énergétique & logistique, carte interactive des gisements et checklist de chantier.\n\n---\n\n> [!NOTE]\n> ### 🚧 PROJET EN COURS DE DÉVELOPPEMENT (Work In Progress)\n> Ce projet est **activement développé** pour la version 1.2 de Satisfactory. De nouvelles fonctionnalités, modèles 3D, schémas d'usines, modules blueprints et optimisations d'interface sont ajoutés et ajustés en continu.  \n> Les retours et suggestions d'amélioration sont les bienvenus !\n\n---\n\n## 🖥️ Modules & Fonctionnalités du Tableau de Bord\n\nLe tableau de bord regroupe **8 modules spécialisés** directement accessibles depuis la barre de navigation :\n\n```text\n[ 📊 Synthèse & Salle de Contrôle ]  [ 📋 Jalons & Ascenseur ]  [ 🔬 MAM & Disques Durs ]  [ 🏭 Production & Usines ]  [ ⚡ Centrales & Énergie ]  [ 🚚 Logistique & Transports ]  [ 🏗️ Checklist ]  [ 🗺️ Carte ]\n```\n\n---\n\n### 📊 1. Synthèse Industrielle & Salle de Contrôle FICSIT\n* **Poste de Commandement & HUD Rétro-Futuriste** :\n  * **Télémétrie Énergétique & Production** : jauges néon dynamiques (consommation, capacité réseau, indice d'efficacité FICSIT 98.6%, charge usine).\n  * **Radar Tactique Canvas 2D** : balayage circulaire fluorescent à 60 fps avec détection pulsée des gisements miniers et bouton *Ping Radar*.\n  * **Holo-Inspecteur 3D à Vue Éclatée (Three.js)** : modélisation modulaire des machines (*Constructeur*, *Assembleur*, *Raffinerie*, *Fonderie*, *Centrale*) avec curseur d'écartement dynamique des parois.\n  * **Télex de Diagnostics en temps réel** : terminal défilant de télémétrie FICSIT et répliques sarcastiques de l'IA ADA.\n  * **Filtres Rétro-Futuristes** : *Scanlines CRT*, *Bloom holographique* et mode plein écran natif.\n* **Synchroniseur & Importateur de Sauvegarde (.SAV) Intégré** : Glissez-déposez directement votre fichier de sauvegarde Satisfactory pour synchroniser en 1 clic vos jalons débloqués, phases spatiales, arbres du MAM et recettes alternatives scannées.\n* **Tableau de bord récapitulatif** de l'état de votre industrie : technologies disponibles, capacités logistiques, convoyeurs débloqués et recommandations des prochains objectifs à construire.\n* **Sélecteur de Thèmes FICSIT** : 5 thèmes immersifs (*FICSIT Standard*, *Caterium Cyberpunk*, *Uranium Hazard*, *Schéma Technique*, *Laboratoire Pionnier*).\n\n---\n\n### 📋 2. Jalons du HUB & Ascenseur Spatial (Paliers 0 à 9 & Phases 1 à 5)\n* **Vue Unifiée de la Progression** avec sous-onglets ultra-rapides :\n  * **Jalons du HUB** : Suivi interactif des **Paliers 0 à 9**, filtres et saut rapide par palier, boutons Déplier/Replier tout, validation dynamique des bâtiments débloqués et bouton direct *\"⚡ Calculer l'Usine pour ce Jalon\"*.\n  * **Ascenseur Spatial** : Suivi des 5 phases du **Projet Assemblée** (jusqu'au dénouement 1.2), détail des pièces orbitales requises (*Placage intelligent*, *Structure polyvalente*, *Câblage automatisé*, *Système de propulsion thermique*, etc.) et dimensionnement instantané de la ligne d'assemblage.\n\n---\n\n### 🔬 3. M.A.M. & Traqueur de Disques Durs (Satisfactory 1.2)\n* **Arbres Technologiques Complets (9 branches)** :\n  * *Technologie Alien & Dépôt Dimensionnel 1.0* (Sphères de Mercer, Somersloops, vitesse et capacité cloud, Amplificateur de Puissance Alien +500 MW).\n  * *Caterium* (Fil actif, Limiteur IA, Connecteurs, Poteaux Mk.2/Mk.3, Géothermie).\n  * *Électrolimaces* (Limaces bleues/jaunes/violettes, Overclocking 250%, Synthèse quantique d'éclats).\n  * *Quartz*, *Soufre*, *Organismes Alien*, *Mycélia*, *Nutriments*.\n* **Simulateur d'Aide au Choix de Disques Durs (\"Quelle Recette Choisir parmi 3 ?\")** :\n  * Évaluation algorithmique instantanée des 3 options d'un scan MAM pour recommander le meilleur choix selon votre palier actuel.\n* **Tier-List Dynamique des 100+ Recettes Alternatives** :\n  * Classement de **Tier S (Indispensables)** à **Tier D**, avec filtres thématiques (*Stratégie Sans-Vis*, *Économie de Minerai*, *Max Énergie*).\n  * Bouton d'activation directe vers le Calculateur de production.\n\n---\n\n### 🏭 4. Calculateur de Production & Usines (Pièces Uniques & Complexes Multi-Lignes)\n* **Vue Unifiée avec sous-onglets spécialisés** :\n  * **🔩 Pièces Uniques & Lignes Dédiées** :\n    * Dimensionnement d'un composant individuel par *Cadence continue (/min)* ou *Fabrication par lot (quantité en temps donné)*.\n    * Optimisation automatique par IA (Minimum de machines via recettes alternatives 1.2).\n    * Organigramme interactif SCIM zoomable avec drag & drop libre et heatmap énergétique (MW).\n    * Guide de montage interactif 3D WebGL (Three.js) avec gestion des étages et vue 2D CAD pas à pas isolée.\n    * Bouton direct *\"🚚 Planifier le Transport Logistique\"*.\n  * **🏭 Usines Complètes de Jalons & Phases (Multi-Produits)** :\n    * Dimensionnement de complexes industriels multi-lignes pour boucler un Jalon ou une Phase de l'Ascenseur en 10 min, 15 min, 30 min, 45 min ou 1h.\n    * Optimisation IA globale sur l'ensemble des branches du complexe.\n    * Export direct vers la Checklist de Chantier.\n\n---\n\n### ⚡ 5. Simulateur de Centrales Électriques & Réseau FICSIT (1.0 / 1.2)\n* **10 Technologies Énergétiques** : Biomasse automatisée, Charbon standard, Charbon compacté, Carburant liquide (250 MW), Turbo-carburant, Carburant de fusée (*Rocket Fuel* 1.0), Carburant ionisé (*Ionized Fuel* 1.0), Fission Uranium (2500 MW), Recyclage Ficsonium Zéro Déchet, Géothermie et Amplificateur Alien (+500 MW).\n* **Mode de Calcul Hybride** : Dimensionnement par *Puissance Cible (MW)* ou par *Débit de Ressource Disponible (/min)*.\n* **Guide Hydraulique & Ratios Parfaits FICSIT** : Spécification des tuyaux (Mk.1 300 m³/min vs Mk.2 600 m³/min) et des boucles anti-reflux (ex: 3 extracteurs pour 8 générateurs à charbon).\n* **Bilan de la chaîne amont** (Raffineries, Mélangeurs, Pompes) et export direct vers la Checklist de Chantier.\n\n---\n\n### 🚚 6. Simulateur Logistique & Réseaux de Fret (Trains, Drones, Camions & Convoyeurs)\n* **Dimensionnement de Flottes & Convois** :\n  * **Monorail Ferroviaire** : Calcul du nombre exact de wagons (fret / citerne liquide 2400 m³), puissance requise (MW) et nombre de locomotives adapté au relief/pentes (1:4 sur plat, 1:2 en forte pente).\n  * **Drones Aériens (252 km/h)** : Calcul du nombre de drones/ports et de la consommation précise de batteries par minute.\n  * **Véhicules Routiers** (Tracteur, Camion, Explorateur) : Choix des carburants (Charbon, Fuel, Turbofuel, Fusée, Batteries) et calcul des débits de ravitaillement.\n  * **Convoyeurs & Tuyaux longues distances** (Mk.1 à Mk.6).\n* **Gestion du Gel de Quai (25 secondes)** : calcul mathématique des pertes de débit pendant l'animation de quai et dimensionnement des conteneurs industriels tampons double entrée/sortie.\n* **Matrice Décisionnelle Comparative FICSIT** : évaluation objective et notation (0-100) du mode de transport optimal selon la distance, le débit et le type de cargaison.\n* **Guides et Schémas Techniques Vectoriels** : règles d'or pour la signalisation ferroviaire (*Block Signal* vs *Path Signal*) et topologie des tampons sans interruption.\n* **Ponts d'intégration bidirectionnels** avec la Carte Interactive (mesure de trajet au clic) et la Checklist de Chantier.\n\n---\n\n### 🏗️ 7. Checklist de Chantier & Fiches d'Atelier\n* Liste interactive des machines et matériaux à emporter sur le terrain pour construire votre usine.\n* Possibilité de cocher chaque élément au fur et à mesure de l'assemblage.\n* **Fiche récapitulative d'usine imprimable** : vue épurée et exportable pour consultation sur second écran ou impression papier.\n* **Notice de chantier pas-à-pas** découpée en modules compacts adaptés aux Blueprint Designers Mk.1, Mk.2 et Mk.3 (6x6).\n\n---\n\n### 🗺️ 8. Carte Interactive des Ressources\n* Visualiseur cartographique Canvas haute performance avec 3 modes de vue : **Satellite**, **Biomes** et **Tactique**.\n* Affichage de tous les gisements avec indication visuelle de pureté (*Pur*, *Normal*, *Impur*).\n* **Inspecteur de gisement en temps réel** :\n  * Ajustement du type de foreuse (Foreuse Mk.1, Mk.2, Mk.3).\n  * Curseur d'overclocking (100% à 250%) et boost Somersloop.\n  * Calcul instantané du rendement en pièces/minute.\n  * Bouton **\"Injecter dans le Calculateur\"** pour démarrer une chaîne à partir du gisement sélectionné.\n* **Outil Radar de zone** : analyse instantanée de tous les gisements situés dans un rayon configurable (50 m à 3 500 m).\n* **Outil Tracé & Mesure Logistique** : mesure de distance directe entre deux points ou gisements et transfert automatique vers le module Logistique.\n* **Affichage des Capsules de Sauvetage (Crash Sites)** avec conditions de déverrouillage de disques durs.\n* Filtres multi-critères par type de ressource et par niveau de pureté.\n\n---\n\n## 📦 Bibliothèque & Générateur de Blueprints (.SBP & .SBPCFG) ⚠️ *(En cours de développement)*\n\n> [!WARNING]\n> ### ⚙️ Fonctionnalité Expérimentale (WIP)\n> Le moteur de génération binaire `.sbp` / `.sbpcfg` ainsi que les fichiers de la bibliothèque de blueprints sont actuellement en **phase active de développement et d'expérimentation**.  \n> Certains agencements, connexions automatiques ou gabarits de bâtiments peuvent encore évoluer ou nécessiter des ajustements lors de l'import direct dans les Blueprint Designers de Satisfactory 1.0 / 1.2.\n\nLe module blueprint comprend :\n\n* **Générateur Universel de Blueprints** (`js/engine/blueprintGenerator.js`) : Génère directement au format binaire Unreal Engine les fichiers `.sbp` et `.sbpcfg` compressés en zlib.\n* **Dossier de Blueprints Dédié** (`/blueprints`) :\n  * Modules de démarrage Palier 0 (*Plaques*, *Tiges*, *Câbles*, *Béton*, *Plaques renforcées*).\n  * Modules d'énergie (*Centrales à charbon*, *Raffineries*, etc.).\n  * Modules de phases spatiales (Phases 1 à 5).\n  * Architecture 1900 et packs d'usines complets (`Pack_Campus_1900.zip`, `Campus_1900_Cascades.cbp`).\n* **Export par lot** : Script `batch_export_sbp.js` pour tester et générer automatiquement l'ensemble des blueprints du catalogue.\n\n---\n\n## 🛠️ Stack Technique & Architecture\n\n* **Interface & Rendu** : HTML5, CSS3 Moderne (*FICSIT Dark Industrial Theme*), Canvas 2D, SVG vectoriel interactif.\n* **Moteur 3D WebGL** : [Three.js](https://threejs.org/) & OrbitControls pour la visualisation spatiale des complexes industriels avec gestion multi-étages.\n* **Logique & Algorithmes** : JavaScript ES6+ Vanilla (zéro framework lourd, exécution instantanée en local).\n* **Format & Déploiement** : Page web 100% autonome (*Single File Standalone* via `bundle.js`), utilisable hors-ligne ou hébergée sur GitHub Pages.\n* **Automatisation** : Script PowerShell `sync_and_deploy.ps1` pour la synchronisation locale, la détection automatique de modifications et le déploiement Git/GitHub en une commande.\n\n---\n\n## 📁 Structure du Projet\n\n```text\nSatisfactory-Dashboard/\n├── blueprints/                 # Collection de blueprints .sbp, .sbpcfg, .cbp et archives zip (WIP)\n├── js/\n│   ├── app.js                  # Contrôleur principal et routage de l'interface\n│   ├── data/                   # Données de référence Satisfactory 1.2\n│   │   ├── blueprints.js       # Définition des structures de blueprints\n│   │   ├── buildings.js        # Catalogue des bâtiments et coûts\n│   │   ├── buildingTextures.js # Textures 2D/3D des machines\n│   │   ├── logisticsData.js    # Données trains, drones, camions & convoyeurs\n│   │   ├── mamData.js          # Arbres MAM et recettes alternatives\n│   │   ├── mapTextures.js      # Tuiles cartographiques (Satellite & Biomes)\n│   │   ├── milestones.js       # Paliers 0-9 et Phases spatiales 1-5\n│   │   ├── nodes.js            # Base de coordonnées de tous les gisements\n│   │   ├── powerData.js        # Données des centrales et combustibles\n│   │   └── recipes.js          # Recettes de base et alternatives 1.2\n│   └── engine/                 # Moteurs de calcul et de rendu\n│       ├── blueprintGenerator.js # Générateur binaire .sbp / .sbpcfg (expérimental)\n│       ├── calculator.js       # Calculateur de production et optimiseur IA\n│       ├── factoryViewer3D.js  # Moteur 3D WebGL (Three.js)\n│       ├── logisticsEngine.js  # Moteur de dimensionnement du fret\n│       ├── mamEngine.js        # Logique d'analyse MAM et tier-lists\n│       ├── mapEngine.js        # Moteur cartographique Canvas 2D\n│       ├── powerCalculator.js  # Moteur énergétique et bilans réseau\n│       └── saveParser.js       # Analyseur binaire de sauvegardes .SAV\n├── batch_export_sbp.js         # Script Node.js d'export groupé de blueprints\n├── bundle.js                   # Compilation autonome pour utilisation offline\n├── index.html                  # Point d'entrée principal pour GitHub Pages\n├── satisfactory_dashboard.html # Application complète autonome\n├── styles.css                  # Feuilles de style FICSIT Dark Industrial\n├── sync_and_deploy.ps1         # Script d'automatisation et de déploiement GitHub\n└── template.html               # Modèle source du dashboard\n```\n\n---\n\n## 🚀 Utilisation Rapide\n\n### Utilisation en local\n1. Clonez le dépôt :\n   ```bash\n   git clone https://github.com/Bokabiere/Satisfactory-Dashboard.git\n   ```\n2. Ouvrez simplement le fichier `index.html` ou `satisfactory_dashboard.html` dans n'importe quel navigateur Web moderne (Chrome, Firefox, Edge, Brave, etc.). Aucun serveur Node.js ou Python n'est requis.\n\n### Déploiement GitHub Pages\nActivez GitHub Pages dans les options de votre dépôt GitHub (`Settings > Pages > Branch : main`) pour accéder à votre tableau de bord depuis n'importe quel PC, smartphone ou tablette.\n\n---\n\n## 🗺️ Feuille de Route (Roadmap)\n\n- [x] Suivi complet des Paliers 0 à 9 et Phases 1 à 5 de l'Ascenseur Spatial (Satisfactory 1.2).\n- [x] Calculateur dédié pour Pièces Uniques et Calculateur dédié pour Usines Complètes de Jalons.\n- [x] Organigramme interactif SCIM avec déplacement libre de blocs et mode heatmap énergétique.\n- [x] Moteur d'optimisation automatique des recettes alternatives (Minimum de machines).\n- [x] Visualiseur 3D temps réel WebGL (Three.js) avec modèle interactif des usines et sélecteur d'étages.\n- [x] Guide de construction visuel 2D CAD étape par étape avec isolation dynamique.\n- [x] Carte Canvas interactive avec inspecteur de foreuses, radar de zone et outil de tracé logistique.\n- [x] Simulateur Logistique & Réseaux de Fret (Trains, Drones, Camions & Matrice de rentabilité FICSIT).\n- [x] Simulateur de Centrales Électriques pour les 10 technologies 1.2 (Ficsonium, Rocket Fuel, Ionized Fuel, etc.).\n- [x] Arbre Technologique Complet du MAM & Traqueur de Disques Durs (Dépôt Dimensionnel 1.0, Tier-List S/A/B/C/D & Aide au tirage).\n- [x] Checklist de chantier interactive et fiche d'atelier imprimable.\n- [x] Synchroniseur et importateur de sauvegardes `.SAV` Satisfactory.\n- [ ] 🟡 *En cours de développement* : **Générateur & Bibliothèque de Blueprints .sbp / .sbpcfg natifs** (phase expérimentale, enrichissement et stabilisation des modules compacts et plans d'architecte Blueprint Designer Mk.1 / Mk.2 / Mk.3).\n\n---\n\n## 📜 Mentions Légales\n\n* **Satisfactory** est une marque déposée et un jeu développé par [Coffee Stain Studios](https://www.coffeestainstudios.com/).\n* Cet outil est un projet communautaire open-source non-officiel d'aide au jeu.\n";
 
 // Application Principale - Satisfactory Companion Dashboard
 // Contrôleur UI, synchronisation LocalStorage, Calculateur & Savegame Parser
@@ -26734,11 +27037,244 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
+  // MANUEL & DOCUMENTATION FICSIT 1.2 (README)
+  // =========================================================================
+  function initReadmeModal() {
+    const modal = document.getElementById("readme-modal");
+    const openBtn = document.getElementById("btn-open-readme-modal");
+    const closeBtn = document.getElementById("btn-close-readme-modal");
+    const doneBtn = document.getElementById("btn-readme-modal-done");
+    const bodyContainer = document.getElementById("readme-modal-body");
+    const rawContainer = document.getElementById("readme-raw-container");
+    const rawTextElem = document.getElementById("readme-raw-text");
+    const toggleViewBtn = document.getElementById("btn-toggle-readme-view");
+    const searchInput = document.getElementById("readme-search-input");
+    const copyBtn = document.getElementById("btn-copy-readme-text");
+    const tocBtns = document.querySelectorAll(".readme-toc-btn");
+
+    if (!modal) return;
+
+    // Contenu markdown (injecté via bundle.js ou fallback)
+    const markdownContent = (typeof window.FICSIT_README_MARKDOWN === "string" && window.FICSIT_README_MARKDOWN.trim()) 
+      ? window.FICSIT_README_MARKDOWN 
+      : "# 🏭 FICSIT Factory Companion — Satisfactory Dashboard\n\nCompagnon industriel 1.2 pour la planification et l'optimisation de vos usines.";
+
+    let isRawView = false;
+
+    function parseMarkdown(md) {
+      if (!md) return "<p style='color: var(--text-secondary);'>Aucun contenu disponible.</p>";
+
+      // 1. Sauvegarde et masquage des blocs de code
+      const codeBlocks = [];
+      let html = md.replace(/```([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const id = `___CODE_BLOCK_${codeBlocks.length}___`;
+        const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        codeBlocks.push(`<pre><code class="language-${lang || 'text'}">${escaped}</code></pre>`);
+        return id;
+      });
+
+      // 2. Headings avec IDs d'ancres
+      html = html.replace(/^# (.*$)/gim, '<h1 id="readme-sec-intro">$1</h1>');
+      html = html.replace(/^## (.*$)/gim, (match, title) => {
+        let secId = "sec-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        if (/module|fonctionnalit/i.test(title)) secId = "readme-sec-modules";
+        else if (/blueprint/i.test(title)) secId = "readme-sec-blueprints";
+        else if (/stack|architecture|structure/i.test(title)) secId = "readme-sec-stack";
+        else if (/utilisation|démarrage|astuce|feuille/i.test(title)) secId = "readme-sec-tips";
+        return `<h2 id="${secId}">${title}</h2>`;
+      });
+      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+
+      // 3. Callouts GitHub Alerts (> [!NOTE], > [!WARNING], > [!TIP], > [!IMPORTANT])
+      html = html.replace(/> \[!NOTE\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout callout-note"><div class="ficsit-callout-title" style="color: var(--ficsit-cyan);">ℹ️ NOTE FICSIT</div><div>${clean}</div></div>`;
+      });
+      html = html.replace(/> \[!WARNING\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout callout-warn"><div class="ficsit-callout-title" style="color: var(--ficsit-amber);">⚠️ AVERTISSEMENT / EXPÉRIMENTAL</div><div>${clean}</div></div>`;
+      });
+      html = html.replace(/> \[!TIP\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout"><div class="ficsit-callout-title" style="color: var(--ficsit-blue);">💡 ASTUCE PIONNIER</div><div>${clean}</div></div>`;
+      });
+      html = html.replace(/> \[!IMPORTANT\]\r?\n((?:> .*\r?\n?)*)/gim, (match, body) => {
+        const clean = body.replace(/^> /gm, '').trim();
+        return `<div class="ficsit-callout callout-warn"><div class="ficsit-callout-title" style="color: var(--ficsit-orange);">⚡ IMPORTANT</div><div>${clean}</div></div>`;
+      });
+
+      // 4. Blockquotes standards
+      html = html.replace(/^> (.*$)/gim, '<blockquote style="border-left: 3px solid var(--ficsit-orange); padding-left: 12px; margin: 10px 0; color: var(--text-secondary);">$1</blockquote>');
+
+      // 5. Badges Shields [![...](...)]
+      html = html.replace(/\[!\[(.*?)\]\((.*?)\)\]\((.*?)\)/gim, '<a href="$3" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; margin: 2px;"><img src="$2" alt="$1" style="vertical-align: middle; border-radius: 3px;" /></a>');
+
+      // 6. Tableaux Markdown
+      html = html.replace(/^\|(.+)\|\r?\n^\|[-:| ]+\|\r?\n((?:^\|.+\|\r?\n?)+)/gm, (match, headerLine, rowsBlock) => {
+        const headers = headerLine.split('|').filter(c => c.trim() !== '').map(c => `<th>${c.trim()}</th>`).join('');
+        const rows = rowsBlock.trim().split(/\r?\n/).map(row => {
+          const cells = row.split('|').filter(c => c.trim() !== '').map(c => `<td>${c.trim()}</td>`).join('');
+          return `<tr>${cells}</tr>`;
+        }).join('');
+        return `<table class="readme-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+      });
+
+      // 7. Checklists et listes à puces
+      html = html.replace(/^- \[x\] (.*$)/gim, '<li style="list-style:none;">✅ <span style="color: var(--ficsit-green); font-weight:600;">$1</span></li>');
+      html = html.replace(/^- \[ \] (.*$)/gim, '<li style="list-style:none;">⏳ <span style="color: var(--text-secondary);">$1</span></li>');
+      html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
+      html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+
+      // 8. Formatage Inline
+      html = html.replace(/\*\*(.*?)\*\*/gim, '<strong style="color: var(--text-primary);">$1</strong>');
+      html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+      html = html.replace(/`([^`]+)`/gim, '<code>$1</code>');
+      html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--ficsit-blue); text-decoration: underline;">$1</a>');
+      html = html.replace(/^---$/gim, '<hr>');
+
+      // 9. Restaurer les blocs de code
+      codeBlocks.forEach((block, i) => {
+        html = html.replace(`___CODE_BLOCK_${i}___`, block);
+      });
+
+      return html;
+    }
+
+    function initContent() {
+      if (rawTextElem) rawTextElem.textContent = markdownContent;
+      if (bodyContainer) bodyContainer.innerHTML = parseMarkdown(markdownContent);
+    }
+
+    initContent();
+
+    // Ouverture du modal
+    if (openBtn) {
+      openBtn.addEventListener("click", () => {
+        modal.style.display = "flex";
+        if (searchInput) {
+          searchInput.value = "";
+          searchInput.focus();
+        }
+      });
+    }
+
+    // Fermeture du modal
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (doneBtn) doneBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.style.display === "flex") {
+        closeModal();
+      }
+    });
+
+    // Bascule vue Formattée / Markdown Brut
+    if (toggleViewBtn) {
+      toggleViewBtn.addEventListener("click", () => {
+        isRawView = !isRawView;
+        if (isRawView) {
+          bodyContainer.style.display = "none";
+          rawContainer.style.display = "block";
+          toggleViewBtn.innerHTML = "📖 Mode Formatté";
+          toggleViewBtn.style.color = "var(--ficsit-orange)";
+        } else {
+          bodyContainer.style.display = "block";
+          rawContainer.style.display = "none";
+          toggleViewBtn.innerHTML = "📄 Mode Markdown Brut";
+          toggleViewBtn.style.color = "";
+        }
+      });
+    }
+
+    // Navigation par chapitres / Quick TOC
+    tocBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        if (isRawView) {
+          isRawView = false;
+          bodyContainer.style.display = "block";
+          rawContainer.style.display = "none";
+          if (toggleViewBtn) toggleViewBtn.innerHTML = "📄 Mode Markdown Brut";
+        }
+        const targetElem = document.getElementById(targetId);
+        if (targetElem && bodyContainer) {
+          bodyContainer.scrollTo({
+            top: targetElem.offsetTop - 15,
+            behavior: "smooth"
+          });
+        }
+      });
+    });
+
+    // Recherche en direct
+    if (searchInput && bodyContainer) {
+      let searchTimeout;
+      searchInput.addEventListener("input", (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          const query = e.target.value.trim().toLowerCase();
+          if (!query) {
+            bodyContainer.innerHTML = parseMarkdown(markdownContent);
+            return;
+          }
+
+          const rawHtml = parseMarkdown(markdownContent);
+          const temp = document.createElement("div");
+          temp.innerHTML = rawHtml;
+
+          const walker = document.createTreeWalker(temp, NodeFilter.SHOW_TEXT, null, false);
+          const nodesToReplace = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue.toLowerCase().includes(query) && node.parentNode.nodeName !== "CODE" && node.parentNode.nodeName !== "SCRIPT") {
+              nodesToReplace.push(node);
+            }
+          }
+
+          nodesToReplace.forEach(textNode => {
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            const span = document.createElement("span");
+            span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="readme-highlight-match">$1</mark>');
+            textNode.parentNode.replaceChild(span, textNode);
+          });
+
+          bodyContainer.innerHTML = temp.innerHTML;
+
+          const firstMatch = bodyContainer.querySelector(".readme-highlight-match");
+          if (firstMatch) {
+            firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 150);
+      });
+    }
+
+    // Copier le Markdown brut
+    if (copyBtn) {
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(markdownContent).then(() => {
+          showToast("📋 Documentation README.md copiée dans le presse-papier !");
+        }).catch(() => {
+          showToast("❌ Impossible de copier le texte.");
+        });
+      });
+    }
+  }
+
+  // =========================================================================
   // DÉMARRAGE & INITIALISATION DE L'APPLICATION
   // =========================================================================
   initThemeSelector();
   initNavigation();
   initSaveUploader();
+  initReadmeModal();
   renderMilestones();
   renderPhases();
   initMAMUI();

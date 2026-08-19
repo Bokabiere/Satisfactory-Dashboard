@@ -25,15 +25,16 @@ const factory3DJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'factoryV
 const blueprintGenJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'blueprintGenerator.js'), 'utf8');
 const controlRoomJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'controlRoomEngine.js'), 'utf8');
 const appJs = fs.readFileSync(path.join(baseDir, 'js', 'app.js'), 'utf8');
+const readmeMd = fs.readFileSync(path.join(baseDir, 'README.md'), 'utf8');
 
 // Replace CSS
 if (html.includes('<link rel="stylesheet" href="styles.css">')) {
-  html = html.replace('<link rel="stylesheet" href="styles.css">', '<style>\n' + css + '\n</style>');
+  html = html.replace('<link rel="stylesheet" href="styles.css">', () => '<style>\n' + css + '\n</style>');
 } else if (html.includes('<style>')) {
-  html = html.replace(/<style>[\s\S]*?<\/style>/, '<style>\n' + css + '\n</style>');
+  html = html.replace(/<style>[\s\S]*?<\/style>/, () => '<style>\n' + css + '\n</style>');
 }
 
-// Replace scripts
+// Replace scripts (use function replacer to prevent '$' characters from corrupting JS code)
 const bundleScript = '<script>\n' + 
   buildingsJs + '\n\n' +
   recipesJs + '\n\n' +
@@ -54,13 +55,16 @@ const bundleScript = '<script>\n' +
   factory3DJs + '\n\n' +
   blueprintGenJs + '\n\n' +
   controlRoomJs + '\n\n' +
+  'window.FICSIT_README_MARKDOWN = ' + JSON.stringify(readmeMd) + ';\n\n' +
   appJs + '\n' +
 '</script>';
 
-if (html.includes('<script>')) {
-  html = html.replace(/<script>[\s\S]*?<\/script>/, bundleScript);
+if (/<script(?![^>]*src)>[\s\S]*?<\/script>/.test(html)) {
+  html = html.replace(/<script(?![^>]*src)>[\s\S]*?<\/script>/, () => bundleScript);
+} else if (html.includes('<script>')) {
+  html = html.replace(/<script>[\s\S]*?<\/script>/, () => bundleScript);
 } else {
-  html = html.replace(/<script src="js\/data\/buildings\.js"><\/script>[\s\S]*<script src="js\/app\.js"><\/script>/, bundleScript);
+  html = html.replace(/<script src="js\/data\/buildings\.js"><\/script>[\s\S]*<script src="js\/app\.js"><\/script>/, () => bundleScript);
 }
 
 fs.writeFileSync(path.join(__dirname, 'satisfactory_dashboard.html'), html, 'utf8');

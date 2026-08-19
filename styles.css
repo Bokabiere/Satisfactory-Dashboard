@@ -3371,4 +3371,232 @@ body {
   accent-color: var(--ficsit-orange);
 }
 
+/* ==========================================================================
+   BOUTON D'INFORMATION "i" DANS L'EN-TÊTE & MODAL DU MANUEL / README
+   ========================================================================== */
+.btn-info-header {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-info-header:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--ficsit-blue);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(75, 179, 253, 0.35);
+  transform: translateY(-1px);
+}
+
+.info-icon-badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: rgba(75, 179, 253, 0.2);
+  border: 1.5px solid var(--ficsit-blue);
+  color: var(--ficsit-blue);
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-weight: bold;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1;
+  box-shadow: 0 0 6px rgba(75, 179, 253, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-info-header:hover .info-icon-badge {
+  background: var(--ficsit-blue);
+  color: #0e1217;
+  box-shadow: 0 0 10px var(--ficsit-blue);
+}
+
+/* Modal README */
+#readme-modal .readme-toc-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+#readme-modal .readme-toc-btn:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--ficsit-blue);
+  color: var(--text-primary);
+}
+
+#readme-modal-body h1 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--ficsit-orange);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+#readme-modal-body h2 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--ficsit-blue);
+  margin-top: 24px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#readme-modal-body h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--ficsit-amber);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+#readme-modal-body p {
+  margin-bottom: 10px;
+}
+
+#readme-modal-body hr {
+  border: 0;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 20px 0;
+}
+
+#readme-modal-body ul, #readme-modal-body ol {
+  margin-left: 20px;
+  margin-bottom: 12px;
+}
+
+#readme-modal-body li {
+  margin-bottom: 4px;
+}
+
+#readme-modal-body code {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  color: var(--ficsit-amber);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+#readme-modal-body pre {
+  background: #05080c;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+#readme-modal-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #8ea8cc;
+  font-size: 12px;
+  display: block;
+}
+
+#readme-modal-body .ficsit-callout {
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--ficsit-blue);
+  background: rgba(75, 179, 253, 0.08);
+}
+
+#readme-modal-body .ficsit-callout.callout-warn {
+  border-left-color: var(--ficsit-amber);
+  background: rgba(243, 193, 27, 0.08);
+}
+
+#readme-modal-body .ficsit-callout.callout-note {
+  border-left-color: var(--ficsit-cyan);
+  background: rgba(63, 224, 208, 0.08);
+}
+
+#readme-modal-body .ficsit-callout-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#readme-modal-body .readme-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+#readme-modal-body .readme-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+}
+
+#readme-modal-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+}
+
+#readme-modal-body th, #readme-modal-body td {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+#readme-modal-body th {
+  background: var(--bg-surface-elevated);
+  color: var(--ficsit-orange);
+  font-family: var(--font-display);
+}
+
+#readme-modal-body tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.readme-highlight-match {
+  background: rgba(250, 149, 73, 0.4);
+  color: #fff;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
 

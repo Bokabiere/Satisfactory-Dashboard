@@ -962,6 +962,11 @@ body {
           </div>
         </div>
       </div>
+      <!-- Bouton "i" Information / Manuel FICSIT (README) -->
+      <button type="button" id="btn-open-readme-modal" class="btn-info-header" title="Documentation & Manuel FICSIT (README.md)" aria-label="Documentation et Manuel FICSIT">
+        <span class="info-icon-badge">i</span>
+        <span class="info-btn-text">Manuel / README</span>
+      </button>
     </div>
   </header>
 
@@ -3141,6 +3146,74 @@ body {
         <button type="button" id="btn-apply-alt-modal" class="btn-ficsit" style="font-size: 12.5px; padding: 7px 20px; background: var(--ficsit-orange); color: #000; font-weight: 800; cursor: pointer;">
           💾 Appliquer & Recalculer l'Usine
         </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Documentation & Manuel FICSIT (README.md) -->
+  <div id="readme-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 999999; justify-content: center; align-items: center; padding: 20px;">
+    <div onclick="event.stopPropagation()" style="background: #0d1117; border: 2px solid var(--ficsit-blue); border-radius: var(--radius-md); max-width: 1060px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.9);">
+      
+      <!-- En-tête du Modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="info-icon-badge" style="width: 28px; height: 28px; font-size: 18px;">i</div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--ficsit-blue); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+              Manuel & Documentation FICSIT (README.md)
+            </h3>
+            <span style="font-size: 11.5px; color: var(--text-secondary);">
+              Compagnon industriel 1.2 • Fonctionnalités, architecture, raccourcis et guide d'utilisation
+            </span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" id="btn-toggle-readme-view" class="btn-outline" style="font-size: 11.5px; padding: 5px 12px;" title="Basculer entre vue formattée et Markdown brut">
+            📄 Mode Markdown Brut
+          </button>
+          <button type="button" id="btn-close-readme-modal" style="background: none; border: none; color: #fff; font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px;" title="Fermer (Échap)">&times;</button>
+        </div>
+      </div>
+
+      <!-- Barre d'outils et recherche instantanée -->
+      <div style="padding: 10px 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-subtle); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 260px;">
+          <input type="text" id="readme-search-input" placeholder="🔍 Rechercher dans le guide (ex: disques durs, 3D, trains, sauvegardes...)" style="width: 100%; background: #080d14; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 7px 12px; color: #fff; font-size: 12px;">
+        </div>
+        <div class="readme-quick-nav" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;">
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-intro">🏠 Présentation</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-modules">🖥️ 8 Modules</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-blueprints">📦 Blueprints</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-stack">🛠️ Stack & Fichiers</button>
+          <button type="button" class="readme-toc-btn" data-target="readme-sec-tips">🚀 Démarrage Rapide</button>
+        </div>
+      </div>
+
+      <!-- Corps du Modal avec rendu formaté -->
+      <div id="readme-modal-body" style="padding: 22px 26px; overflow-y: auto; flex: 1; max-height: calc(92vh - 165px); background: #090d14; color: var(--text-primary); line-height: 1.6; font-size: 13.5px;">
+        <!-- Injecté dynamiquement par app.js -->
+      </div>
+
+      <!-- Vue Markdown Brut (masquée par défaut) -->
+      <div id="readme-raw-container" style="display: none; padding: 20px; overflow-y: auto; flex: 1; max-height: calc(92vh - 165px); background: #06090e;">
+        <pre id="readme-raw-text" style="font-family: monospace; font-size: 12px; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin: 0; user-select: text;"></pre>
+      </div>
+
+      <!-- Pied de page du Modal -->
+      <div style="padding: 12px 20px; border-top: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ficsit-green);"></span>
+          <span>100% Autonome & Local • Sans Crédit • Aucune connexion externe requise</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" id="btn-copy-readme-text" class="btn-outline" style="font-size: 12px; padding: 6px 14px;">
+            📋 Copier le README
+          </button>
+          <button type="button" id="btn-readme-modal-done" class="btn-ficsit" style="font-size: 12px; padding: 6px 18px; background: var(--ficsit-blue); color: #000; font-weight: 800; cursor: pointer;">
+            Fermer le Manuel
+          </button>
+        </div>
       </div>
 
     </div>
