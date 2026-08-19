@@ -39,6 +39,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   // GESTION DES ONGLETS & NAVIGATION
   // =========================================================================
+  function switchSyntheticSubtab(subtab) {
+    const subnavBtns = document.querySelectorAll("[data-synth-subtab]");
+    const cockpitSubtab = document.getElementById("synth-subtab-cockpit");
+    const progSubtab = document.getElementById("synth-subtab-progression");
+
+    subnavBtns.forEach(btn => {
+      if (btn.getAttribute("data-synth-subtab") === subtab) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    if (cockpitSubtab) cockpitSubtab.style.display = subtab === "cockpit" ? "block" : "none";
+    if (progSubtab) progSubtab.style.display = subtab === "progression" ? "block" : "none";
+
+    if (subtab === "cockpit" && window.ControlRoomEngine && typeof window.ControlRoomEngine.init === 'function') {
+      setTimeout(() => window.ControlRoomEngine.init(), 30);
+    }
+  }
+
   function switchProgressionSubtab(subtab) {
     const subnavBtns = document.querySelectorAll("[data-prog-subtab]");
     const milestonesSubtab = document.getElementById("prog-subtab-milestones");
@@ -116,6 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (targetView === "synthetic") {
       renderSyntheticView();
+      if (window.ControlRoomEngine && typeof window.ControlRoomEngine.init === 'function') {
+        setTimeout(() => window.ControlRoomEngine.init(), 50);
+      }
     } else if (targetView === "milestones") {
       renderMilestones();
       renderPhases();
@@ -149,6 +173,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Sous-navigation Synthèse & Salle de Contrôle
+    document.querySelectorAll("[data-synth-subtab]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetSubtab = btn.getAttribute("data-synth-subtab");
+        switchSyntheticSubtab(targetSubtab);
+      });
+    });
+
     document.querySelectorAll(".btn-switch-to-ms-calc").forEach(btn => {
       btn.addEventListener("click", () => {
         switchTab("calc-milestones");
@@ -170,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
     STORAGE_KEY_COLLAPSED: "ficsit_collapsed_sections",
 
     allTabs: [
-      { id: "synthetic", label: "Vue Synthétique", icon: "📊" },
+      { id: "synthetic", label: "Synthèse & Salle de Contrôle", icon: "📊" },
       { id: "milestones", label: "Jalons & Ascenseur Spatial", icon: "📋" },
       { id: "mam", label: "MAM & Disques Durs", icon: "🔬" },
       { id: "calculator", label: "Usines & Production", icon: "🏭" },

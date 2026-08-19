@@ -23,6 +23,7 @@ const mamEngineJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'mamEngin
 const mapEngineJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'mapEngine.js'), 'utf8');
 const factory3DJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'factoryViewer3D.js'), 'utf8');
 const blueprintGenJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'blueprintGenerator.js'), 'utf8');
+const controlRoomJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'controlRoomEngine.js'), 'utf8');
 const appJs = fs.readFileSync(path.join(baseDir, 'js', 'app.js'), 'utf8');
 
 // Replace CSS
@@ -52,6 +53,7 @@ const bundleScript = '<script>\n' +
   mapEngineJs + '\n\n' +
   factory3DJs + '\n\n' +
   blueprintGenJs + '\n\n' +
+  controlRoomJs + '\n\n' +
   appJs + '\n' +
 '</script>';
 

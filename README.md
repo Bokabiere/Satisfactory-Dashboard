@@ -22,16 +22,21 @@
 Le tableau de bord regroupe **8 modules spécialisés** directement accessibles depuis la barre de navigation :
 
 ```text
-[ 📊 Vue Synthétique ]  [ 📋 Jalons & Ascenseur ]  [ 🔬 MAM & Disques Durs ]  [ 🏭 Production & Usines ]  [ ⚡ Centrales & Énergie ]  [ 🚚 Logistique & Transports ]  [ 🏗️ Checklist ]  [ 🗺️ Carte ]
+[ 📊 Synthèse & Salle de Contrôle ]  [ 📋 Jalons & Ascenseur ]  [ 🔬 MAM & Disques Durs ]  [ 🏭 Production & Usines ]  [ ⚡ Centrales & Énergie ]  [ 🚚 Logistique & Transports ]  [ 🏗️ Checklist ]  [ 🗺️ Carte ]
 ```
 
 ---
 
-### 📊 1. Vue Synthétique & Tableau de Bord
+### 📊 1. Synthèse Industrielle & Salle de Contrôle FICSIT
+* **Poste de Commandement & HUD Rétro-Futuriste** :
+  * **Télémétrie Énergétique & Production** : jauges néon dynamiques (consommation, capacité réseau, indice d'efficacité FICSIT 98.6%, charge usine).
+  * **Radar Tactique Canvas 2D** : balayage circulaire fluorescent à 60 fps avec détection pulsée des gisements miniers et bouton *Ping Radar*.
+  * **Holo-Inspecteur 3D à Vue Éclatée (Three.js)** : modélisation modulaire des machines (*Constructeur*, *Assembleur*, *Raffinerie*, *Fonderie*, *Centrale*) avec curseur d'écartement dynamique des parois.
+  * **Télex de Diagnostics en temps réel** : terminal défilant de télémétrie FICSIT et répliques sarcastiques de l'IA ADA.
+  * **Filtres Rétro-Futuristes** : *Scanlines CRT*, *Bloom holographique* et mode plein écran natif.
 * **Synchroniseur & Importateur de Sauvegarde (.SAV) Intégré** : Glissez-déposez directement votre fichier de sauvegarde Satisfactory pour synchroniser en 1 clic vos jalons débloqués, phases spatiales, arbres du MAM et recettes alternatives scannées.
 * **Tableau de bord récapitulatif** de l'état de votre industrie : technologies disponibles, capacités logistiques, convoyeurs débloqués et recommandations des prochains objectifs à construire.
 * **Sélecteur de Thèmes FICSIT** : 5 thèmes immersifs (*FICSIT Standard*, *Caterium Cyberpunk*, *Uranium Hazard*, *Schéma Technique*, *Laboratoire Pionnier*).
-* **Compteurs en temps réel** : Suivi global des jalons débloqués et de la puissance électrique totale du réseau.
 
 ---
 

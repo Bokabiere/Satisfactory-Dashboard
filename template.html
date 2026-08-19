@@ -968,7 +968,7 @@ body {
   <!-- BARRE DE NAVIGATION -->
   <nav class="nav-tabs-bar">
     <button class="nav-tab active" data-tab="synthetic">
-      <span>📊</span> Vue Synthétique
+      <span>📊</span> Synthèse & Salle de Contrôle
     </button>
     <button class="nav-tab" data-tab="milestones">
       <span>📋</span> Jalons & Ascenseur Spatial
@@ -996,13 +996,142 @@ body {
   <!-- CONTENU PRINCIPAL -->
   <main class="main-container">
 
-    <!-- 1. VUE SYNTHÉTIQUE -->
+    <!-- 1. VUE SYNTHÉTIQUE & SALLE DE CONTRÔLE FUSIONNÉE -->
     <section id="view-synthetic" class="tab-view active">
-      <div class="panel-header">
-        <h2 class="panel-title"><i>📊</i> Tableau de Bord de Progression & Synthèse Industrielle</h2>
-      </div>
-      <div id="synthetic-summary-content">
-        <!-- Rempli dynamiquement par app.js -->
+      <div class="card-panel" style="padding-bottom: 8px;">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h2 class="panel-title"><i>📊</i> Synthèse Industrielle & Poste de Commandement FICSIT</h2>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+              Cockpit d'ingénierie tactique, télémétrie en temps réel et suivi global de progression .SAV.
+            </div>
+          </div>
+          <div class="logistics-subnav" style="margin-bottom: 0;">
+            <button type="button" class="logistics-subnav-btn active" data-synth-subtab="cockpit">
+              <span>🎛️</span> Poste de Commandement & HUD
+            </button>
+            <button type="button" class="logistics-subnav-btn" data-synth-subtab="progression">
+              <span>📋</span> Synthèse & Sauvegarde (.SAV)
+            </button>
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 1 : POSTE DE COMMANDEMENT HUD -->
+        <div id="synth-subtab-cockpit" class="synth-subtab-view active">
+          <div class="ficsit-control-room-layout hologram-glow">
+            
+            <!-- Barre supérieure du HUD -->
+            <div class="hud-top-bar">
+              <div class="hud-system-status">
+                <span class="hud-status-indicator"></span>
+                <strong style="color: var(--ficsit-cyan); font-size: 15px;">POSTE DE COMMANDEMENT FICSIT // EN LIGNE</strong>
+                <span style="color: var(--text-muted); font-size: 12px;">| NŒUD PRIMAIRE v1.2</span>
+              </div>
+              <div class="hud-toolbar">
+                <button id="btn-toggle-crt" class="hud-btn">
+                  <span>📺</span> Scanlines CRT
+                </button>
+                <button id="btn-toggle-bloom" class="hud-btn active">
+                  <span>✨</span> Holo Bloom
+                </button>
+                <button id="btn-toggle-fs" class="hud-btn">
+                  <span>⛶</span> Plein Écran
+                </button>
+              </div>
+            </div>
+
+            <!-- Grille 2x2 des Modules Cockpit -->
+            <div class="hud-grid-quad">
+              
+              <!-- Panneau 1 : Télémétrie Énergétique & Efficacité -->
+              <div class="hud-panel">
+                <div class="hud-panel-title">
+                  <span>⚡ TÉLÉMÉTRIE DU RÉSEAU ÉLECTRIQUE</span>
+                  <span style="font-size: 10px; color: var(--ficsit-green);">60 Hz STABLE</span>
+                </div>
+                <div class="gauge-metric-grid">
+                  <div class="gauge-box">
+                    <div class="gauge-label">Consommation Active</div>
+                    <div class="gauge-val neon-orange" id="hud-power-consumption">2,420 MW</div>
+                  </div>
+                  <div class="gauge-box">
+                    <div class="gauge-label">Capacité Totale</div>
+                    <div class="gauge-val neon-cyan" id="hud-power-capacity">3,750 MW</div>
+                  </div>
+                  <div class="gauge-box">
+                    <div class="gauge-label">Indice d'Efficacité FICSIT</div>
+                    <div class="gauge-val neon-green" id="hud-efficiency-score">98.6%</div>
+                  </div>
+                  <div class="gauge-box">
+                    <div class="gauge-label">Charge de Production</div>
+                    <div class="gauge-val neon-orange" id="hud-factory-load">64.5%</div>
+                  </div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">Charge Réseau :</div>
+                <div class="hud-progress-bar">
+                  <div class="hud-progress-fill" id="hud-power-ratio-fill" style="width: 64.5%;"></div>
+                </div>
+              </div>
+
+              <!-- Panneau 2 : Radar Tactique de Détection -->
+              <div class="hud-panel">
+                <div class="hud-panel-title">
+                  <span>📡 RADAR TACTIQUE & GISEMENTS</span>
+                  <button id="btn-radar-ping" class="hud-btn" style="padding: 2px 8px; font-size: 10px;">
+                    <span>🎯</span> Ping Radar
+                  </button>
+                </div>
+                <div class="radar-wrapper">
+                  <canvas id="ficsit-tactical-radar" width="220" height="220"></canvas>
+                </div>
+              </div>
+
+              <!-- Panneau 3 : Inspecteur 3D à Vue Éclatée -->
+              <div class="hud-panel">
+                <div class="hud-panel-title">
+                  <span>🔬 HOLO-INSPECTEUR 3D // VUE ÉCLATÉE</span>
+                  <select id="ficsit-holo-building-select" class="form-input" style="padding: 2px 8px; font-size: 11px; width: auto;">
+                    <option value="constructor">Constructeur Mk.1</option>
+                    <option value="assembler">Assembleuse</option>
+                    <option value="smelter">Fonderie</option>
+                    <option value="refinery">Raffinerie</option>
+                    <option value="coal_generator">Générateur à Charbon</option>
+                  </select>
+                </div>
+                <div class="holo-3d-wrapper">
+                  <div id="ficsit-holo-3d-container" style="width: 100%; height: 100%;"></div>
+                </div>
+                <div class="holo-controls-bar">
+                  <div class="holo-slider-group">
+                    <span>💥 Éclatement :</span>
+                    <input type="range" id="ficsit-explosion-slider" min="0" max="1" step="0.01" value="0">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panneau 4 : Télex de Diagnostics FICSIT -->
+              <div class="hud-panel">
+                <div class="hud-panel-title">
+                  <span>📟 TÉLEX & TÉLÉMÉTRIE OPÉRATIONNELLE</span>
+                  <span style="font-size: 10px; color: var(--ficsit-amber);">DIRECT FLOW</span>
+                </div>
+                <div class="telex-container" id="ficsit-telex-feed">
+                  <!-- Rempli en continu par controlRoomEngine.js -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SOUS-ONGLET 2 : SYNTHÈSE INDUSTRIELLE & .SAV -->
+        <div id="synth-subtab-progression" class="synth-subtab-view" style="display: none; margin-top: 16px;">
+          <div id="synthetic-summary-content">
+            <!-- Rempli dynamiquement par app.js -->
+          </div>
+        </div>
+
       </div>
     </section>
 
