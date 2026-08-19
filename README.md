@@ -6,14 +6,18 @@
 [![Visualiseur 3D](https://img.shields.io/badge/Moteur%203D-Three.js%20WebGL-3fe0d0?style=for-the-badge&logo=three.js&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 [![Déploiement](https://img.shields.io/badge/GitHub%20Pages-Pr%C3%AAt-2ecc71?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bokabiere/Satisfactory-Dashboard)
 
-> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.2** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, carte interactive des gisements et checklist de chantier.
+> **Tableau de bord et compagnon industriel complet pour Satisfactory 1.2** : Planification d'usine, calculateur de pièces uniques, dimensionnement d'usines complètes de jalons & phases, organigrammes SCIM interactifs, guide de construction 2D/3D étape par étape, générateur de Blueprints `.sbp`, simulateur énergétique & logistique, carte interactive des gisements et checklist de chantier.
 
 ---
 
-> [!WARNING]
+> [!NOTE]
 > ### 🚧 PROJET EN COURS DE DÉVELOPPEMENT (Work In Progress)
 > Ce projet est **activement développé** pour la version 1.2 de Satisfactory. De nouvelles fonctionnalités, modèles 3D, schémas d'usines et optimisations d'interface sont ajoutés et ajustés en continu.  
-> Les retours et suggestions d'amélioration sont l## 🖥️ Modules & Fonctionnalités du Tableau de Bord
+> Les retours et suggestions d'amélioration sont les bienvenus !
+
+---
+
+## 🖥️ Modules & Fonctionnalités du Tableau de Bord
 
 Le tableau de bord regroupe **8 modules spécialisés** directement accessibles depuis la barre de navigation :
 
@@ -24,17 +28,17 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
 ---
 
 ### 📊 1. Vue Synthétique & Tableau de Bord
-* **Synchroniseur & Importateur de Sauvegarde (.SAV) Intégré** : Glissez-déposez directement votre fichier de sauvegarde pour synchroniser en 1 clic vos jalons, phases spatiales, arbres du MAM et recettes alternatives scannées.
-* **Tableau de bord récapitulatif** de l'état de votre industrie : technologies disponibles, capacités logistiques, convoyeurs débloqués et recommandations de prochains jalons à construire.
+* **Synchroniseur & Importateur de Sauvegarde (.SAV) Intégré** : Glissez-déposez directement votre fichier de sauvegarde Satisfactory pour synchroniser en 1 clic vos jalons débloqués, phases spatiales, arbres du MAM et recettes alternatives scannées.
+* **Tableau de bord récapitulatif** de l'état de votre industrie : technologies disponibles, capacités logistiques, convoyeurs débloqués et recommandations des prochains objectifs à construire.
 * **Sélecteur de Thèmes FICSIT** : 5 thèmes immersifs (*FICSIT Standard*, *Caterium Cyberpunk*, *Uranium Hazard*, *Schéma Technique*, *Laboratoire Pionnier*).
-* **Compteurs en temps réel** : Jalons débloqués et puissance électrique totale du réseau.
+* **Compteurs en temps réel** : Suivi global des jalons débloqués et de la puissance électrique totale du réseau.
 
 ---
 
 ### 📋 2. Jalons du HUB & Ascenseur Spatial (Paliers 0 à 9 & Phases 1 à 5)
 * **Vue Unifiée de la Progression** avec sous-onglets ultra-rapides :
-  * **Jalons du HUB** : Suivi interactif des **Paliers 0 à 9**, boutons de saut rapide par palier, boutons Déplier/Replier tout, validation dynamique des bâtiments débloqués et bouton direct *"⚡ Calculer l'Usine pour ce Jalon"*.
-  * **Ascenseur Spatial** : Suivi des 5 phases du **Projet Assemblée** (jusqu'au dénouement 1.2), détail des pièces orbitales requises (*Placage intelligent*, *Structure polyvalente*, *Câblage automatisé*, etc.) et dimensionnement instantané de la ligne d'assemblage.
+  * **Jalons du HUB** : Suivi interactif des **Paliers 0 à 9**, filtres et saut rapide par palier, boutons Déplier/Replier tout, validation dynamique des bâtiments débloqués et bouton direct *"⚡ Calculer l'Usine pour ce Jalon"*.
+  * **Ascenseur Spatial** : Suivi des 5 phases du **Projet Assemblée** (jusqu'au dénouement 1.2), détail des pièces orbitales requises (*Placage intelligent*, *Structure polyvalente*, *Câblage automatisé*, *Système de propulsion thermique*, etc.) et dimensionnement instantané de la ligne d'assemblage.
 
 ---
 
@@ -45,7 +49,7 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
   * *Électrolimaces* (Limaces bleues/jaunes/violettes, Overclocking 250%, Synthèse quantique d'éclats).
   * *Quartz*, *Soufre*, *Organismes Alien*, *Mycélia*, *Nutriments*.
 * **Simulateur d'Aide au Choix de Disques Durs ("Quelle Recette Choisir parmi 3 ?")** :
-  * Évaluation algorithmique instantanée des 3 options d'un scan MAM pour recommander le meilleur choix selon votre palier.
+  * Évaluation algorithmique instantanée des 3 options d'un scan MAM pour recommander le meilleur choix selon votre palier actuel.
 * **Tier-List Dynamique des 100+ Recettes Alternatives** :
   * Classement de **Tier S (Indispensables)** à **Tier D**, avec filtres thématiques (*Stratégie Sans-Vis*, *Économie de Minerai*, *Max Énergie*).
   * Bouton d'activation directe vers le Calculateur de production.
@@ -57,8 +61,8 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
   * **🔩 Pièces Uniques & Lignes Dédiées** :
     * Dimensionnement d'un composant individuel par *Cadence continue (/min)* ou *Fabrication par lot (quantité en temps donné)*.
     * Optimisation automatique par IA (Minimum de machines via recettes alternatives 1.2).
-    * Organigramme interactif SCIM zoomable avec drag & drop libre et heatmap énergétique.
-    * Guide de montage interactif 3D WebGL (Three.js) & 2D CAD pas à pas.
+    * Organigramme interactif SCIM zoomable avec drag & drop libre et heatmap énergétique (MW).
+    * Guide de montage interactif 3D WebGL (Three.js) avec gestion des étages et vue 2D CAD pas à pas isolée.
     * Bouton direct *"🚚 Planifier le Transport Logistique"*.
   * **🏭 Usines Complètes de Jalons & Phases (Multi-Produits)** :
     * Dimensionnement de complexes industriels multi-lignes pour boucler un Jalon ou une Phase de l'Ascenseur en 10 min, 15 min, 30 min, 45 min ou 1h.
@@ -68,7 +72,7 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
 ---
 
 ### ⚡ 5. Simulateur de Centrales Électriques & Réseau FICSIT (1.0 / 1.2)
-* **10 Technologies Énergétiques** : Biomasse automatisée, Charbon standard, Charbon compacté, Carburant liquide (250 MW), Turbo-carburant, Carburant de fusée (Rocket Fuel 1.0), Carburant ionisé (Ionized Fuel 1.0), Fission Uranium (2500 MW), Recyclage Ficsonium Zéro Déchet, Géothermie et Amplificateur Alien.
+* **10 Technologies Énergétiques** : Biomasse automatisée, Charbon standard, Charbon compacté, Carburant liquide (250 MW), Turbo-carburant, Carburant de fusée (*Rocket Fuel* 1.0), Carburant ionisé (*Ionized Fuel* 1.0), Fission Uranium (2500 MW), Recyclage Ficsonium Zéro Déchet, Géothermie et Amplificateur Alien (+500 MW).
 * **Mode de Calcul Hybride** : Dimensionnement par *Puissance Cible (MW)* ou par *Débit de Ressource Disponible (/min)*.
 * **Guide Hydraulique & Ratios Parfaits FICSIT** : Spécification des tuyaux (Mk.1 300 m³/min vs Mk.2 600 m³/min) et des boucles anti-reflux (ex: 3 extracteurs pour 8 générateurs à charbon).
 * **Bilan de la chaîne amont** (Raffineries, Mélangeurs, Pompes) et export direct vers la Checklist de Chantier.
@@ -92,6 +96,7 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
 * Liste interactive des machines et matériaux à emporter sur le terrain pour construire votre usine.
 * Possibilité de cocher chaque élément au fur et à mesure de l'assemblage.
 * **Fiche récapitulative d'usine imprimable** : vue épurée et exportable pour consultation sur second écran ou impression papier.
+* **Notice de chantier pas-à-pas** découpée en modules compacts adaptés aux Blueprint Designers Mk.1, Mk.2 et Mk.3 (6x6).
 
 ---
 
@@ -110,12 +115,65 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
 
 ---
 
-## 🛠️ Stack Technique
+## 📦 Bibliothèque & Générateur de Blueprints (.SBP & .SBPCFG)
+
+Le projet intègre un moteur complet de génération binaire et une collection de blueprints natifs prêts à être déposés dans votre dossier de sauvegarde :
+
+* **Générateur Universel de Blueprints** (`js/engine/blueprintGenerator.js`) : Génère directement au format binaire Unreal Engine les fichiers `.sbp` et `.sbpcfg` compressés en zlib.
+* **Dossier de Blueprints Dédié** (`/blueprints`) :
+  * Modules de démarrage Palier 0 (*Plaques*, *Tiges*, *Câbles*, *Béton*, *Plaques renforcées*).
+  * Modules d'énergie (*Centrales à charbon*, *Raffineries*, etc.).
+  * Modules de phases spatiales (Phases 1 à 5).
+  * Architecture 1900 et packs d'usines complets (`Pack_Campus_1900.zip`, `Campus_1900_Cascades.cbp`).
+* **Export par lot** : Script `batch_export_sbp.js` pour générer automatiquement l'ensemble des blueprints du catalogue.
+
+---
+
+## 🛠️ Stack Technique & Architecture
 
 * **Interface & Rendu** : HTML5, CSS3 Moderne (*FICSIT Dark Industrial Theme*), Canvas 2D, SVG vectoriel interactif.
-* **Moteur 3D WebGL** : [Three.js](https://threejs.org/) & OrbitControls pour la visualisation spatiale des complexes industriels.
-* **Logique & Algorithmes** : JavaScript ES6+ Vanilla (zéro dépendance lourde, exécution ultra-rapide).
+* **Moteur 3D WebGL** : [Three.js](https://threejs.org/) & OrbitControls pour la visualisation spatiale des complexes industriels avec gestion multi-étages.
+* **Logique & Algorithmes** : JavaScript ES6+ Vanilla (zéro framework lourd, exécution instantanée en local).
 * **Format & Déploiement** : Page web 100% autonome (*Single File Standalone* via `bundle.js`), utilisable hors-ligne ou hébergée sur GitHub Pages.
+* **Automatisation** : Script PowerShell `sync_and_deploy.ps1` pour la synchronisation locale, la détection automatique de modifications et le déploiement Git/GitHub en une commande.
+
+---
+
+## 📁 Structure du Projet
+
+```text
+Satisfactory-Dashboard/
+├── blueprints/                 # Collection de blueprints .sbp, .sbpcfg, .cbp et archives zip
+├── js/
+│   ├── app.js                  # Contrôleur principal et routage de l'interface
+│   ├── data/                   # Données de référence Satisfactory 1.2
+│   │   ├── blueprints.js       # Définition des structures de blueprints
+│   │   ├── buildings.js        # Catalogue des bâtiments et coûts
+│   │   ├── buildingTextures.js # Textures 2D/3D des machines
+│   │   ├── logisticsData.js    # Données trains, drones, camions & convoyeurs
+│   │   ├── mamData.js          # Arbres MAM et recettes alternatives
+│   │   ├── mapTextures.js      # Tuiles cartographiques (Satellite & Biomes)
+│   │   ├── milestones.js       # Paliers 0-9 et Phases spatiales 1-5
+│   │   ├── nodes.js            # Base de coordonnées de tous les gisements
+│   │   ├── powerData.js        # Données des centrales et combustibles
+│   │   └── recipes.js          # Recettes de base et alternatives 1.2
+│   └── engine/                 # Moteurs de calcul et de rendu
+│       ├── blueprintGenerator.js # Générateur binaire .sbp / .sbpcfg
+│       ├── calculator.js       # Calculateur de production et optimiseur IA
+│       ├── factoryViewer3D.js  # Moteur 3D WebGL (Three.js)
+│       ├── logisticsEngine.js  # Moteur de dimensionnement du fret
+│       ├── mamEngine.js        # Logique d'analyse MAM et tier-lists
+│       ├── mapEngine.js        # Moteur cartographique Canvas 2D
+│       ├── powerCalculator.js  # Moteur énergétique et bilans réseau
+│       └── saveParser.js       # Analyseur binaire de sauvegardes .SAV
+├── batch_export_sbp.js         # Script Node.js d'export groupé de blueprints
+├── bundle.js                   # Compilation autonome pour utilisation offline
+├── index.html                  # Point d'entrée principal pour GitHub Pages
+├── satisfactory_dashboard.html # Application complète autonome
+├── styles.css                  # Feuilles de style FICSIT Dark Industrial
+├── sync_and_deploy.ps1         # Script d'automatisation et de déploiement GitHub
+└── template.html               # Modèle source du dashboard
+```
 
 ---
 
@@ -126,7 +184,7 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
    ```bash
    git clone https://github.com/Bokabiere/Satisfactory-Dashboard.git
    ```
-2. Ouvrez simplement le fichier `index.html` ou `satisfactory_dashboard.html` dans n'importe quel navigateur Web moderne.
+2. Ouvrez simplement le fichier `index.html` ou `satisfactory_dashboard.html` dans n'importe quel navigateur Web moderne (Chrome, Firefox, Edge, Brave, etc.). Aucun serveur Node.js ou Python n'est requis.
 
 ### Déploiement GitHub Pages
 Activez GitHub Pages dans les options de votre dépôt GitHub (`Settings > Pages > Branch : main`) pour accéder à votre tableau de bord depuis n'importe quel PC, smartphone ou tablette.
@@ -137,20 +195,22 @@ Activez GitHub Pages dans les options de votre dépôt GitHub (`Settings > Pages
 
 - [x] Suivi complet des Paliers 0 à 9 et Phases 1 à 5 de l'Ascenseur Spatial (Satisfactory 1.2).
 - [x] Calculateur dédié pour Pièces Uniques et Calculateur dédié pour Usines Complètes de Jalons.
-- [x] Organigramme interactif SCIM avec déplacement libre de blocs et mode heatmap.
+- [x] Organigramme interactif SCIM avec déplacement libre de blocs et mode heatmap énergétique.
 - [x] Moteur d'optimisation automatique des recettes alternatives (Minimum de machines).
-- [x] Visualiseur 3D temps réel WebGL (Three.js) avec modèle interactif des usines.
-- [x] Guide de construction visuel 2D CAD étape par étape.
-- [x] Carte Canvas interactive avec inspecteur de foreuses, radar de zone et outil de tracé de lignes de transport.
+- [x] Visualiseur 3D temps réel WebGL (Three.js) avec modèle interactif des usines et sélecteur d'étages.
+- [x] Guide de construction visuel 2D CAD étape par étape avec isolation dynamique.
+- [x] Générateur et exportateur de fichiers Blueprints `.sbp` / `.sbpcfg` natifs.
+- [x] Carte Canvas interactive avec inspecteur de foreuses, radar de zone et outil de tracé logistique.
 - [x] Simulateur Logistique & Réseaux de Fret (Trains, Drones, Camions & Matrice de rentabilité FICSIT).
-- [x] **Arbre Technologique Complet du MAM & Traqueur de Disques Durs (Dépôt Dimensionnel 1.0, Tier-List S/A/B/C/D & Aide au tirage)**.
+- [x] Simulateur de Centrales Électriques pour les 10 technologies 1.2 (Ficsonium, Rocket Fuel, Ionized Fuel, etc.).
+- [x] Arbre Technologique Complet du MAM & Traqueur de Disques Durs (Dépôt Dimensionnel 1.0, Tier-List S/A/B/C/D & Aide au tirage).
 - [x] Checklist de chantier interactive et fiche d'atelier imprimable.
-- [ ] 🟡 *En cours* : Ajout de nouveaux modules de production compacts et verticaux.
+- [x] Synchroniseur et importateur de sauvegardes `.SAV` Satisfactory.
+- [ ] 🟡 *En cours* : Ajout de nouveaux modules d'usines compactes et plans d'architecte Blueprint Designer Mk.3.
 
 ---
 
 ## 📜 Mentions Légales
 
-* **Satisfactory** est développé par [Coffee Stain Studios](https://www.coffeestainstudios.com/).
-* Cet outil est un projet communautaire non-officiel d'aide au jeu.
-
+* **Satisfactory** est une marque déposée et un jeu développé par [Coffee Stain Studios](https://www.coffeestainstudios.com/).
+* Cet outil est un projet communautaire open-source non-officiel d'aide au jeu.
