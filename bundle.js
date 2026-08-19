@@ -11,9 +11,12 @@ const milestonesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'milestone
 const blueprintsJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'blueprints.js'), 'utf8');
 const nodesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'nodes.js'), 'utf8');
 const mapTexturesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'mapTextures.js'), 'utf8');
+const buildingTexturesJs = fs.readFileSync(path.join(baseDir, 'js', 'data', 'buildingTextures.js'), 'utf8');
 const calcJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'calculator.js'), 'utf8');
 const saveJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'saveParser.js'), 'utf8');
 const mapEngineJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'mapEngine.js'), 'utf8');
+const factory3DJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'factoryViewer3D.js'), 'utf8');
+const blueprintGenJs = fs.readFileSync(path.join(baseDir, 'js', 'engine', 'blueprintGenerator.js'), 'utf8');
 const appJs = fs.readFileSync(path.join(baseDir, 'js', 'app.js'), 'utf8');
 
 // Replace CSS
@@ -31,9 +34,12 @@ const bundleScript = '<script>\n' +
   blueprintsJs + '\n\n' +
   nodesJs + '\n\n' +
   mapTexturesJs + '\n\n' +
+  buildingTexturesJs + '\n\n' +
   calcJs + '\n\n' +
   saveJs + '\n\n' +
   mapEngineJs + '\n\n' +
+  factory3DJs + '\n\n' +
+  blueprintGenJs + '\n\n' +
   appJs + '\n' +
 '</script>';
 

@@ -357,6 +357,39 @@ document.addEventListener("DOMContentLoaded", () => {
           <h3>🎯 Prochains Jalons Recommandés</h3>
           <div class="summary-list">${nextHtml || "<div style='color: var(--ficsit-green);'>Tous les jalons actuels sont validés ! Bravo Pionnier !</div>"}</div>
         </div>
+        <div class="tech-summary-card" style="border-top: 2px solid #38bdf8;">
+          <h3>⚡ Outils d'Ingénierie & Blueprints</h3>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" class="btn-outline btn-synth-nav" data-tab="calculator" style="text-align: left; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05); cursor: pointer; border-radius: var(--radius-sm);">
+              <div>
+                <strong style="color: #38bdf8; font-size: 13px;">🔩 Pièces Uniques</strong>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Calculateur de cadence, notice 3D et export .sbp</div>
+              </div>
+              <span style="font-size: 14px; color: #38bdf8;">➔</span>
+            </button>
+            <button type="button" class="btn-outline btn-synth-nav" data-tab="calc-milestones" style="text-align: left; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05); cursor: pointer; border-radius: var(--radius-sm);">
+              <div>
+                <strong style="color: #10b981; font-size: 13px;">🏭 Usines de Jalons</strong>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Complexes multi-lignes, optimisation et blueprint complet</div>
+              </div>
+              <span style="font-size: 14px; color: #10b981;">➔</span>
+            </button>
+            <button type="button" class="btn-outline btn-synth-nav" data-tab="phases" style="text-align: left; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.05); cursor: pointer; border-radius: var(--radius-sm);">
+              <div>
+                <strong style="color: var(--ficsit-amber); font-size: 13px;">🚀 Ascenseur Spatial</strong>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Phases 1 à 5 et pièces du Projet Assemblée</div>
+              </div>
+              <span style="font-size: 14px; color: var(--ficsit-amber);">➔</span>
+            </button>
+            <button type="button" class="btn-outline btn-synth-nav" data-tab="map" style="text-align: left; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.05); cursor: pointer; border-radius: var(--radius-sm);">
+              <div>
+                <strong style="color: #a855f7; font-size: 13px;">🗺️ Carte des Ressources</strong>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Visualiseur satellite, radar et injection dans le calculateur</div>
+              </div>
+              <span style="font-size: 14px; color: #a855f7;">➔</span>
+            </button>
+          </div>
+        </div>
       </div>
     `;
 
@@ -367,6 +400,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (targetNm) {
           loadMilestoneIntoCalculator(targetNm);
         }
+      });
+    });
+
+    // Écouteurs pour les raccourcis d'onglets de la vue synthétique
+    container.querySelectorAll(".btn-synth-nav").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        if (tab) switchTab(tab);
       });
     });
   }
@@ -1188,53 +1229,9 @@ document.addEventListener("DOMContentLoaded", () => {
       chainFlowEl.style.display = "none";
     }
 
-    // Micro-Usines Intégrées Mk.3 / Méga Complexe
+    // Micro-Usines Intégrées Mk.3 / Méga Complexe (Masqué - Remplacé par la Notice de Montage Pas-à-Pas)
     const integratedSection = document.getElementById("calc-ms-integrated-module-section");
-    const integratedViewport = document.getElementById("integrated-ms-blueprint-viewport");
-    const integratedBadge = document.getElementById("integrated-ms-module-count-badge");
-    const integratedSummaryBar = document.getElementById("integrated-ms-module-summary-bar");
-    const toggleIntegratedBtn = document.getElementById("btn-toggle-ms-integrated-view");
-
-    if (integratedSection && results.productionSteps.length > 0) {
-      integratedSection.style.display = "block";
-      const totalMachines = results.productionSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
-      const modulesNeeded = totalMachines <= 18 ? 1 : (totalMachines <= 36 ? 2 : Math.ceil(totalMachines / 18));
-      
-      if (integratedBadge) {
-        integratedBadge.innerText = modulesNeeded === 1 ? "1 SEUL BLUEPRINT MK.3 TOUT-EN-UN" : `${modulesNeeded} BLUEPRINTS MK.3 COMBINÉS`;
-        integratedBadge.style.background = modulesNeeded === 1 ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)";
-        integratedBadge.style.borderColor = modulesNeeded === 1 ? "#10b981" : "#f59e0b";
-        integratedBadge.style.color = modulesNeeded === 1 ? "#10b981" : "#f59e0b";
-      }
-
-      if (integratedViewport) {
-        integratedViewport.innerHTML = generateIntegratedMultiMachineBlueprintSVG(results);
-        attachMachineInteractivity(integratedViewport);
-      }
-
-      if (integratedSummaryBar) {
-        const rawList = Object.entries(results.rawResources).map(([r, rate]) => `<span style="color: var(--ficsit-orange); font-weight: bold;">${Math.round(rate*10)/10}/m ${ITEM_NAMES[r]||r}</span>`).join(" + ");
-        const targetsList = results.targets.map(t => `<span style="color: #4ade80; font-weight: bold;">+${t.rate}/m ${ITEM_NAMES[t.item]||t.item}</span>`).join(" + ");
-
-        integratedSummaryBar.innerHTML = `
-          <div>
-            <strong>📥 Minerais Bruts :</strong> ${rawList || "Matières directes"}
-          </div>
-          <div>
-            <strong>⚙️ Machines Compactées :</strong> <span style="color: var(--ficsit-cyan); font-weight: bold;">${totalMachines} machines</span> (<strong style="color: #10b981;">${modulesNeeded} Mod. Mk.3</strong>)
-          </div>
-          <div>
-            <strong>🎯 Sortie Globale :</strong> ${targetsList}
-          </div>
-        `;
-      }
-
-      if (toggleIntegratedBtn) {
-        toggleIntegratedBtn.onclick = () => {
-          openBlueprintModal(`Méga-Complexe Intégré Mk.3 : ${results.milestoneName || "Jalon"}`, generateIntegratedMultiMachineBlueprintSVG(results));
-        };
-      }
-    } else if (integratedSection) {
+    if (integratedSection) {
       integratedSection.style.display = "none";
     }
 
@@ -3138,6 +3135,9 @@ document.addEventListener("DOMContentLoaded", () => {
       modalSvgContainer.innerHTML = svgContent;
       modalSvgContainer.style.display = "block";
       attachMachineInteractivity(modalSvgContainer);
+      if (typeof FactoryConstructionGuide !== "undefined" && FactoryConstructionGuide.attachGuideInteractivity) {
+        FactoryConstructionGuide.attachGuideInteractivity(modalSvgContainer, STATE.lastCalculation, false);
+      }
     }
 
     modal.classList.add("is-active");
@@ -3211,8 +3211,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // VUE TOP-DOWN 2D PHOTORÉALISTE STYLE SCIM BLUEPRINT DESIGNER
   // =========================================================================
   const FactoryConstructionGuide = {
-    singleState: { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null, calcKey: "" },
-    msState: { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null, calcKey: "" },
+    singleState: { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null, calcKey: "", selectedMachine: null, maxBeltMk: 3, densityProfile: "standard", architectureMode: "multi_floor", footprintMode: "auto", activeFloor: 0, viewType: "2d", viewMode3D: "step" },
+    msState: { currentStepIndex: 0, steps: [], currentViewMode: "step", lastResults: null, calcKey: "", selectedMachine: null, maxBeltMk: 3, densityProfile: "standard", architectureMode: "multi_floor", footprintMode: "auto", activeFloor: 0, viewType: "2d", viewMode3D: "step" },
+    single3DViewer: null,
+    ms3DViewer: null,
     validatedSteps: new Set(JSON.parse(localStorage.getItem("ficsit_guide_validated") || "[]")),
 
     // Rendu d'une dalle de fondation FICSIT 8m×8m biseautée
@@ -3235,13 +3237,31 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    // Rendu Sprite 2D Fonderie (Smelter) Top-Down
-    renderSpriteSmelter(x, y, w, h, data, opacity = 1, isTargetStep = false) {
+    // Rendu Sprite 2D Fonderie (Smelter) Top-Down avec ports et données interactives
+    renderSpriteSmelter(x, y, w, h, data, opacity = 1, isTargetStep = false, machId = "smelter_0", loc = "Dalle B5") {
       const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 12px rgba(245, 158, 11, 0.75))"` : `filter="drop-shadow(0 4px 10px rgba(0,0,0,0.6))"`;
       const strokeCol = isTargetStep ? "#f59e0b" : "#3e4d62";
+      const isDual = (data.building?.id === "foundry") || (data.ingredients && data.ingredients.length >= 2);
+      const rName = data.recipeName || (ITEM_NAMES[data.itemId] || "Lingots");
+      const machInfo = {
+        id: machId,
+        type: data.building?.name || (isDual ? "Fonderie avancée" : "Fonderie"),
+        recipeName: rName,
+        isAlt: !!data.isAlt,
+        itemId: data.itemId,
+        itemName: ITEM_NAMES[data.itemId] || data.itemId || "Lingot",
+        rateProduced: data.rateProduced ? Math.round(data.rateProduced * 10) / 10 : 30,
+        powerMW: data.powerMW ? Math.round(data.powerMW * 10) / 10 : (isDual ? 16 : 4),
+        overclock: data.overclock || 100,
+        ingredients: (data.ingredients && data.ingredients.length > 0)
+          ? data.ingredients.map(i => ({ item: i.item, name: ITEM_NAMES[i.item] || i.item, rate: Math.round((i.rate || 0) * 10) / 10 }))
+          : [{ item: "raw_ore", name: "Minerai brut", rate: Math.round((data.rateProduced || 30) * 10) / 10 }],
+        location: loc
+      };
+      const jsonStr = encodeURIComponent(JSON.stringify(machInfo));
       return `
-        <g class="ficsit-sprite-smelter" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
-          <title>🏭 ${data.building?.name || "Fonderie"} : ${data.recipeName || "Lingots"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})</title>
+        <g class="ficsit-sprite-smelter ficsit-guide-clickable-machine" data-guide-mach-id="${machId}" data-mach-json="${jsonStr}" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
+          <title>🏭 ${machInfo.type} : ${rName} (${machInfo.rateProduced}/min)&#10;⚡ ${machInfo.powerMW} MW @ ${machInfo.overclock}%&#10;👆 Cliquer pour afficher la recette & les flux I/O</title>
           <rect x="0" y="0" width="${w}" height="${h}" rx="5" fill="#171d27" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.2 : 1.4}" />
           <rect x="2" y="8" width="4" height="${h - 16}" rx="1" fill="#ea580c" />
           <rect x="${w - 6}" y="8" width="4" height="${h - 16}" rx="1" fill="#ea580c" />
@@ -3252,24 +3272,51 @@ document.addEventListener("DOMContentLoaded", () => {
           <rect x="${w/2 - 13}" y="${h/2 - 19}" width="26" height="38" rx="13" fill="#090d14" stroke="#ea580c" stroke-width="1.2" />
           <ellipse cx="${w/2}" cy="${h/2}" rx="9" ry="14" fill="url(#smelterCoreGlow)" />
           <ellipse cx="${w/2}" cy="${h/2}" rx="5" ry="8" fill="#ffffff" opacity="0.85" />
-          <rect x="${w/2 - 8}" y="${h - 4}" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#f97316" stroke-width="1" />
-          <circle cx="${w/2}" cy="${h - 1}" r="2" fill="#38bdf8" />
+          ${isDual ? `
+            <!-- Ports d'entrée Sud Dual (Gauche & Droite) -->
+            <rect x="${w/2 - 18}" y="${h - 4}" width="12" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+            <circle cx="${w/2 - 12}" cy="${h - 1}" r="2.8" class="ficsit-port-in" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2" />
+            <rect x="${w/2 + 6}" y="${h - 4}" width="12" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+            <circle cx="${w/2 + 12}" cy="${h - 1}" r="2.8" class="ficsit-port-in" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2" />
+          ` : `
+            <!-- Port d'entrée Sud Single (Centre) -->
+            <rect x="${w/2 - 8}" y="${h - 4}" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+            <circle cx="${w/2}" cy="${h - 1}" r="3" class="ficsit-port-in" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2" />
+          `}
+          <!-- Port de sortie Nord (Vert / Out) -->
           <rect x="${w/2 - 8}" y="-1" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
-          <circle cx="${w/2}" cy="1" r="2" fill="#22c55e" />
-          <rect x="8" y="4" width="${w - 16}" height="10" rx="2" fill="#0f172a" opacity="0.9" />
-          <text x="${w/2}" y="12" fill="#f59e0b" font-size="7.5" font-weight="900" text-anchor="middle" font-family="sans-serif">FONDERIE</text>
-          <text x="${w/2}" y="${h - 7}" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">${(data.recipeName || "Lingots").substring(0, 11)}</text>
+          <circle cx="${w/2}" cy="1" r="3" class="ficsit-port-out" fill="#22c55e" stroke="#15803d" stroke-width="1.2" />
+          <rect x="6" y="4" width="${w - 12}" height="10" rx="2" fill="#0f172a" opacity="0.9" />
+          <text x="${w/2}" y="12" fill="#f59e0b" font-size="7.2" font-weight="900" text-anchor="middle" font-family="sans-serif">${isDual ? "FONDERIE AV." : "FONDERIE"}</text>
+          <text x="${w/2}" y="${h - 7}" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">${rName.substring(0, 11)}</text>
         </g>
       `;
     },
 
-    // Rendu Sprite 2D Constructeur (Constructor) Top-Down
-    renderSpriteConstructor(x, y, w, h, data, opacity = 1, isTargetStep = false) {
+    // Rendu Sprite 2D Constructeur (Constructor) Top-Down avec ports et données interactives
+    renderSpriteConstructor(x, y, w, h, data, opacity = 1, isTargetStep = false, machId = "const_0", loc = "Dalle B3") {
       const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 12px rgba(56, 189, 248, 0.75))"` : `filter="drop-shadow(0 4px 10px rgba(0,0,0,0.6))"`;
       const strokeCol = isTargetStep ? "#38bdf8" : "#3e4d62";
+      const rName = data.recipeName || (ITEM_NAMES[data.itemId] || "Pièces");
+      const machInfo = {
+        id: machId,
+        type: "Constructeur",
+        recipeName: rName,
+        isAlt: !!data.isAlt,
+        itemId: data.itemId,
+        itemName: ITEM_NAMES[data.itemId] || data.itemId || "Pièce usinée",
+        rateProduced: data.rateProduced ? Math.round(data.rateProduced * 10) / 10 : 20,
+        powerMW: data.powerMW ? Math.round(data.powerMW * 10) / 10 : 4,
+        overclock: data.overclock || 100,
+        ingredients: (data.ingredients && data.ingredients.length > 0)
+          ? data.ingredients.map(i => ({ item: i.item, name: ITEM_NAMES[i.item] || i.item, rate: Math.round((i.rate || 0) * 10) / 10 }))
+          : [{ item: "ingot", name: "Lingots nécessaires", rate: 30 }],
+        location: loc
+      };
+      const jsonStr = encodeURIComponent(JSON.stringify(machInfo));
       return `
-        <g class="ficsit-sprite-constructor" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
-          <title>⚙️ Constructeur : ${data.recipeName || "Pièces"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})</title>
+        <g class="ficsit-sprite-constructor ficsit-guide-clickable-machine" data-guide-mach-id="${machId}" data-mach-json="${jsonStr}" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
+          <title>⚙️ Constructeur : ${rName} (${machInfo.rateProduced}/min)&#10;⚡ ${machInfo.powerMW} MW @ ${machInfo.overclock}%&#10;👆 Cliquer pour afficher la recette & les flux I/O</title>
           <rect x="0" y="0" width="${w}" height="${h}" rx="5" fill="#161c26" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.2 : 1.4}" />
           <rect x="2" y="6" width="10" height="${h - 12}" fill="#0f141d" stroke="#ea580c" stroke-width="1.2" rx="1" />
           <line x1="2" y1="6" x2="12" y2="18" stroke="#f97316" stroke-width="1.2" />
@@ -3289,25 +3336,44 @@ document.addEventListener("DOMContentLoaded", () => {
           <rect x="${w/2 - 6}" y="20" width="12" height="14" rx="2" fill="#3b82f6" opacity="0.8" />
           <line x1="${w/2}" y1="20" x2="${w/2}" y2="${h - 20}" stroke="#94a3b8" stroke-width="2.5" />
           <rect x="${w/2 - 10}" y="${h/2 - 6}" width="20" height="12" rx="2" fill="#1e293b" stroke="#64748b" stroke-width="1" />
+          <!-- Port d'entrée Sud (Bleu / In) -->
           <rect x="${w/2 - 8}" y="${h - 4}" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
-          <circle cx="${w/2}" cy="${h - 1}" r="2" fill="#38bdf8" />
+          <circle cx="${w/2}" cy="${h - 1}" r="3" class="ficsit-port-in" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2" />
+          <!-- Port de sortie Nord (Vert / Out) -->
           <rect x="${w/2 - 8}" y="-1" width="16" height="5" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
-          <circle cx="${w/2}" cy="1" r="2" fill="#22c55e" />
-          <rect x="14" y="4" width="${w - 28}" height="9" rx="2" fill="#0369a1" opacity="0.9" />
+          <circle cx="${w/2}" cy="1" r="3" class="ficsit-port-out" fill="#22c55e" stroke="#15803d" stroke-width="1.2" />
+          <rect x="10" y="4" width="${w - 20}" height="9" rx="2" fill="#0369a1" opacity="0.9" />
           <text x="${w/2}" y="11" fill="#ffffff" font-size="7" font-weight="900" text-anchor="middle" font-family="sans-serif">CONSTRUCTEUR</text>
-          <text x="${w/2}" y="${h - 6}" fill="#93c5fd" font-size="6.5" font-weight="bold" text-anchor="middle">${(data.recipeName || "Pièces").substring(0, 11)}</text>
+          <text x="${w/2}" y="${h - 6}" fill="#93c5fd" font-size="6.5" font-weight="bold" text-anchor="middle">${rName.substring(0, 11)}</text>
         </g>
       `;
     },
 
-    // Rendu Sprite 2D Assembleuse (Assembler) Top-Down
-    renderSpriteAssembler(x, y, w, h, data, opacity = 1, isTargetStep = false) {
+    // Rendu Sprite 2D Assembleuse (Assembler) Top-Down avec ports et données interactives
+    renderSpriteAssembler(x, y, w, h, data, opacity = 1, isTargetStep = false, machId = "assembler_0", loc = "Dalles B1-B2") {
       const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 14px rgba(168, 85, 247, 0.8))"` : `filter="drop-shadow(0 4px 12px rgba(0,0,0,0.65))"`;
       const strokeCol = isTargetStep ? "#a855f7" : "#3e4d62";
       const bldName = (data.building?.name || "Assembleuse").toUpperCase();
+      const rName = data.recipeName || (ITEM_NAMES[data.itemId] || "Assemblage");
+      const machInfo = {
+        id: machId,
+        type: data.building?.name || "Assembleuse",
+        recipeName: rName,
+        isAlt: !!data.isAlt,
+        itemId: data.itemId,
+        itemName: ITEM_NAMES[data.itemId] || data.itemId || "Composant complexe",
+        rateProduced: data.rateProduced ? Math.round(data.rateProduced * 10) / 10 : 5,
+        powerMW: data.powerMW ? Math.round(data.powerMW * 10) / 10 : 15,
+        overclock: data.overclock || 100,
+        ingredients: (data.ingredients && data.ingredients.length > 0)
+          ? data.ingredients.map(i => ({ item: i.item, name: ITEM_NAMES[i.item] || i.item, rate: Math.round((i.rate || 0) * 10) / 10 }))
+          : [{ item: "parts", name: "Composants d'assemblage", rate: 10 }],
+        location: loc
+      };
+      const jsonStr = encodeURIComponent(JSON.stringify(machInfo));
       return `
-        <g class="ficsit-sprite-assembler" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
-          <title>🧩 ${data.building?.name || "Assembleuse"} : ${data.recipeName || "Assemblage"} (${data.rateProduced ? Math.round(data.rateProduced*10)/10 + '/min' : ""})</title>
+        <g class="ficsit-sprite-assembler ficsit-guide-clickable-machine" data-guide-mach-id="${machId}" data-mach-json="${jsonStr}" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
+          <title>🧩 ${data.building?.name || "Assembleuse"} : ${rName} (${machInfo.rateProduced}/min)&#10;⚡ ${machInfo.powerMW} MW @ ${machInfo.overclock}%&#10;👆 Cliquer pour afficher la recette & les flux I/O</title>
           <rect x="0" y="0" width="${w}" height="${h}" rx="6" fill="#131822" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.4 : 1.5}" />
           <path d="M 0 24 L -6 24 L -6 44 L 0 44" stroke="#ea580c" stroke-width="2.5" fill="none" />
           <rect x="-9" y="30" width="4" height="8" rx="1" fill="#ef4444" />
@@ -3318,15 +3384,57 @@ document.addEventListener("DOMContentLoaded", () => {
           <circle cx="${w/2 - 10}" cy="${h/2}" r="7" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,2" />
           <circle cx="${w/2 + 10}" cy="${h/2}" r="7" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,2" />
           <circle cx="${w/2}" cy="${h/2}" r="3" fill="#a855f7" />
+          <!-- Port d'entrée 1 Sud -->
           <rect x="${w/2 - 20}" y="${h - 4}" width="14" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
-          <circle cx="${w/2 - 13}" cy="${h - 1}" r="2" fill="#38bdf8" />
+          <circle cx="${w/2 - 13}" cy="${h - 1}" r="3" class="ficsit-port-in" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2" />
+          <!-- Port d'entrée 2 Sud -->
           <rect x="${w/2 + 6}" y="${h - 4}" width="14" height="5" rx="1.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
-          <circle cx="${w/2 + 13}" cy="${h - 1}" r="2" fill="#38bdf8" />
+          <circle cx="${w/2 + 13}" cy="${h - 1}" r="3" class="ficsit-port-in" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2" />
+          <!-- Port de sortie Nord -->
           <rect x="${w/2 - 9}" y="-1" width="18" height="5" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
-          <circle cx="${w/2}" cy="1" r="2.2" fill="#22c55e" />
-          <rect x="18" y="4" width="${w - 36}" height="10" rx="2" fill="#6b21a8" opacity="0.9" />
+          <circle cx="${w/2}" cy="1" r="3.2" class="ficsit-port-out" fill="#22c55e" stroke="#15803d" stroke-width="1.2" />
+          <rect x="14" y="4" width="${w - 28}" height="10" rx="2" fill="#6b21a8" opacity="0.9" />
           <text x="${w/2}" y="12" fill="#ffffff" font-size="7.5" font-weight="900" text-anchor="middle" font-family="sans-serif">${bldName.substring(0, 15)}</text>
-          <text x="${w/2}" y="${h - 6}" fill="#d8b4fe" font-size="7" font-weight="bold" text-anchor="middle">${(data.recipeName || "Assemblage").substring(0, 14)}</text>
+          <text x="${w/2}" y="${h - 6}" fill="#d8b4fe" font-size="7" font-weight="bold" text-anchor="middle">${rName.substring(0, 14)}</text>
+        </g>
+      `;
+    },
+
+    // Rendu Sprite 2D Conteneur de Stockage Industriel
+    renderSpriteStorage(x, y, w, h, targetName, opacity = 1, isTargetStep = false, machId = "storage_0", loc = "Dalle F1-F2", finalTargets = []) {
+      const activeGlow = isTargetStep ? `filter="drop-shadow(0 0 14px rgba(16, 185, 129, 0.8))"` : `filter="drop-shadow(0 4px 10px rgba(0,0,0,0.6))"`;
+      const strokeCol = isTargetStep ? '#10b981' : '#047857';
+      const machInfo = {
+        id: machId,
+        type: "Conteneur de Stockage Industriel",
+        recipeName: `Stockage & Logistique : ${targetName}`,
+        isAlt: false,
+        itemId: (finalTargets[0] && finalTargets[0].item) || "product",
+        itemName: targetName,
+        rateProduced: (finalTargets[0] && finalTargets[0].rate) || 10,
+        powerMW: 0,
+        overclock: 100,
+        ingredients: (finalTargets && finalTargets.length > 0)
+          ? finalTargets.map(t => ({ item: t.item, name: ITEM_NAMES[t.item] || t.item, rate: Math.round(t.rate * 10) / 10 }))
+          : [{ item: "product", name: targetName, rate: 10 }],
+        location: loc
+      };
+      const jsonStr = encodeURIComponent(JSON.stringify(machInfo));
+      return `
+        <g class="ficsit-guide-clickable-machine ficsit-sprite-storage" data-guide-mach-id="${machId}" data-mach-json="${jsonStr}" transform="translate(${x}, ${y})" opacity="${opacity}" ${activeGlow} style="cursor: pointer;">
+          <title>📦 Conteneur de Stockage Industriel&#10;🎯 Produit Fini : ${targetName}&#10;👆 Cliquer pour afficher le récapitulatif d'expédition</title>
+          <rect width="${w}" height="${h}" rx="4" fill="#064e3b" stroke="${strokeCol}" stroke-width="${isTargetStep ? 2.2 : 1.4}" />
+          <line x1="10" y1="8" x2="10" y2="${h - 8}" stroke="#047857" stroke-width="2" />
+          <line x1="22" y1="8" x2="22" y2="${h - 8}" stroke="#047857" stroke-width="2" />
+          <line x1="34" y1="8" x2="34" y2="${h - 8}" stroke="#047857" stroke-width="2" />
+          <line x1="${w - 22}" y1="8" x2="${w - 22}" y2="${h - 8}" stroke="#047857" stroke-width="2" />
+          <rect x="4" y="4" width="${w - 8}" height="12" rx="2" fill="#022c22" />
+          <text x="${w/2}" y="13" fill="#a7f3d0" font-size="7.5" font-weight="900" text-anchor="middle">STOCKAGE</text>
+          <circle cx="10" cy="10" r="2.5" fill="#10b981" />
+          <text x="${w/2}" y="${h/2 + 8}" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">PRODUIT FINI</text>
+          <!-- Port d'entrée Ouest (Bleu/Vert) -->
+          <rect x="-3" y="${h/2 - 8}" width="6" height="16" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
+          <circle cx="0" cy="${h/2}" r="3" class="ficsit-port-in" fill="#10b981" stroke="#059669" stroke-width="1.2" />
         </g>
       `;
     },
@@ -3359,13 +3467,36 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
-    // Rendu Convoyeur Réaliste avec Courbe Bézier
-    renderCurvedConveyor(pathD, color = "#475569", width = 12) {
+    // Rendu Sprite 2D Ascenseur de Convoyeur (Conveyor Lift)
+    renderSpriteConveyorLift(x, y, size = 28, direction = "up", label = "Lift +8m", destFloor = 1) {
+      const isUp = direction === "up";
+      const mainCol = isUp ? "#f59e0b" : "#38bdf8";
+      const arrowIcon = isUp ? "▲" : "▼";
       return `
-        <path d="${pathD}" stroke="#1e242f" stroke-width="${width}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="${pathD}" stroke="${color}" stroke-width="${width - 3}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="${pathD}" stroke="#0b1017" stroke-width="${width - 6}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="${pathD}" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="3,6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        <g class="ficsit-conveyor-lift" transform="translate(${x - size/2}, ${y - size/2})">
+          <title>Ascenseur Vertical FICSIT : ${label} (${isUp ? "Montée vers Étage " + destFloor : "Arrivée depuis Étage précédent"})</title>
+          <rect x="0" y="0" width="${size}" height="${size}" rx="4" fill="#0b111e" stroke="${mainCol}" stroke-width="1.8" />
+          <rect x="3" y="3" width="${size - 6}" height="${size - 6}" rx="2" fill="#1e293b" stroke="#334155" stroke-width="1" />
+          <circle cx="${size/2}" cy="${size/2}" r="6" fill="${mainCol}" opacity="0.25" />
+          <text x="${size/2}" y="${size/2 + 4}" fill="${mainCol}" font-size="11" font-weight="900" text-anchor="middle">${arrowIcon}</text>
+          <text x="${size/2}" y="${size + 9}" fill="${mainCol}" font-size="7" font-weight="bold" text-anchor="middle">${label}</text>
+        </g>
+      `;
+    },
+
+    // Rendu Convoyeur Réaliste avec Courbe Bézier, Groupes et Identifiants pour Surbrillance
+    renderCurvedConveyor(pathD, color = "#475569", width = 12, beltId = "", fromMach = "", toMach = "") {
+      const idAttr = beltId ? `id="${beltId}"` : "";
+      const fromAttr = fromMach ? `data-belt-from="${fromMach}"` : "";
+      const toAttr = toMach ? `data-belt-to="${toMach}"` : "";
+      const dataIdAttr = beltId ? `data-belt-id="${beltId}"` : "";
+      return `
+        <g class="ficsit-guide-conveyor" ${idAttr} ${dataIdAttr} ${fromAttr} ${toAttr}>
+          <path class="belt-base" d="${pathD}" stroke="#1e242f" stroke-width="${width}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          <path class="belt-track" d="${pathD}" stroke="${color}" stroke-width="${width - 3}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          <path class="belt-center" d="${pathD}" stroke="#0b1017" stroke-width="${width - 6}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          <path class="belt-dashes flow-line" d="${pathD}" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-dasharray="3,6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
       `;
     },
 
@@ -3378,9 +3509,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ? (ITEM_NAMES[targetItem.item] || targetItem.item)
         : (results.targets || []).map(t => `${t.rate}/m ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
       const factoryTitle = results.milestoneName || targetName;
+      const rawResources = results.rawResources || {};
 
-      const svgW = 680;
-      const svgH = 680;
+      const svgW = 720;
+      const svgH = 720;
       const margin = 50;
       const gridW = svgW - margin * 2;
       const gridH = svgH - margin * 2;
@@ -3390,6 +3522,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const cellH = gridH / rows;
 
       const colLetters = ["A", "B", "C", "D", "E", "F"];
+
+      const ITEM_COLORS = {
+        "iron_ore": "#ea580c", "iron_ingot": "#f59e0b", "iron_plate": "#38bdf8", "iron_rod": "#0284c7", "screw": "#94a3b8", "reinforced_iron_plate": "#06b6d4", "rotor": "#a855f7", "modular_frame": "#d946ef",
+        "copper_ore": "#f97316", "copper_ingot": "#ea580c", "wire": "#eab308", "cable": "#0284c7", "copper_sheet": "#ca8a04",
+        "coal": "#475569", "steel_ingot": "#64748b", "steel_beam": "#64748b", "steel_pipe": "#94a3b8", "encased_industrial_beam": "#10b981", "stator": "#8b5cf6", "motor": "#ec4899", "heavy_modular_frame": "#f43f5e",
+        "limestone": "#cbd5e1", "concrete": "#e2e8f0",
+        "caterium_ore": "#eab308", "caterium_ingot": "#facc15", "quickwire": "#fbbf24",
+        "raw_quartz": "#ec4899", "quartz_crystal": "#f472b6", "silica": "#cbd5e1",
+        "crude_oil": "#4f46e5", "plastic": "#06b6d4", "rubber": "#64748b", "fuel": "#f59e0b",
+        "bauxite": "#dc2626", "aluminum_scrap": "#e2e8f0", "aluminum_ingot": "#cbd5e1", "alclad_aluminum_sheet": "#38bdf8",
+        "smart_plating": "#10b981", "versatile_framework": "#10b981", "automated_wiring": "#10b981", "adaptive_control_unit": "#10b981", "modular_engine": "#10b981"
+      };
 
       let foundationsSvg = "";
       for (let r = 0; r < rows; r++) {
@@ -3427,75 +3571,201 @@ document.addEventListener("DOMContentLoaded", () => {
       const assemblers = steps.filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "refinery" || s.building.id === "blender" || s.building.id === "packager"));
 
       const isFull = !targetStepId || (activeState && activeState.currentViewMode === "full");
-      const getOpacity = (stepType) => {
+      const getOpacity = (stepType, machItem = "") => {
         if (isFull) return 1;
         if (targetStepId === "step_foundations") return 0.2;
         if (targetStepId === "step_raw_logistics" && stepType === "raw") return 1;
+        if (targetStepId && targetStepId.startsWith("step_line_")) {
+          if (activeState && activeState.steps && activeState.steps[activeState.currentStepIndex]) {
+            const curStep = activeState.steps[activeState.currentStepIndex];
+            if (curStep.lineData && curStep.lineData.steps) {
+              const matches = curStep.lineData.steps.some(s => s.itemId === machItem || (machItem && s.recipeId && s.recipeId.includes(machItem)));
+              if (matches) return 1;
+            }
+          }
+          return 0.25;
+        }
         if (targetStepId === "step_smelters" && (stepType === "smelter" || stepType === "raw")) return 1;
         if (targetStepId === "step_constructors" && (stepType === "constructor" || stepType === "smelter" || stepType === "raw")) return 1;
         if (targetStepId === "step_assemblers" && (stepType === "assembler" || stepType === "constructor" || stepType === "smelter" || stepType === "raw")) return 1;
         if (targetStepId === "step_power") return 0.85;
         if (targetStepId === "step_output_storage") return 1;
-        return 0.2;
+        return 0.25;
       };
+
+      const isMultiFloor = activeState && activeState.architectureMode === "multi_floor";
+      const activeFloor = (activeState && typeof activeState.activeFloor === "number") ? activeState.activeFloor : 0;
 
       let beltsSvg = "";
       let machinesSvg = "";
       let splittersSvg = "";
       let powerSvg = "";
+      let rawInletsSvg = "";
+      let liftsSvg = "";
 
+      // 1. ARRIVÉES MULTI-RESSOURCES BRUTES (Sud - Rangée 6)
+      const rawEntries = Object.entries(rawResources);
+      const rawCount = Math.max(1, rawEntries.length);
+      const rawPositions = {};
+      const rawYMap = {};
+      const baseSplitY = margin + 5 * cellH + cellH/2;
+
+      if (!isMultiFloor || activeFloor === 0) {
+        rawEntries.forEach(([rItem, rate], rIdx) => {
+          const itemCol = ITEM_COLORS[rItem] || "#f59e0b";
+          const inX = margin + (rIdx + 1) * (gridW / (rawCount + 1));
+          const inY = svgH - 12;
+          rawPositions[rItem] = { x: inX, y: inY, color: itemCol, rate: rate };
+
+          // Étage/Canal Y dédié par type de minerai :
+          // Tier 1 (Sud / Bas) : rIdx = 0 (ex: Fer)
+          // Tier 2 (Nord / Haut) : rIdx = 1 (ex: Charbon)
+          // Tier 3 : rIdx = 2 (ex: Cuivre)
+          const yOffset = (rIdx === 0) ? 14 : ((rIdx === 1) ? -14 : 0);
+          rawYMap[rItem] = baseSplitY + yOffset;
+
+          rawInletsSvg += `
+            <g class="ficsit-raw-inlet" transform="translate(${inX}, ${inY})">
+              <rect x="-42" y="-18" width="84" height="18" rx="3" fill="#0f172a" stroke="${itemCol}" stroke-width="1.2" />
+              <text x="0" y="-6" fill="${itemCol}" font-size="8" font-weight="900" text-anchor="middle" font-family="sans-serif">📥 ${Math.round(rate*10)/10}/m ${ITEM_NAMES[rItem] || rItem}</text>
+              <circle cx="0" cy="0" r="3.5" fill="${itemCol}" stroke="#0f172a" stroke-width="1" />
+            </g>
+          `;
+        });
+      }
+
+      // 2. FONDERIES & FONDERIES AVANCÉES (Rangée 5 - Dalles B5 à E5)
       const smeltCount = smelters.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const displaySmelters = Math.min(smeltCount, 4);
       const smeltPositions = [];
+      const splittersList = [];
 
       for (let i = 0; i < displaySmelters; i++) {
         const cIdx = 1 + i;
+        const colLetter = colLetters[cIdx] || "B";
         const mx = margin + cIdx * cellW + (cellW - 54) / 2;
         const my = margin + 4 * cellH + 6;
-        smeltPositions.push({ x: mx, y: my, w: 54, h: 78, inX: mx + 27, inY: my + 78, outX: mx + 27, outY: my });
+        const machId = `smelter_${i}`;
+        const locName = isMultiFloor ? `RDC - Dalle ${colLetter}5` : `Dalle ${colLetter}5 (Rangée Sud)`;
+        const sData = smelters[i % smelters.length] || {};
+        const isDual = (sData.building?.id === "foundry") || (sData.ingredients && sData.ingredients.length >= 2);
+        const in1Item = (sData.ingredients && sData.ingredients[0]?.item) || "iron_ore";
+        const in2Item = (sData.ingredients && sData.ingredients[1]?.item) || null;
+        const outItem = sData.itemId || "iron_ingot";
+        const outColor = ITEM_COLORS[outItem] || "#f59e0b";
+
+        smeltPositions.push({ id: machId, x: mx, y: my, w: 54, h: 78, isDual, in1Item, in2Item, outItem, outColor });
         
-        const isStep = targetStepId === "step_smelters";
-        machinesSvg += this.renderSpriteSmelter(mx, my, 54, 78, smelters[i % smelters.length] || {}, getOpacity("smelter"), isStep);
+        if (!isMultiFloor || activeFloor === 0) {
+          const isStep = targetStepId === "step_smelters" || (targetStepId && targetStepId.startsWith("step_line_") && getOpacity("smelter", outItem) === 1);
+          machinesSvg += this.renderSpriteSmelter(mx, my, 54, 78, sData, getOpacity("smelter", outItem), isStep, machId, locName);
 
-        const splitY = margin + 5 * cellH + cellH/2;
-        splittersSvg += this.renderSpriteSplitter(mx + 27, splitY, 24);
-        beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${splitY} L ${mx + 27} ${my + 78}`, "#f59e0b", 10);
-      }
+          if (isDual && in2Item) {
+            // Port d'entrée 1 (Gauche) - canal Y dédié
+            const p1X = mx + 16;
+            const splitY1 = rawYMap[in1Item] || (baseSplitY + 14);
+            const in1Color = ITEM_COLORS[in1Item] || "#f59e0b";
+            splittersSvg += this.renderSpriteSplitter(p1X, splitY1, 20);
+            beltsSvg += this.renderCurvedConveyor(`M ${p1X} ${splitY1} L ${p1X} ${my + 78}`, in1Color, 9, `belt_in1_${machId}`, `raw_splitter_${i}_1`, machId);
+            splittersList.push({ item: in1Item, x: p1X, y: splitY1, color: in1Color, id: `raw_splitter_${i}_1`, machId });
 
-      if (smeltPositions.length > 0) {
-        const firstSplitX = smeltPositions[0].inX;
-        const lastSplitX = smeltPositions[smeltPositions.length - 1].inX;
-        const splitY = margin + 5 * cellH + cellH/2;
-        beltsSvg += this.renderCurvedConveyor(`M ${firstSplitX} ${svgH - 10} L ${firstSplitX} ${splitY}`, "#f59e0b", 12);
-        if (lastSplitX > firstSplitX) {
-          beltsSvg += this.renderCurvedConveyor(`M ${firstSplitX} ${splitY} L ${lastSplitX} ${splitY}`, "#f59e0b", 10);
+            // Port d'entrée 2 (Droite) - canal Y dédié
+            const p2X = mx + 38;
+            const splitY2 = rawYMap[in2Item] || (baseSplitY - 14);
+            const in2Color = ITEM_COLORS[in2Item] || "#475569";
+            splittersSvg += this.renderSpriteSplitter(p2X, splitY2, 20);
+            beltsSvg += this.renderCurvedConveyor(`M ${p2X} ${splitY2} L ${p2X} ${my + 78}`, in2Color, 9, `belt_in2_${machId}`, `raw_splitter_${i}_2`, machId);
+            splittersList.push({ item: in2Item, x: p2X, y: splitY2, color: in2Color, id: `raw_splitter_${i}_2`, machId });
+          } else {
+            // Port d'entrée unique
+            const pX = mx + 27;
+            const splitY = rawYMap[in1Item] || baseSplitY;
+            const in1Color = ITEM_COLORS[in1Item] || "#f59e0b";
+            splittersSvg += this.renderSpriteSplitter(pX, splitY, 24);
+            beltsSvg += this.renderCurvedConveyor(`M ${pX} ${splitY} L ${pX} ${my + 78}`, in1Color, 10, `belt_in_${machId}`, `raw_splitter_${i}`, machId);
+            splittersList.push({ item: in1Item, x: pX, y: splitY, color: in1Color, id: `raw_splitter_${i}`, machId });
+          }
+
+          if (isMultiFloor && activeFloor === 0) {
+            liftsSvg += this.renderSpriteConveyorLift(mx + 27, margin + 3 * cellH + 10, 26, "up", "▲ Vers Étage 1", 1);
+            beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${my} L ${mx + 27} ${margin + 3 * cellH + 23}`, outColor, 10, `belt_smelt_to_lift_${i}`, machId, `lift_up_${i}`);
+          }
         }
       }
 
+      // Raccordement multi-ressources strict (Par canal Y dédié sans aucun croisement de répartiteur)
+      if ((!isMultiFloor || activeFloor === 0) && splittersList.length > 0) {
+        const groupsByItem = {};
+        splittersList.forEach((sp) => {
+          if (!groupsByItem[sp.item]) groupsByItem[sp.item] = [];
+          groupsByItem[sp.item].push(sp);
+        });
+
+        Object.entries(groupsByItem).forEach(([inItem, spGroup]) => {
+          const rawFeedPos = rawPositions[inItem] || { x: spGroup[0].x, color: spGroup[0].color || "#f59e0b" };
+          const firstSplitX = spGroup[0].x;
+          const lineY = spGroup[0].y; // Hauteur Y dédiée de cette ressource
+
+          // Amenée dédiée depuis l'entrée spécifique de cette ressource (ex: Charbon, Fer, Cuivre) vers le 1er répartiteur
+          beltsSvg += this.renderCurvedConveyor(`M ${rawFeedPos.x} ${svgH - 12} L ${firstSplitX} ${lineY}`, rawFeedPos.color, 11, `belt_raw_feed_${inItem}`, `raw_inlet_${inItem}`, spGroup[0].id);
+
+          // Manifold horizontal le long de son canal Y exclusif (ne traverse aucun répartiteur d'une autre ressource)
+          if (spGroup.length > 1) {
+            for (let g = 0; g < spGroup.length - 1; g++) {
+              const x1 = spGroup[g].x;
+              const x2 = spGroup[g + 1].x;
+              beltsSvg += this.renderCurvedConveyor(`M ${x1} ${lineY} L ${x2} ${lineY}`, rawFeedPos.color, 9, `belt_manifold_${inItem}_${g}`, spGroup[g].id, spGroup[g + 1].id);
+            }
+          }
+        });
+      }
+
+      // 3. CONSTRUCTEURS (Rangée 3 - Dalles B3 à E3)
       const constCount = constructors.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const displayConst = Math.min(constCount, 4);
       const constPositions = [];
 
       for (let i = 0; i < displayConst; i++) {
         const cIdx = 1 + i;
+        const colLetter = colLetters[cIdx] || "B";
         const mx = margin + cIdx * cellW + (cellW - 54) / 2;
         const my = margin + 2 * cellH + 6;
-        constPositions.push({ x: mx, y: my, w: 54, h: 84, inX: mx + 27, inY: my + 84, outX: mx + 27, outY: my });
+        const machId = `const_${i}`;
+        const locName = isMultiFloor ? `Étage 1 - Dalle ${colLetter}3` : `Dalle ${colLetter}3 (Rangée Centrale)`;
+        const cData = constructors[i % constructors.length] || {};
+        const inItem = (cData.ingredients && cData.ingredients[0]?.item) || "iron_ingot";
+        const outItem = cData.itemId || "iron_plate";
+        const inColor = ITEM_COLORS[inItem] || "#f59e0b";
+        const outColor = ITEM_COLORS[outItem] || "#38bdf8";
 
-        const isStep = targetStepId === "step_constructors";
-        machinesSvg += this.renderSpriteConstructor(mx, my, 54, 84, constructors[i % constructors.length] || {}, getOpacity("constructor"), isStep);
+        constPositions.push({ id: machId, x: mx, y: my, w: 54, h: 84, inX: mx + 27, inY: my + 84, outX: mx + 27, outY: my, inItem, outItem, inColor, outColor });
 
-        const interSplitY = margin + 3 * cellH + cellH/2;
-        splittersSvg += this.renderSpriteMerger(mx + 27, interSplitY, 24);
+        if (!isMultiFloor || activeFloor === 1) {
+          const isStep = targetStepId === "step_constructors" || (targetStepId && targetStepId.startsWith("step_line_") && getOpacity("constructor", outItem) === 1);
+          machinesSvg += this.renderSpriteConstructor(mx, my, 54, 84, cData, getOpacity("constructor", outItem), isStep, machId, locName);
 
-        if (i < smeltPositions.length) {
-          beltsSvg += this.renderCurvedConveyor(`M ${smeltPositions[i].outX} ${smeltPositions[i].outY} L ${mx + 27} ${interSplitY}`, "#4ade80", 10);
-        } else if (smeltPositions.length === 0) {
-          beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${svgH - 10} L ${mx + 27} ${interSplitY}`, "#f59e0b", 10);
+          const interSplitY = margin + 3 * cellH + cellH/2;
+          splittersSvg += this.renderSpriteMerger(mx + 27, interSplitY, 24);
+
+          if (isMultiFloor && activeFloor === 1) {
+            liftsSvg += this.renderSpriteConveyorLift(mx + 27, margin + 5 * cellH, 26, "down", "▼ Arrivée RDC", 0);
+            beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${margin + 5 * cellH - 13} L ${mx + 27} ${interSplitY}`, inColor, 10, `belt_lift_to_const_${i}`, `lift_down_${i}`, machId);
+            liftsSvg += this.renderSpriteConveyorLift(mx + 27, margin + 0.8 * cellH, 26, "up", "▲ Vers Étage 2", 2);
+            beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${my} L ${mx + 27} ${margin + 0.8 * cellH + 13}`, outColor, 10, `belt_const_to_lift_${i}`, machId, `lift_up_e2_${i}`);
+          } else {
+            if (i < smeltPositions.length) {
+              const sMach = smeltPositions[i];
+              beltsSvg += this.renderCurvedConveyor(`M ${sMach.outX} ${sMach.outY} L ${mx + 27} ${interSplitY}`, sMach.outColor, 10, `belt_smelt_to_const_${i}`, sMach.id, machId);
+            } else if (smeltPositions.length === 0) {
+              const rawFeedPos = Object.values(rawPositions)[0] || { x: mx + 27, color: "#f59e0b" };
+              beltsSvg += this.renderCurvedConveyor(`M ${rawFeedPos.x} ${svgH - 12} L ${mx + 27} ${interSplitY}`, inColor, 10, `belt_raw_to_const_${i}`, "raw_inlet", machId);
+            }
+          }
+          beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${interSplitY} L ${mx + 27} ${my + 84}`, inColor, 10, `belt_in_${machId}`, (i < smeltPositions.length ? smeltPositions[i].id : "raw_inlet"), machId);
         }
-        beltsSvg += this.renderCurvedConveyor(`M ${mx + 27} ${interSplitY} L ${mx + 27} ${my + 84}`, "#38bdf8", 10);
       }
 
+      // 4. ASSEMBLEUSES & FAÇONNEUSES (Rangée 1-2 - Dalles B1-C1 & D1-E1)
       const assCount = assemblers.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const displayAss = Math.min(assCount, 2);
       const assPositions = [];
@@ -3506,51 +3776,61 @@ document.addEventListener("DOMContentLoaded", () => {
         const my = margin + 6;
         const assW = cellW * 2 - 12;
         const assH = cellH * 2 - 14;
-        assPositions.push({ x: mx, y: my, w: assW, h: assH, inX1: mx + assW/2 - 13, inX2: mx + assW/2 + 13, inY: my + assH, outX: mx + assW/2, outY: my });
+        const machId = `assembler_${i}`;
+        const locName = isMultiFloor ? `Étage 2 - Dalles B1-C1` : (i === 0 ? "Dalles B1-C1 (Rangée Nord)" : "Dalles D1-E1 (Rangée Nord)");
+        const aData = assemblers[i % assemblers.length] || {};
+        const in1Item = (aData.ingredients && aData.ingredients[0]?.item) || "iron_plate";
+        const in2Item = (aData.ingredients && aData.ingredients[1]?.item) || "screw";
+        const in1Color = ITEM_COLORS[in1Item] || "#38bdf8";
+        const in2Color = ITEM_COLORS[in2Item] || "#a855f7";
+        const outItem = aData.itemId || "reinforced_iron_plate";
+        const outColor = ITEM_COLORS[outItem] || "#10b981";
 
-        const isStep = targetStepId === "step_assemblers";
-        machinesSvg += this.renderSpriteAssembler(mx, my, assW, assH, assemblers[i % assemblers.length] || {}, getOpacity("assembler"), isStep);
+        assPositions.push({ id: machId, x: mx, y: my, w: assW, h: assH, inX1: mx + assW/2 - 13, inX2: mx + assW/2 + 13, inY: my + assH, outX: mx + assW/2, outY: my, outColor });
 
-        if (constPositions.length >= 2) {
-          const c1 = constPositions[Math.min(i*2, constPositions.length - 1)];
-          const c2 = constPositions[Math.min(i*2 + 1, constPositions.length - 1)];
-          beltsSvg += this.renderCurvedConveyor(`M ${c1.outX} ${c1.outY} Q ${c1.outX} ${my + assH + 15}, ${mx + assW/2 - 13} ${my + assH}`, "#a855f7", 10);
-          beltsSvg += this.renderCurvedConveyor(`M ${c2.outX} ${c2.outY} Q ${c2.outX} ${my + assH + 15}, ${mx + assW/2 + 13} ${my + assH}`, "#38bdf8", 10);
-        } else if (constPositions.length === 1) {
-          beltsSvg += this.renderCurvedConveyor(`M ${constPositions[0].outX} ${constPositions[0].outY} L ${mx + assW/2} ${my + assH}`, "#a855f7", 10);
+        if (!isMultiFloor || activeFloor === 2) {
+          const isStep = targetStepId === "step_assemblers" || (targetStepId && targetStepId.startsWith("step_line_") && getOpacity("assembler", outItem) === 1);
+          machinesSvg += this.renderSpriteAssembler(mx, my, assW, assH, aData, getOpacity("assembler", outItem), isStep, machId, locName);
+
+          if (isMultiFloor && activeFloor === 2) {
+            liftsSvg += this.renderSpriteConveyorLift(mx + assW/2 - 13, margin + 4 * cellH, 26, "down", "▼ Arrivée Étage 1", 1);
+            liftsSvg += this.renderSpriteConveyorLift(mx + assW/2 + 13, margin + 4 * cellH, 26, "down", "▼ Arrivée Étage 1", 1);
+            beltsSvg += this.renderCurvedConveyor(`M ${mx + assW/2 - 13} ${margin + 4 * cellH - 13} L ${mx + assW/2 - 13} ${my + assH}`, in1Color, 10, `belt_lift_to_ass1_${i}`, `lift_down1_${i}`, machId);
+            beltsSvg += this.renderCurvedConveyor(`M ${mx + assW/2 + 13} ${margin + 4 * cellH - 13} L ${mx + assW/2 + 13} ${my + assH}`, in2Color, 10, `belt_lift_to_ass2_${i}`, `lift_down2_${i}`, machId);
+          } else {
+            if (constPositions.length >= 2) {
+              const c1 = constPositions[Math.min(i*2, constPositions.length - 1)];
+              const c2 = constPositions[Math.min(i*2 + 1, constPositions.length - 1)];
+              beltsSvg += this.renderCurvedConveyor(`M ${c1.outX} ${c1.outY} Q ${c1.outX} ${my + assH + 15}, ${mx + assW/2 - 13} ${my + assH}`, in1Color, 10, `belt_const_${c1.id}_to_${machId}`, c1.id, machId);
+              beltsSvg += this.renderCurvedConveyor(`M ${c2.outX} ${c2.outY} Q ${c2.outX} ${my + assH + 15}, ${mx + assW/2 + 13} ${my + assH}`, in2Color, 10, `belt_const_${c2.id}_to_${machId}`, c2.id, machId);
+            } else if (constPositions.length === 1) {
+              beltsSvg += this.renderCurvedConveyor(`M ${constPositions[0].outX} ${constPositions[0].outY} L ${mx + assW/2} ${my + assH}`, in1Color, 10, `belt_const_to_${machId}`, constPositions[0].id, machId);
+            }
+          }
         }
       }
 
+      // 5. STOCKAGE INDUSTRIEL DE SORTIE (Rangée 1 - Dalles F1-F2)
       const storageX = margin + 5 * cellW + 6;
       const storageY = margin + 12;
       const isStorageStep = targetStepId === "step_output_storage";
-      const storageGlow = isStorageStep ? `filter="drop-shadow(0 0 14px rgba(16, 185, 129, 0.8))"` : `filter="drop-shadow(0 4px 10px rgba(0,0,0,0.6))"`;
+      const storageW = cellW - 12;
+      const storageH = 68;
+      let storageSvg = "";
 
-      const storageSvg = `
-        <g transform="translate(${storageX}, ${storageY})" opacity="${getOpacity('storage')}" ${storageGlow} style="cursor: pointer;">
-          <title>📦 Conteneur de Stockage Industriel&#10;🎯 Produit Fini : ${targetName}</title>
-          <rect width="${cellW - 12}" height="68" rx="4" fill="#064e3b" stroke="${isStorageStep ? '#10b981' : '#047857'}" stroke-width="${isStorageStep ? 2 : 1.2}" />
-          <line x1="10" y1="8" x2="10" y2="60" stroke="#047857" stroke-width="2" />
-          <line x1="22" y1="8" x2="22" y2="60" stroke="#047857" stroke-width="2" />
-          <line x1="34" y1="8" x2="34" y2="60" stroke="#047857" stroke-width="2" />
-          <line x1="${cellW - 22}" y1="8" x2="${cellW - 22}" y2="60" stroke="#047857" stroke-width="2" />
-          <rect x="4" y="4" width="${cellW - 20}" height="12" rx="2" fill="#022c22" />
-          <text x="${(cellW - 12)/2}" y="13" fill="#a7f3d0" font-size="7.5" font-weight="900" text-anchor="middle">STOCKAGE</text>
-          <circle cx="12" cy="10" r="2.5" fill="#10b981" />
-          <text x="${(cellW - 12)/2}" y="42" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">PRODUIT FINI</text>
-          <rect x="-3" y="26" width="6" height="16" rx="1.5" fill="#1e293b" stroke="#10b981" stroke-width="1" />
-          <circle cx="0" cy="34" r="2" fill="#10b981" />
-        </g>
-      `;
+      if (!isMultiFloor || activeFloor === 2) {
+        storageSvg = this.renderSpriteStorage(storageX, storageY, storageW, storageH, targetName, getOpacity('storage'), isStorageStep, "storage_0", isMultiFloor ? "Étage 2 - Dalles F1-F2" : "Dalles F1-F2 (Expédition)", results.targets || []);
 
-      if (assPositions.length > 0) {
-        const lastAss = assPositions[assPositions.length - 1];
-        beltsSvg += this.renderCurvedConveyor(`M ${lastAss.outX} ${lastAss.outY} Q ${lastAss.outX} ${storageY + 34}, ${storageX} ${storageY + 34}`, "#10b981", 12);
-      } else if (constPositions.length > 0) {
-        const lastConst = constPositions[constPositions.length - 1];
-        beltsSvg += this.renderCurvedConveyor(`M ${lastConst.outX} ${lastConst.outY} Q ${lastConst.outX} ${storageY + 34}, ${storageX} ${storageY + 34}`, "#10b981", 12);
+        if (assPositions.length > 0) {
+          const lastAss = assPositions[assPositions.length - 1];
+          beltsSvg += this.renderCurvedConveyor(`M ${lastAss.outX} ${lastAss.outY} Q ${lastAss.outX} ${storageY + 34}, ${storageX} ${storageY + 34}`, "#10b981", 12, "belt_ass_to_storage", lastAss.id, "storage_0");
+        } else if (constPositions.length > 0) {
+          const lastConst = constPositions[constPositions.length - 1];
+          beltsSvg += this.renderCurvedConveyor(`M ${lastConst.outX} ${lastConst.outY} Q ${lastConst.outX} ${storageY + 34}, ${storageX} ${storageY + 34}`, "#10b981", 12, "belt_const_to_storage", lastConst.id, "storage_0");
+        }
       }
 
+      // 6. RÉSEAU ÉLECTRIQUE
       const isPowerStep = targetStepId === "step_power";
       const pole1X = margin + 1 * cellW;
       const pole1Y = margin + 3 * cellH;
@@ -3587,12 +3867,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const totalStepsCount = activeState && activeState.steps ? activeState.steps.length : 7;
       const curTag = activeState && activeState.steps && activeState.steps[curIdx] ? activeState.steps[curIdx].tag : "";
       
+      const floorHeader = isMultiFloor 
+        ? ` • ÉTAGE ${activeFloor} (${activeFloor === 0 ? "RDC FONDERIES" : (activeFloor === 1 ? "ÉTAGE 1 CONSTRUCTEURS" : "ÉTAGE 2 ASSEMBLEUSES")})`
+        : "";
+
       const planTitle = isFull 
-        ? `PLAN D'IMPLANTATION TOP-DOWN COMPLET : ${factoryTitle.toUpperCase()}` 
-        : `PLAN TOP-DOWN : ÉTAPE ${curIdx + 1}/${totalStepsCount} (${curTag.toUpperCase()})`;
+        ? `PLAN D'IMPLANTATION TOP-DOWN : ${factoryTitle.toUpperCase()}${floorHeader}` 
+        : `PLAN TOP-DOWN : ÉTAPE ${curIdx + 1}/${totalStepsCount} (${curTag.toUpperCase()})${floorHeader}`;
 
       return `
-        <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background: #060910; font-family: system-ui, sans-serif; user-select: none;">
+        <svg id="topdown-factory-svg" viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background: #060910; font-family: system-ui, sans-serif; user-select: none; cursor: grab;">
           <defs>
             <!-- Gradient Foyer en fusion (Smelter Core) -->
             <radialGradient id="smelterCoreGlow" cx="50%" cy="50%" r="50%">
@@ -3622,6 +3906,16 @@ document.addEventListener("DOMContentLoaded", () => {
             ${axesSvg}
           </g>
 
+          <!-- Arrivées de minerais bruts -->
+          <g id="blueprint-raw-inlets-layer">
+            ${rawInletsSvg}
+          </g>
+
+          <!-- Ascenseurs de Convoyeurs (Conveyor Lifts) -->
+          <g id="blueprint-lifts-layer">
+            ${liftsSvg}
+          </g>
+
           <!-- Réseau Logistique Convoyeurs & Splitters -->
           <g id="blueprint-belts-layer">
             ${beltsSvg}
@@ -3642,177 +3936,1004 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     },
 
+    // Rendu de la Fiche Machine & Recette Interactive dans la colonne latérale
+    renderMachineInspector(container, machInfo, isMs = false, results = null) {
+      if (!container) return;
+
+      if (!machInfo) {
+        container.innerHTML = `
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 10px 14px; font-size: 11.5px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">💡</span>
+            <div>
+              <div style="font-weight: bold; color: #e2e8f0; margin-bottom: 2px;">Inspecteur de Recette & Raccordements I/O</div>
+              <div>Cliquez sur n'importe quelle machine du plan 2D pour afficher sa recette à régler en jeu et mettre en évidence ses convoyeurs d'entrée/sortie.</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const state = isMs ? this.msState : this.singleState;
+      const isAlt = machInfo.isAlt;
+      const mType = machInfo.type || "Machine";
+      const mIcon = mType.includes("Fonderie") ? "🏭" : (mType.includes("Constructeur") ? "⚙️" : (mType.includes("Stockage") ? "📦" : "🧩"));
+      const rName = machInfo.recipeName || "Standard";
+      const pMW = machInfo.powerMW || 0;
+      const oClock = machInfo.overclock || 100;
+      const loc = machInfo.location || "Grille FICSIT";
+
+      const inputsHtml = (machInfo.ingredients && machInfo.ingredients.length > 0)
+        ? machInfo.ingredients.map(ing => {
+            const belt = (typeof SatisfactoryFlowchart !== "undefined" && SatisfactoryFlowchart.getBeltTierInfo) ? SatisfactoryFlowchart.getBeltTierInfo(ing.rate) : { mk: "Convoyeur Mk.1", color: "#f59e0b" };
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 5px 8px; border-radius: 4px; font-size: 11.5px; border-left: 3px solid #38bdf8;">
+                <span style="color: #f1f5f9; font-weight: 600;">🔹 ${ing.name}</span>
+                <span style="color: #38bdf8; font-weight: 800;">${ing.rate} /min</span>
+              </div>
+            `;
+          }).join("")
+        : `<div style="color: #94a3b8; font-size: 11px;">Minerais bruts / Entrées directes</div>`;
+
+      const outputsHtml = `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 5px 8px; border-radius: 4px; font-size: 11.5px; border-left: 3px solid #10b981;">
+          <span style="color: #f1f5f9; font-weight: 600;">🟢 ${machInfo.itemName || rName}</span>
+          <span style="color: #4ade80; font-weight: 900;">+${machInfo.rateProduced} /min</span>
+        </div>
+      `;
+
+      container.innerHTML = `
+        <div style="background: linear-gradient(145deg, #0b1320, #080d16); border: 1.5px solid #38bdf8; border-radius: 6px; padding: 12px 14px; box-shadow: 0 4px 18px rgba(0,0,0,0.7), 0 0 15px rgba(56,189,248,0.2);">
+          <!-- En-tête machine avec localisation et bouton fermer -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(56, 189, 248, 0.25);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">${mIcon}</span>
+              <div>
+                <div style="font-weight: 800; font-size: 13.5px; color: #f8fafc; font-family: var(--font-display); letter-spacing: 0.5px;">${mType}</div>
+                <div style="font-size: 10.5px; color: #38bdf8; font-weight: 600;">📍 ${loc}</div>
+              </div>
+            </div>
+            <button type="button" class="btn-guide-close-inspector" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 10.5px; border-radius: 4px; padding: 3px 8px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              ✖ Désélectionner
+            </button>
+          </div>
+
+          <!-- Bannière Recette active à configurer -->
+          <div style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 5px; padding: 8px 10px; margin-bottom: 10px;">
+            <div style="font-size: 10px; font-weight: 800; color: #93c5fd; text-transform: uppercase; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center;">
+              <span>📜 Recette à Appliquer en Jeu :</span>
+              ${isAlt ? '<span style="background: rgba(168, 85, 247, 0.25); border: 1px solid #a855f7; color: #d8b4fe; padding: 1px 6px; border-radius: 3px; font-size: 9.5px; font-weight: bold;">⭐ ALTERNATIVE</span>' : '<span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; padding: 1px 6px; border-radius: 3px; font-size: 9.5px; font-weight: bold;">STANDARD</span>'}
+            </div>
+            <div style="font-size: 15px; font-weight: 900; color: #f59e0b; margin-bottom: 4px;">
+              ${rName}
+            </div>
+            <div style="display: flex; gap: 14px; font-size: 11px; color: #cbd5e1; flex-wrap: wrap;">
+              <span>⚡ <strong>Puissance :</strong> <strong style="color: #f59e0b;">${pMW} MW</strong></span>
+              <span>⏱️ <strong>Horloge :</strong> <strong style="color: #38bdf8;">${oClock}%</strong></span>
+            </div>
+          </div>
+
+          <!-- Grille Entrées / Sorties (I/O) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+            <!-- Entrées (Bleu/Cyan) -->
+            <div style="background: rgba(2, 132, 199, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 4px; padding: 8px 10px;">
+              <div style="font-size: 10px; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 4px;">
+                <span>📥</span> Entrées (Convoyeur Bleu) :
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                ${inputsHtml}
+              </div>
+            </div>
+
+            <!-- Sorties (Vert Émeraude) -->
+            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 4px; padding: 8px 10px;">
+              <div style="font-size: 10px; font-weight: 800; color: #4ade80; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 4px;">
+                <span>📤</span> Sortie (Convoyeur Vert) :
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                ${outputsHtml}
+              </div>
+            </div>
+          </div>
+
+          <!-- Conseil In-Game & Bouton Copie -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 10.5px; color: #94a3b8;">
+            <div>💡 <em>Dans Satisfactory : Ouvrez la machine [E], sélectionnez <strong>${rName}</strong> et réglez l'horloge sur <strong>${oClock}%</strong>.</em></div>
+            <button type="button" class="btn-guide-copy-recipe btn-outline" style="font-size: 10.5px; padding: 3px 9px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); cursor: pointer;">
+              📋 Copier la recette
+            </button>
+          </div>
+        </div>
+      `;
+
+      const closeBtn = container.querySelector(".btn-guide-close-inspector");
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          state.selectedMachine = null;
+          const svgViewport = document.getElementById(isMs ? "guide-ms-step-svg-viewport" : "guide-step-svg-viewport");
+          if (svgViewport) {
+            this.attachGuideInteractivity(svgViewport, state.lastResults, isMs);
+          }
+          this.renderMachineInspector(container, null, isMs, results);
+        };
+      }
+
+      const copyBtn = container.querySelector(".btn-guide-copy-recipe");
+      if (copyBtn) {
+        copyBtn.onclick = () => {
+          const text = `Machine: ${mType}\nRecette: ${rName}\nHorloge: ${oClock}%\nPuissance: ${pMW} MW`;
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+              showToast(`📋 Paramètres copiés : "${rName}"`);
+            }).catch(() => {
+              showToast(`Recette : ${rName}`);
+            });
+          } else {
+            showToast(`Recette : ${rName}`);
+          }
+        };
+      }
+    },
+
+    // Écouteurs de clics et survol sur les machines du plan Top-Down 2D
+    attachGuideInteractivity(container, results, isMs = false) {
+      if (!container) return;
+      const state = isMs ? this.msState : this.singleState;
+      const inspectorCardId = isMs ? "guide-ms-machine-inspector-card" : "guide-machine-inspector-card";
+      const inspectorCardEl = document.getElementById(inspectorCardId);
+
+      let tooltip = document.getElementById("ficsit-machine-hud-tooltip");
+      if (!tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.id = "ficsit-machine-hud-tooltip";
+        tooltip.style.cssText = `
+          position: fixed;
+          display: none;
+          pointer-events: none;
+          z-index: 99999999;
+          background: #09101d;
+          border: 1.5px solid #38bdf8;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.9), 0 0 20px rgba(56,189,248,0.3);
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-family: system-ui, -apple-system, sans-serif;
+          color: #f8fafc;
+          font-size: 12px;
+          min-width: 250px;
+          max-width: 360px;
+          backdrop-filter: blur(10px);
+          transition: opacity 0.12s ease;
+        `;
+        document.body.appendChild(tooltip);
+      }
+
+      const positionTooltip = (e) => {
+        const padding = 16;
+        let x = e.clientX + padding;
+        let y = e.clientY + padding;
+        const rect = tooltip.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth - 10) x = e.clientX - rect.width - padding;
+        if (y + rect.height > window.innerHeight - 10) y = e.clientY - rect.height - padding;
+        tooltip.style.left = `${Math.max(10, x)}px`;
+        tooltip.style.top = `${Math.max(10, y)}px`;
+      };
+
+      const applyHighlight = (selectedId) => {
+        container.querySelectorAll(".ficsit-guide-clickable-machine").forEach(mEl => {
+          const id = mEl.getAttribute("data-guide-mach-id");
+          if (!selectedId) {
+            mEl.classList.remove("is-selected", "is-dimmed");
+          } else if (id === selectedId) {
+            mEl.classList.add("is-selected");
+            mEl.classList.remove("is-dimmed");
+          } else {
+            mEl.classList.remove("is-selected");
+            mEl.classList.add("is-dimmed");
+          }
+        });
+
+        container.querySelectorAll(".ficsit-guide-conveyor").forEach(bEl => {
+          const from = bEl.getAttribute("data-belt-from");
+          const to = bEl.getAttribute("data-belt-to");
+          if (!selectedId) {
+            bEl.classList.remove("is-input-flow", "is-output-flow", "is-dimmed");
+          } else if (to === selectedId) {
+            bEl.classList.add("is-input-flow");
+            bEl.classList.remove("is-output-flow", "is-dimmed");
+          } else if (from === selectedId) {
+            bEl.classList.add("is-output-flow");
+            bEl.classList.remove("is-input-flow", "is-dimmed");
+          } else {
+            bEl.classList.remove("is-input-flow", "is-output-flow");
+            bEl.classList.add("is-dimmed");
+          }
+        });
+      };
+
+      const selectMachine = (machInfo) => {
+        state.selectedMachine = machInfo;
+        this.renderMachineInspector(inspectorCardEl, machInfo, isMs, results);
+        applyHighlight(machInfo ? machInfo.id : null);
+        if (machInfo) {
+          showToast(`🔍 Machine sélectionnée : ${machInfo.type} (${machInfo.recipeName})`);
+        }
+      };
+
+      // Appliquer l'état existant si déjà sélectionné
+      if (state.selectedMachine) {
+        this.renderMachineInspector(inspectorCardEl, state.selectedMachine, isMs, results);
+        applyHighlight(state.selectedMachine.id);
+      } else {
+        this.renderMachineInspector(inspectorCardEl, null, isMs, results);
+      }
+
+      // Écouteurs de clics sur chaque machine
+      container.querySelectorAll(".ficsit-guide-clickable-machine").forEach(machEl => {
+        machEl.onclick = (e) => {
+          e.stopPropagation();
+          const rawJson = machEl.getAttribute("data-mach-json");
+          if (!rawJson) return;
+          try {
+            const machInfo = JSON.parse(decodeURIComponent(rawJson));
+            if (state.selectedMachine && state.selectedMachine.id === machInfo.id) {
+              selectMachine(null);
+            } else {
+              selectMachine(machInfo);
+            }
+          } catch (err) {
+            console.error("Error parsing machine JSON", err);
+          }
+        };
+
+        machEl.onmouseenter = (e) => {
+          const rawJson = machEl.getAttribute("data-mach-json");
+          if (!rawJson) return;
+          try {
+            const info = JSON.parse(decodeURIComponent(rawJson));
+            const inputsText = (info.ingredients || []).map(i => `${i.rate}/m ${i.name}`).join(", ") || "Matières directes";
+            const isAltBadge = info.isAlt ? '<span style="color:#d8b4fe;font-weight:bold;">[⭐ Alternative]</span>' : '<span style="color:#7dd3fc;">[Standard]</span>';
+            tooltip.innerHTML = `
+              <div style="font-weight: 800; font-size: 13.5px; color: #38bdf8; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 6px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <span>🏭 ${info.type}</span>
+                <span style="color: #f59e0b; font-size: 11px; font-weight: bold;">⚡ ${info.powerMW} MW</span>
+              </div>
+              <div style="font-size: 12px; margin-bottom: 6px;">
+                <strong>📜 Recette :</strong> <span style="color: #f59e0b; font-weight: 800;">${info.recipeName}</span> ${isAltBadge}
+              </div>
+              <div style="font-size: 11.5px; color: #94a3b8; margin-bottom: 4px;">
+                <strong style="color: #38bdf8;">📥 Entrées :</strong> ${inputsText}
+              </div>
+              <div style="font-size: 11.5px; color: #94a3b8; margin-bottom: 6px;">
+                <strong style="color: #10b981;">📤 Sortie :</strong> +${info.rateProduced}/min ${info.itemName}
+              </div>
+              <div style="font-size: 10.5px; color: #64748b; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 5px;">
+                👆 <em>Cliquez pour verrouiller et inspecter le raccordement complet</em>
+              </div>
+            `;
+            tooltip.style.display = "block";
+            positionTooltip(e);
+          } catch (err) {}
+        };
+
+        machEl.onmousemove = (e) => {
+          positionTooltip(e);
+        };
+
+        machEl.onmouseleave = () => {
+          tooltip.style.display = "none";
+        };
+      });
+
+      // Clic hors des machines dans le SVG pour désélectionner
+      const svgEl = container.querySelector("svg");
+      if (svgEl) {
+        svgEl.onclick = (e) => {
+          if (!e.target.closest(".ficsit-guide-clickable-machine")) {
+            selectMachine(null);
+          }
+        };
+
+        // --- GESTION DU PAN & ZOOM INTÉRACTIF DANS LE PLAN 2D TOP-DOWN ---
+        const vbAttr = svgEl.getAttribute("viewBox") || "0 0 720 720";
+        const parts = vbAttr.split(" ").map(Number);
+        let vbX = parts[0] || 0;
+        let vbY = parts[1] || 0;
+        let vbW = parts[2] || 720;
+        let vbH = parts[3] || 720;
+        const initialVb = { x: vbX, y: vbY, width: vbW, height: vbH };
+
+        const updateViewBox = () => {
+          svgEl.setAttribute("viewBox", `${vbX} ${vbY} ${vbW} ${vbH}`);
+        };
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        svgEl.addEventListener("mousedown", (e) => {
+          if (e.target.closest(".ficsit-guide-clickable-machine")) return;
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          svgEl.style.cursor = "grabbing";
+        });
+
+        window.addEventListener("mousemove", (e) => {
+          if (!isDragging) return;
+          const rect = svgEl.getBoundingClientRect();
+          const cw = rect.width > 10 ? rect.width : 720;
+          const ch = rect.height > 10 ? rect.height : 720;
+          const scaleX = vbW / cw;
+          const scaleY = vbH / ch;
+          const dx = (e.clientX - startX) * scaleX;
+          const dy = (e.clientY - startY) * scaleY;
+          if (!isNaN(dx) && !isNaN(dy)) {
+            vbX -= dx;
+            vbY -= dy;
+            startX = e.clientX;
+            startY = e.clientY;
+            updateViewBox();
+          }
+        });
+
+        window.addEventListener("mouseup", () => {
+          if (isDragging) {
+            isDragging = false;
+            svgEl.style.cursor = "grab";
+          }
+        });
+
+        // Zoom à la molette fluide centré sur le curseur
+        svgEl.addEventListener("wheel", (e) => {
+          e.preventDefault();
+          const zoomFactor = e.deltaY < 0 ? 0.85 : 1.15;
+          const rect = svgEl.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+          const svgX = vbX + (mouseX / (rect.width || 1)) * vbW;
+          const svgY = vbY + (mouseY / (rect.height || 1)) * vbH;
+
+          const newW = Math.min(Math.max(vbW * zoomFactor, 160), 2400);
+          const newH = Math.min(Math.max(vbH * zoomFactor, 160), 2400);
+
+          vbX = svgX - (mouseX / (rect.width || 1)) * newW;
+          vbY = svgY - (mouseY / (rect.height || 1)) * newH;
+          vbW = newW;
+          vbH = newH;
+          updateViewBox();
+        }, { passive: false });
+
+        // Double-clic pour réinitialiser le cadrage
+        svgEl.addEventListener("dblclick", (e) => {
+          if (e.target.closest(".ficsit-guide-clickable-machine")) return;
+          vbX = initialVb.x;
+          vbY = initialVb.y;
+          vbW = initialVb.width;
+          vbH = initialVb.height;
+          updateViewBox();
+        });
+
+        // Liaison des boutons de contrôle de zoom externes
+        const btnZoomIn = document.getElementById(isMs ? "btn-guide-ms-zoom-in" : "btn-guide-zoom-in");
+        const btnZoomOut = document.getElementById(isMs ? "btn-guide-ms-zoom-out" : "btn-guide-zoom-out");
+        const btnResetZoom = document.getElementById(isMs ? "btn-guide-ms-reset-zoom" : "btn-guide-reset-zoom");
+
+        if (btnZoomIn) {
+          btnZoomIn.onclick = () => {
+            const factor = 0.8;
+            const centerX = vbX + vbW / 2;
+            const centerY = vbY + vbH / 2;
+            vbW = Math.max(vbW * factor, 160);
+            vbH = Math.max(vbH * factor, 160);
+            vbX = centerX - vbW / 2;
+            vbY = centerY - vbH / 2;
+            updateViewBox();
+          };
+        }
+
+        if (btnZoomOut) {
+          btnZoomOut.onclick = () => {
+            const factor = 1.25;
+            const centerX = vbX + vbW / 2;
+            const centerY = vbY + vbH / 2;
+            vbW = Math.min(vbW * factor, 2400);
+            vbH = Math.min(vbH * factor, 2400);
+            vbX = centerX - vbW / 2;
+            vbY = centerY - vbH / 2;
+            updateViewBox();
+          };
+        }
+
+        if (btnResetZoom) {
+          btnResetZoom.onclick = () => {
+            vbX = initialVb.x;
+            vbY = initialVb.y;
+            vbW = initialVb.width;
+            vbH = initialVb.height;
+            updateViewBox();
+          };
+        }
+      }
+    },
+
+    // Découpage intelligent du complexe de jalon en lignes de production modulaires
+    decomposeIntoLines(results) {
+      const steps = results.productionSteps || [];
+      const targets = results.targets || [];
+      const lines = [];
+
+      const getItemName = (id) => ITEM_NAMES[id] || id;
+
+      if (targets.length > 1) {
+        // Cas 1 : Multi-produits finaux du jalon (ex: Phase 2)
+        targets.forEach((target, tIdx) => {
+          const targetStep = steps.find(s => s.itemId === target.item);
+          const targetSteps = [];
+          if (targetStep) targetSteps.push(targetStep);
+
+          const ingItems = targetStep && targetStep.ingredients ? targetStep.ingredients.map(i => i.item) : [];
+          steps.forEach(s => {
+            if (s.itemId !== target.item && (ingItems.includes(s.itemId) || s.ingredients?.some(ing => ingItems.includes(ing.item)))) {
+              if (!targetSteps.includes(s)) targetSteps.push(s);
+            }
+          });
+
+          const lineMachines = targetSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+          const linePower = Math.round(targetSteps.reduce((sum, s) => sum + s.powerMW, 0) * 10) / 10;
+
+          lines.push({
+            lineId: `line_${tIdx}`,
+            lineIndex: tIdx + 1,
+            title: `Ligne ${String.fromCharCode(65 + tIdx)} : ${getItemName(target.item)} (+${target.rate}/min)`,
+            tag: `${tIdx + 3}. LIGNE ${String.fromCharCode(65 + tIdx)} (${getItemName(target.item).toUpperCase()})`,
+            targetItem: target.item,
+            targetRate: target.rate,
+            steps: targetSteps.length > 0 ? targetSteps : steps,
+            totalMachines: lineMachines || Math.ceil(steps.length / targets.length),
+            powerMW: linePower || Math.round((results.totalPowerMW / targets.length) * 10) / 10,
+            desc: `Implantation complète et raccordement autonome de la ligne de fabrication de ${getItemName(target.item)} (${target.rate}/min).`
+          });
+        });
+      } else if (targets.length === 1) {
+        // Cas 2 : Un seul produit avec sous-ensembles (ex: Phase 1 Smart Plating -> Reinforced Plates + Rotors)
+        const target = targets[0];
+        const finalStep = steps.find(s => s.itemId === target.item);
+        const subProducts = finalStep && finalStep.ingredients ? finalStep.ingredients.map(i => i.item) : [];
+
+        if (subProducts.length >= 2) {
+          subProducts.forEach((subItem, sIdx) => {
+            const subSteps = steps.filter(s => s.itemId === subItem || s.ingredients?.some(i => i.item === subItem) || (s.building?.id === 'smelter' && sIdx === 0));
+            const lineMachines = subSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+            const linePower = Math.round(subSteps.reduce((sum, s) => sum + s.powerMW, 0) * 10) / 10;
+            const subRate = finalStep.ingredients.find(i => i.item === subItem)?.rate || 10;
+
+            lines.push({
+              lineId: `line_${sIdx}`,
+              lineIndex: sIdx + 1,
+              title: `Sous-ensemble ${String.fromCharCode(65 + sIdx)} : ${getItemName(subItem)} (+${Math.round(subRate*10)/10}/min)`,
+              tag: `${sIdx + 3}. SOUS-ENSEMBLE ${String.fromCharCode(65 + sIdx)} (${getItemName(subItem).toUpperCase()})`,
+              targetItem: subItem,
+              targetRate: subRate,
+              steps: subSteps,
+              totalMachines: lineMachines || 3,
+              powerMW: linePower || 25,
+              desc: `Ligne de fabrication dédiée à l'usinage des ${getItemName(subItem)} pour alimenter l'assemblage final.`
+            });
+          });
+
+          const finalMachines = finalStep ? (finalStep.physicalMachines || Math.ceil(finalStep.machinesCount)) : 1;
+          lines.push({
+            lineId: `line_final`,
+            lineIndex: subProducts.length + 1,
+            title: `Ligne d'Assemblage Final : ${getItemName(target.item)} (+${target.rate}/min)`,
+            tag: `${subProducts.length + 3}. ASSEMBLAGE FINAL (${getItemName(target.item).toUpperCase()})`,
+            targetItem: target.item,
+            targetRate: target.rate,
+            steps: finalStep ? [finalStep] : [],
+            totalMachines: finalMachines,
+            powerMW: finalStep ? Math.round(finalStep.powerMW * 10) / 10 : 15,
+            desc: `Raccordement des sous-ensembles aux assembleuses finales pour produire ${getItemName(target.item)} en flux tendu continu.`
+          });
+        } else {
+          lines.push({
+            lineId: `line_0`,
+            lineIndex: 1,
+            title: `Ligne de Production Complète : ${getItemName(target.item)} (+${target.rate}/min)`,
+            tag: `3. LIGNE PRINCIPALE (${getItemName(target.item).toUpperCase()})`,
+            targetItem: target.item,
+            targetRate: target.rate,
+            steps: steps,
+            totalMachines: steps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0),
+            powerMW: results.totalPowerMW,
+            desc: `Fabrication en flux continu de ${getItemName(target.item)}.`
+          });
+        }
+      }
+
+      return lines;
+    },
+
     generateSteps(results, isMs = false) {
+      const state = isMs ? this.msState : this.singleState;
+      const maxBeltMk = state.maxBeltMk || 3;
+      const BELT_CAPS = { 1: 60, 2: 120, 3: 270, 4: 480, 5: 780 };
+      const maxCap = BELT_CAPS[maxBeltMk] || 270;
+      const isMultiFloor = state.architectureMode === "multi_floor";
+      const densityProfile = state.densityProfile || "standard";
+
       const steps = [];
-      const totalMachines = (results.productionSteps || []).reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+      const prodSteps = results.productionSteps || [];
+      const totalMachines = prodSteps.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       const targetItem = (results.targets && results.targets[0]) || { item: "Produit Fini", rate: 10 };
       const targetName = results.targets && results.targets.length === 1 
         ? (ITEM_NAMES[targetItem.item] || targetItem.item)
         : (results.targets || []).map(t => `${t.rate}/m ${ITEM_NAMES[t.item]||t.item}`).join(" + ");
       const factoryTitle = results.milestoneName || targetName;
       const rawResources = results.rawResources || {};
+      const rawList = Object.entries(rawResources);
 
-      // 1. Étape 1 : Fondations & Implantation Géodésique
+      const smelters = prodSteps.filter(s => s.building && (s.building.id === "smelter" || s.building.id === "foundry"));
+      const constructors = prodSteps.filter(s => s.building && (s.building.id === "constructor"));
+      const assemblers = prodSteps.filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "refinery" || s.building.id === "blender" || s.building.id === "packager"));
+
+      // =========================================================================
+      // CAS 1 : MODE MULTI-ÉTAGES VERTICAL (DÉCOUPAGE PAR ÉTAGE 0, 1, 2)
+      // =========================================================================
+      if (isMultiFloor) {
+        // --- ÉTAGE 0 (RDC) ---
+        steps.push({
+          baseId: "step_floor0_foundations",
+          targetFloor: 0,
+          tag: "RDC : 1. FONDATIONS SOL",
+          title: "1. [RDC] Pose de la dalle de sol (32m × 32m) & Mur Panneau Sandwich",
+          desc: "Posez la dalle de fondation de base au niveau du sol et élevez le mur panneau sandwich technique pour les ascenseurs.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>📐 <strong>Emprise au sol :</strong> Dalles de 8m×8m avec vide technique de 6m.</div>
+              <div>📍 <strong>Niveau :</strong> <span style="color: #a855f7; font-weight: bold;">Niveau 0 (RDC)</span>.</div>
+              <div>🧭 <strong>Alignement :</strong> Dégager l'accès logistique Sud pour l'arrivée des minerais bruts.</div>
+            </div>
+          `,
+          shopping: [{ name: "Béton", qty: 96, icon: "🧱" }],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_foundations", { ...st, activeFloor: 0 })
+        });
+
+        let rawSplittersCount = 0;
+        rawList.forEach(([item, rate]) => {
+          rawSplittersCount += Math.max(1, Math.ceil(rate / maxCap));
+        });
+
+        steps.push({
+          baseId: "step_floor0_raw_logistics",
+          targetFloor: 0,
+          tag: "RDC : 2. ARRIVÉES MINERAIS",
+          title: `2. [RDC] Arrivées de minerais bruts (${rawList.length} flux • Tapis Max Mk.${maxBeltMk})`,
+          desc: "Amenez les flux de minerais bruts au Sud du RDC et installez les puits d'accès logistiques.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              ${rawList.map(([item, rate]) => {
+                const rRate = Math.round(rate * 10) / 10;
+                const isOverCap = rate > maxCap;
+                const parallelBelts = Math.ceil(rate / maxCap);
+                const splitWarning = isOverCap 
+                  ? `<span style="color: #ef4444; font-weight: bold;">⚠️ Dépasse Mk.${maxBeltMk} (${maxCap}/m) ➔ Diviser en ${parallelBelts} convoyeurs Mk.${maxBeltMk}</span>`
+                  : `<span style="color: #10b981; font-weight: bold;">✓ 1 Tapis Mk.${maxBeltMk} suffit</span>`;
+                return `<div>📥 <strong>${ITEM_NAMES[item]||item} :</strong> <span style="color: #f59e0b; font-weight: bold;">${rRate}/min</span> ➔ ${splitWarning}</div>`;
+              }).join("") || "<div>📥 <em>Alimentation directe</em></div>"}
+              <div>📍 <strong>Niveau :</strong> <span style="color: #a855f7; font-weight: bold;">Niveau 0 (RDC) - Bord Sud</span>.</div>
+            </div>
+          `,
+          shopping: [
+            { name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 50, icon: "📦" },
+            { name: "Plaque de fer renf. (Répartiteurs)", qty: Math.max(rawSplittersCount * 2, 4), icon: "⚙️" }
+          ],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_raw_logistics", { ...st, activeFloor: 0 })
+        });
+
+        const smeltMachines = smelters.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+        const smeltShopping = [];
+        smelters.forEach(s => {
+          const bCost = BUILDINGS[s.building?.id]?.cost || { "iron_rod": 8, "wire": 5 };
+          const mCount = s.physicalMachines || Math.ceil(s.machinesCount);
+          Object.entries(bCost).forEach(([cItem, q]) => {
+            const ex = smeltShopping.find(sh => sh.name === (ITEM_NAMES[cItem]||cItem));
+            if (ex) ex.qty += q * mCount;
+            else smeltShopping.push({ name: ITEM_NAMES[cItem]||cItem, qty: q * mCount, icon: "🏭" });
+          });
+        });
+        if (densityProfile === "compact") smeltShopping.push({ name: "Éclat de charge", qty: smeltMachines * 2, icon: "💎" });
+
+        steps.push({
+          baseId: "step_floor0_smelters",
+          targetFloor: 0,
+          tag: "RDC : 3. POSE DES FONDERIES",
+          title: `3. [RDC] Pose des Fonderies FICSIT (${smeltMachines} machine(s))`,
+          desc: "Installez les fonderies/fours alignés sur la dalle du RDC face au Nord.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>🏭 <strong>Machines au RDC :</strong> ${smeltMachines}× Fonderie(s)/Four(s).</div>
+              <div>🧭 <strong>Orientation :</strong> Entrées face au Sud (vide technique), Sorties vers le Nord (mur sandwich).</div>
+            </div>
+          `,
+          shopping: smeltShopping,
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_smelters", { ...st, activeFloor: 0 })
+        });
+
+        steps.push({
+          baseId: "step_floor0_smelters_conveyors",
+          targetFloor: 0,
+          tag: "RDC : 4. CONVOYEURS & LIFTS FONDERIES",
+          title: "4. [RDC] Réseau de Convoyeurs, Répartiteurs en Sous-Sol & Lifts 1 (+18m)",
+          desc: "Posez les passe-dalles, les répartiteurs en sous-sol technique et raccordez les sorties aux ascenseurs verticaux (Lifts 1) montants en gaine vers l'Étage 1.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>▲ <strong>Ascenseurs verticaux (+18m) :</strong> Expédient les lingots fondus dans la gaine technique vers le sous-sol de l'Étage 1.</div>
+              <div>🔀 <strong>Manifolds Sous-Sol :</strong> Distribution des minerais aux fonderies sans aucun croisement en surface.</div>
+              <div>⚡ <strong>Réseau RDC :</strong> Câbler les fonderies vers le pylône principal au RDC.</div>
+            </div>
+          `,
+          shopping: [
+            { name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 60, icon: "📦" },
+            { name: "Ascenseur de convoyeur", qty: Math.max(smeltMachines, 2), icon: "▲" },
+            { name: "Câble", qty: 25, icon: "⚡" }
+          ],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_smelters", { ...st, activeFloor: 0 })
+        });
+
+        // --- ÉTAGE 1 (+18m) ---
+        steps.push({
+          baseId: "step_floor1_slab",
+          targetFloor: 1,
+          tag: "ÉTAGE 1 : 5. PLANCHER (+18M)",
+          title: "5. [Étage 1] Pose du plancher sandwich suspendu (+18m, 6m sous-sol)",
+          desc: "Montez de 18 mètres et posez le plancher sandwich de l'Étage 1 avec son vide technique suspendu.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>📐 <strong>Dimensions :</strong> Dalles suspendues à +18m avec 6m de sous-sol technique.</div>
+              <div>📍 <strong>Niveau :</strong> <span style="color: #38bdf8; font-weight: bold;">Niveau 1 (+18m)</span>.</div>
+            </div>
+          `,
+          shopping: [{ name: "Béton", qty: 96, icon: "🧱" }],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_foundations", { ...st, activeFloor: 1 })
+        });
+
+        const constMachines = constructors.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+        const constShopping = [];
+        constructors.forEach(s => {
+          const bCost = BUILDINGS[s.building?.id]?.cost || { "reinforced_iron_plate": 2, "cable": 8 };
+          const mCount = s.physicalMachines || Math.ceil(s.machinesCount);
+          Object.entries(bCost).forEach(([cItem, q]) => {
+            const ex = constShopping.find(sh => sh.name === (ITEM_NAMES[cItem]||cItem));
+            if (ex) ex.qty += q * mCount;
+            else constShopping.push({ name: ITEM_NAMES[cItem]||cItem, qty: q * mCount, icon: "🏭" });
+          });
+        });
+        if (densityProfile === "compact") constShopping.push({ name: "Éclat de charge", qty: constMachines * 2, icon: "💎" });
+
+        steps.push({
+          baseId: "step_floor1_constructors",
+          targetFloor: 1,
+          tag: "ÉTAGE 1 : 6. POSE CONSTRUCTEURS",
+          title: `6. [Étage 1] Pose des Constructeurs FICSIT (${constMachines} machine(s))`,
+          desc: "Installez les constructeurs sur la dalle du 1er étage pour usiner les pièces intermédiaires.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>🏭 <strong>Machines à l'Étage 1 :</strong> ${constMachines}× Constructeur(s) FICSIT.</div>
+              <div>⚙️ <strong>Usinage :</strong> Fabrication des composants (Plaques, Tiges, Vis, Fils...).</div>
+            </div>
+          `,
+          shopping: constShopping,
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_constructors", { ...st, activeFloor: 1 })
+        });
+
+        steps.push({
+          baseId: "step_floor1_constructors_conveyors",
+          targetFloor: 1,
+          tag: "ÉTAGE 1 : 7. CONVOYEURS & LIFTS CONSTRUCTEURS",
+          title: "7. [Étage 1] Réseau de Convoyeurs d'Usinage, Manifold Sous-Sol & Lifts 2 (+36m)",
+          desc: "Raccordez l'infeed manifold depuis le Lift 1, posez les passe-dalles et connectez les sorties aux ascenseurs verticaux (Lifts 2) vers l'Étage 2.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>▼ <strong>Infeed Manifold :</strong> Distribution sous-sol par tronçons de 60/min vers chaque constructeur.</div>
+              <div>▲ <strong>Ascenseurs verticaux (+36m) :</strong> Expédition des pièces usinées vers le plancher d'assemblage.</div>
+              <div>⚡ <strong>Raccordement électrique :</strong> Poteau intermédiaire relié au réseau du RDC.</div>
+            </div>
+          `,
+          shopping: [
+            { name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 70, icon: "📦" },
+            { name: "Ascenseur de convoyeur", qty: Math.max(constMachines, 2), icon: "▲" },
+            { name: "Câble", qty: 30, icon: "⚡" }
+          ],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_constructors", { ...st, activeFloor: 1 })
+        });
+
+        // --- ÉTAGE 2 (+36m) ---
+        steps.push({
+          baseId: "step_floor2_slab",
+          targetFloor: 2,
+          tag: "ÉTAGE 2 : 8. PLANCHER (+36M)",
+          title: "8. [Étage 2] Pose du plancher sandwich supérieur (+36m, 6m sous-sol)",
+          desc: "Montez à +36m et installez la dalle supérieure pour les assembleuses avec son sous-sol technique.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>📐 <strong>Dimensions :</strong> Dalles suspendues à +36m de hauteur avec 6m de vide technique.</div>
+              <div>📍 <strong>Niveau :</strong> <span style="color: #10b981; font-weight: bold;">Niveau 2 (+36m - Assemblage)</span>.</div>
+            </div>
+          `,
+          shopping: [{ name: "Béton", qty: 96, icon: "🧱" }],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_foundations", { ...st, activeFloor: 2 })
+        });
+
+        const assMachines = assemblers.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+        const assShopping = [];
+        assemblers.forEach(s => {
+          const bCost = BUILDINGS[s.building?.id]?.cost || { "modular_frame": 4, "rotor": 8 };
+          const mCount = s.physicalMachines || Math.ceil(s.machinesCount);
+          Object.entries(bCost).forEach(([cItem, q]) => {
+            const ex = assShopping.find(sh => sh.name === (ITEM_NAMES[cItem]||cItem));
+            if (ex) ex.qty += q * mCount;
+            else assShopping.push({ name: ITEM_NAMES[cItem]||cItem, qty: q * mCount, icon: "🏭" });
+          });
+        });
+        if (densityProfile === "compact") assShopping.push({ name: "Éclat de charge", qty: assMachines * 2, icon: "💎" });
+        if (densityProfile === "somersloop") assShopping.push({ name: "Somersloop (Artefact)", qty: 2, icon: "🔮" });
+
+        steps.push({
+          baseId: "step_floor2_assemblers",
+          targetFloor: 2,
+          tag: "ÉTAGE 2 : 9. POSE ASSEMBLEUSES",
+          title: `9. [Étage 2] Pose des Assembleuses FICSIT (${assMachines} machine(s))`,
+          desc: "Installez les assembleuses sur la dalle de l'Étage 2 pour finaliser la fabrication.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>🏭 <strong>Machines à l'Étage 2 :</strong> ${assMachines}× Assembleuse(s) / Façonneuse(s).</div>
+              <div>🎯 <strong>Production Finale :</strong> <span style="color: #10b981; font-weight: bold;">${targetName}</span>.</div>
+            </div>
+          `,
+          shopping: assShopping,
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_assemblers", { ...st, activeFloor: 2 })
+        });
+
+        steps.push({
+          baseId: "step_floor2_assemblers_conveyors",
+          targetFloor: 2,
+          tag: "ÉTAGE 2 : 10. CONVOYEURS & LIFTS ASSEMBLEUSES",
+          title: "10. [Étage 2] Réseau de Convoyeurs Double Bus Dédié & Lifts 3 (+54m)",
+          desc: "Posez le double bus parallèle en sous-sol (Tier 1 & Tier 2) et raccordez les sorties des assembleuses aux Lifts 3 montants vers le Hub de stockage.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>▼ <strong>Double Bus Parallèle :</strong> Tier 1 (Bus A) et Tier 2 (Bus B) sous plancher sans aucun croisement.</div>
+              <div>▲ <strong>Ascenseurs verticaux (+54m) :</strong> Acheminement du produit fini vers le sommet de la tour.</div>
+              <div>⚡ <strong>Raccordement électrique :</strong> Câblage de l'étage d'assemblage.</div>
+            </div>
+          `,
+          shopping: [
+            { name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 80, icon: "📦" },
+            { name: "Ascenseur de convoyeur", qty: 2, icon: "▲" },
+            { name: "Câble", qty: 30, icon: "⚡" }
+          ],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_power", { ...st, activeFloor: 2 })
+        });
+
+        // --- ÉTAGE 3 (+54m - HUB DE STOCKAGE INDUSTRIEL) ---
+        steps.push({
+          baseId: "step_floor3_slab",
+          targetFloor: 3,
+          tag: "ÉTAGE 3 : 11. PLANCHER EXPÉDITION (+54M)",
+          title: "11. [Étage 3] Pose du plancher supérieur (+54m, 6m sous-sol)",
+          desc: "Montez au dernier niveau (+54m) et installez la dalle supérieure pour les conteneurs industriels.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>📐 <strong>Dimensions :</strong> Dalles suspendues à +54m avec vide technique logistique.</div>
+              <div>📍 <strong>Niveau :</strong> <span style="color: #38bdf8; font-weight: bold;">Niveau 3 (+54m - Hub Logistique & Expédition)</span>.</div>
+            </div>
+          `,
+          shopping: [{ name: "Béton", qty: 96, icon: "🧱" }],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_foundations", { ...st, activeFloor: 2 })
+        });
+
+        steps.push({
+          baseId: "step_floor3_storage",
+          targetFloor: 3,
+          tag: "ÉTAGE 3 : 12. GROS CONTENEURS",
+          title: "12. [Étage 3] Pose des Gros Conteneurs Industriels de Stockage FICSIT",
+          desc: "Posez les Conteneurs de Stockage Industriels FICSIT (48 slots) pour stocker la production terminée.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>📦 <strong>Stockage :</strong> Gros Conteneur(s) de Stockage Industriel (Double étage, 48 slots FICSIT, jauge LED).</div>
+            </div>
+          `,
+          shopping: [
+            { name: "Plaque de fer renf.", qty: 30, icon: "📦" },
+            { name: "Tige de fer", qty: 40, icon: "🔩" }
+          ],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_output_storage", { ...st, activeFloor: 2 })
+        });
+
+        steps.push({
+          baseId: "step_floor3_storage_conveyors",
+          targetFloor: 3,
+          tag: "ÉTAGE 3 : 13. CONVOYEURS FINAUX & DÔME (+70M)",
+          title: "13. [Étage 3 - Sommet] Réseau de Convoyeurs Finaux de Stockage, Câblage & Dôme Vitré (+70m)",
+          desc: "Raccordez les convoyeurs sous-sol du 3e étage aux conteneurs et posez la toiture dôme vitrée culminant à +70m.",
+          details: `
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div>🏛️ <strong>Toiture Dôme Vitrée :</strong> Culmine à +70m avec pylône haute tension FICSIT.</div>
+              <div>⚡ <strong>Puissance Totale de la Tour :</strong> <span style="color: #f59e0b; font-weight: 800;">${results.totalPowerMW || 0} MW</span>.</div>
+              <div>✨ <strong>Validation :</strong> Les 4 niveaux tournent de manière synchronisée à 100% d'efficacité !</div>
+            </div>
+          `,
+          shopping: [
+            { name: "Poutre d'acier", qty: 20, icon: "🏗️" },
+            { name: "Verre de silice", qty: 40, icon: "🪟" },
+            { name: "Câble", qty: 30, icon: "⚡" }
+          ],
+          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_output_storage", { ...st, activeFloor: 2 })
+        });
+
+        return steps;
+      }
+
+      // =========================================================================
+      // CAS 2 : MODE PLAIN-PIED (1 ÉTAGE - DÉCOUPAGE PAR ÉTAPES BÂTIMENTS & CONVOYEURS)
+      // =========================================================================
+      // 1. Étape 1 : Fondations
       steps.push({
         baseId: "step_foundations",
         tag: "1. FONDATIONS & SOL",
-        title: `1. Pose de la dalle de fondations 6×6 pour : ${factoryTitle}`,
-        desc: `Installez une dalle de fondation plane de 48m × 48m (6×6 dalles de 8m×8m) alignée sur la grille mondiale (touche Ctrl enfoncée). Cette dalle accueillera l'ensemble du complexe de ${totalMachines} machines.`,
+        title: `1. Pose de la dalle de fondations pour : ${factoryTitle}`,
+        desc: `Installez la dalle de fondation plane avec vide technique de 6m alignée sur la grille mondiale. Cette dalle accueillera l'ensemble du complexe de ${totalMachines} machines.`,
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div>📐 <strong>Dimensions :</strong> 6 dalles (A-F) × 6 dalles (1-6) = 36 fondations (2304 m²).</div>
-            <div>🧭 <strong>Alignement :</strong> Placer la dalle face au Nord avec accès logistique dégagé au Sud.</div>
-            <div>🏭 <strong>Capacité :</strong> Prévue pour ${totalMachines} machines FICSIT compactées en flux tendu.</div>
-            <div>📍 <strong>Repères de pose :</strong> Colonnes A à F de gauche à droite, Lignes 1 (Nord) à 6 (Sud).</div>
+            <div>🧭 <strong>Alignement :</strong> Placer la dalle face au Nord avec accès logistique minerais au Sud.</div>
+            <div>🏭 <strong>Capacité :</strong> Prévue pour ${totalMachines} machines FICSIT en flux continu.</div>
           </div>
         `,
-        shopping: [
-          { name: "Béton", qty: 216, icon: "🧱" }
-        ],
+        shopping: [{ name: "Béton", qty: 216, icon: "🧱" }],
         svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_foundations", st)
       });
 
       // 2. Étape 2 : Arrivées Minerais & Manifolds d'entrée
-      const rawList = Object.entries(rawResources);
-      const rawShopping = [];
       let rawSplittersCount = 0;
       rawList.forEach(([item, rate]) => {
-        rawSplittersCount += Math.max(1, Math.ceil(rate / 60));
+        rawSplittersCount += Math.max(1, Math.ceil(rate / maxCap));
       });
-      rawShopping.push({ name: "Plaque de fer (Tapis)", qty: 60, icon: "📦" });
-      rawShopping.push({ name: "Plaque de fer renf. (Répartiteurs)", qty: Math.max(rawSplittersCount * 2, 4), icon: "⚙️" });
+      const rawShopping = [
+        { name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 80, icon: "📦" },
+        { name: "Plaque de fer renf. (Répartiteurs)", qty: Math.max(rawSplittersCount * 2, 4), icon: "⚙️" }
+      ];
 
       steps.push({
         baseId: "step_raw_logistics",
         tag: "2. ARRIVÉES BRUTES",
-        title: `2. Arrivées de matières premières (${rawList.length} ressource(s))`,
-        desc: `Amenez les flux de matières premières brutes au bord Sud de la dalle (Ligne 6) et posez la ligne de Répartiteurs (Splitters) en manifold.`,
+        title: `2. Arrivées de matières premières (${rawList.length} flux • Tapis Max Mk.${maxBeltMk})`,
+        desc: `Amenez les flux de matières premières brutes au bord Sud de la dalle et posez la ligne de répartiteurs en sous-sol.`,
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
             ${rawList.map(([item, rate]) => {
-              const belt = SatisfactoryFlowchart.getBeltTierInfo(rate);
-              return `<div>📥 <strong>${ITEM_NAMES[item]||item} :</strong> <span style="color: #f59e0b; font-weight: bold;">${Math.round(rate*10)/10}/min</span> ➔ Tapis recommandé : <span style="color: ${belt.color}; font-weight: bold;">${belt.mk}</span>.</div>`;
+              const rRate = Math.round(rate * 10) / 10;
+              const isOverCap = rate > maxCap;
+              const parallelBelts = Math.ceil(rate / maxCap);
+              const splitWarning = isOverCap 
+                ? `<span style="color: #ef4444; font-weight: bold;">⚠️ Dépasse Mk.${maxBeltMk} (${maxCap}/m) ➔ Diviser en ${parallelBelts} lignes parallèles Mk.${maxBeltMk}</span>`
+                : `<span style="color: #10b981; font-weight: bold;">✓ 1 Tapis Mk.${maxBeltMk} suffit</span>`;
+              return `<div>📥 <strong>${ITEM_NAMES[item]||item} :</strong> <span style="color: #f59e0b; font-weight: bold;">${rRate}/min</span> ➔ ${splitWarning}</div>`;
             }).join("") || "<div>📥 <em>Alimentation par composants intermédiaires</em></div>"}
-            <div>🔀 <strong>Logistique :</strong> Aligner 1 Répartiteur orange sur chaque axe de machine en Dalle B6, C6, D6, E6.</div>
           </div>
         `,
         shopping: rawShopping,
         svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_raw_logistics", st)
       });
 
-      // 3. Groupe Fonderies
-      const smelters = (results.productionSteps || []).filter(s => s.building && (s.building.id === "smelter" || s.building.id === "foundry"));
-      if (smelters.length > 0) {
-        const totalSmeltMachines = smelters.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
-        const smelterBld = smelters[0].building;
-        const bldCost = BUILDINGS[smelterBld.id]?.cost || { "iron_rod": 8, "wire": 5 };
-        const shopping = Object.entries(bldCost).map(([item, q]) => ({ name: ITEM_NAMES[item]||item, qty: q * totalSmeltMachines, icon: "🏭" }));
-
-        steps.push({
-          baseId: "step_smelters",
-          tag: "3. FONDERIES",
-          title: `3. Implantation des Fonderies (${totalSmeltMachines} machine(s))`,
-          desc: "Posez la rangée de fonderies sur les fondations de Rangée 5 (B5, C5, D5...). Reliez les entrées aux splitters Sud et les sorties aux collecteurs Nord.",
-          details: `
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              ${smelters.map(s => `<div>⚙️ <strong>${s.recipeName} :</strong> ${s.physicalMachines || Math.ceil(s.machinesCount)}× ${s.building.name} (@${s.overclock||100}%) ➔ Sortie : <span style="color: #4ade80; font-weight: bold;">+${Math.round(s.rateProduced*10)/10}/m ${ITEM_NAMES[s.itemId]||s.itemId}</span></div>`).join("")}
-              <div>⚡ <strong>Puissance requise :</strong> <span style="color: #f59e0b; font-weight: bold;">${Math.round(smelters.reduce((sum, s) => sum + s.powerMW, 0)*10)/10} MW</span>.</div>
-              <div>📍 <strong>Positionnement :</strong> Entrée face au Sud, sortie face au Nord vers la rangée 4.</div>
-            </div>
-          `,
-          shopping: shopping,
-          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_smelters", st)
-        });
-      }
-
-      // 4. Groupe Constructeurs
-      const constructors = (results.productionSteps || []).filter(s => s.building && s.building.id === "constructor");
-      if (constructors.length > 0) {
-        const totalConstMachines = constructors.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
-        const constBld = constructors[0].building;
-        const bldCost = BUILDINGS[constBld.id]?.cost || { "reinforced_iron_plate": 2, "cable": 8 };
-        const shopping = Object.entries(bldCost).map(([item, q]) => ({ name: ITEM_NAMES[item]||item, qty: q * totalConstMachines, icon: "🏭" }));
-
-        steps.push({
-          baseId: "step_constructors",
-          tag: "4. CONSTRUCTEURS",
-          title: `4. Implantation des Constructeurs (${totalConstMachines} machine(s))`,
-          desc: "Installez les constructeurs sur les dalles centrales de Rangée 3 (B3, C3, D3...). Connectez les lingots en entrée et regroupez les pièces usinées.",
-          details: `
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              ${constructors.map(s => `<div>⚙️ <strong>${s.recipeName} :</strong> ${s.physicalMachines || Math.ceil(s.machinesCount)}× Constructeur (@${s.overclock||100}%) ➔ <span style="color: #38bdf8; font-weight: bold;">+${Math.round(s.rateProduced*10)/10}/m ${ITEM_NAMES[s.itemId]||s.itemId}</span></div>`).join("")}
-              <div>⚡ <strong>Puissance requise :</strong> <span style="color: #f59e0b; font-weight: bold;">${Math.round(constructors.reduce((sum, s) => sum + s.powerMW, 0)*10)/10} MW</span>.</div>
-              <div>📍 <strong>Positionnement :</strong> Entrée face aux collecteurs de fonderie (Sud), sortie orientée vers les assembleuses (Nord).</div>
-            </div>
-          `,
-          shopping: shopping,
-          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_constructors", st)
-        });
-      }
-
-      // 5. Groupe Assembleuses / Façonneuses / Raffineries
-      const assemblers = (results.productionSteps || []).filter(s => s.building && (s.building.id === "assembler" || s.building.id === "manufacturer" || s.building.id === "refinery" || s.building.id === "blender" || s.building.id === "packager"));
-      if (assemblers.length > 0) {
-        const totalAssMachines = assemblers.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
-        const assBld = assemblers[0].building;
-        const bldCost = BUILDINGS[assBld.id]?.cost || { "modular_frame": 4, "rotor": 8 };
-        const shopping = Object.entries(bldCost).map(([item, q]) => ({ name: ITEM_NAMES[item]||item, qty: q * totalAssMachines, icon: "🏭" }));
-
-        steps.push({
-          baseId: "step_assemblers",
-          tag: "5. ASSEMBLAGE FINAL",
-          title: `5. Implantation des Assembleuses (${totalAssMachines} machine(s))`,
-          desc: "Positionnez les assembleuses finales sur les fondations Nord de Rangée 1-2 (B1-B2 & D1-D2). Raccordez les flux d'entrée via des convoyeurs dédiés.",
-          details: `
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              ${assemblers.map(s => `<div>⚙️ <strong>${s.recipeName} :</strong> ${s.physicalMachines || Math.ceil(s.machinesCount)}× ${s.building.name} (@${s.overclock||100}%) ➔ <span style="color: #a855f7; font-weight: bold;">+${Math.round(s.rateProduced*10)/10}/m ${ITEM_NAMES[s.itemId]||s.itemId}</span></div>`).join("")}
-              <div>⚡ <strong>Puissance requise :</strong> <span style="color: #f59e0b; font-weight: bold;">${Math.round(assemblers.reduce((sum, s) => sum + s.powerMW, 0)*10)/10} MW</span>.</div>
-              <div>📍 <strong>Empreinte :</strong> 2 dalles de large par assembleuse avec double arrivée de convoyeurs.</div>
-            </div>
-          `,
-          shopping: shopping,
-          svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_assemblers", st)
-        });
-      }
-
-      // 6. Étape Réseau Électrique
-      const polesCount = Math.ceil(totalMachines / 3) + 2;
+      // 3. Étape 3 : Pose Fonderies
+      const smeltMachines = smelters.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
       steps.push({
-        baseId: "step_power",
-        tag: "6. ÉLECTRICITÉ",
-        title: `6. Raccordement Électrique & Mise sous Tension (${results.totalPowerMW || 0} MW)`,
-        desc: "Posez les poteaux électriques aux intersections de fondations et câblez chaque machine vers le réseau général FICSIT.",
+        baseId: "step_smelters_buildings",
+        tag: "3. POSE FONDERIES",
+        title: `3. Pose des Fonderies FICSIT (${smeltMachines} machine(s))`,
+        desc: "Installez les fonderies sur la rangée Sud de la dalle de fondation.",
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div>⚡ <strong>Bilan Électrique Global :</strong> <span style="color: #f59e0b; font-weight: 800; font-size: 13px;">${results.totalPowerMW || 0} MW</span>.</div>
-            <div>🔌 <strong>Poteaux / Prises recommandés :</strong> ${polesCount} Poteaux électriques Mk.1 ou Prises murales.</div>
-            <div>💡 <strong>Implantation :</strong> 1 Pylône Ouest (Fondation A3) + 1 Pylône Est (Fondation F3) avec liaison guirlande centrale.</div>
+            <div>🏭 <strong>Machines :</strong> ${smeltMachines}× Fonderie(s)/Four(s).</div>
           </div>
         `,
-        shopping: [
-          { name: "Câble", qty: polesCount * 6 + totalMachines * 3, icon: "⚡" },
-          { name: "Tige de fer", qty: polesCount * 2, icon: "🔩" },
-          { name: "Béton", qty: polesCount * 1, icon: "🧱" }
-        ],
-        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_power", st)
+        shopping: [{ name: "Tige de fer", qty: smeltMachines * 8, icon: "🔩" }, { name: "Fil actif", qty: smeltMachines * 5, icon: "🧵" }],
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_smelters", st)
       });
 
-      // 7. Étape Sortie & Stockage Fini
+      // 4. Étape 4 : Convoyeurs Fonderies
       steps.push({
-        baseId: "step_output_storage",
-        tag: "7. EXPÉDITION",
-        title: `7. Sortie finale vers Stockage FICSIT (${targetName})`,
-        desc: "Raccordez la sortie de l'usine au Conteneur de Stockage Industriel (Dalle F1) ou vers votre réseau logistique principal.",
+        baseId: "step_smelters_conveyors",
+        tag: "4. CONVOYEURS FONDERIES",
+        title: "4. Réseau de Convoyeurs Fonderies & Passe-Dalles en Sous-Sol",
+        desc: "Posez les répartiteurs d'entrée, les passe-dalles et les convoyeurs de liaison vers les constructeurs.",
         details: `
           <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div>🎯 <strong>Production Finale Nette :</strong> <span style="color: #10b981; font-weight: 900; font-size: 14px;">${targetName}</span>.</div>
-            <div>📦 <strong>Stockage recommandé :</strong> 1 Conteneur de Stockage Industriel posé en Dalle F1-F2.</div>
-            <div>✨ <strong>Validation de chaîne :</strong> Les machines doivent tourner en continu à 100% d'efficacité sans engorgement.</div>
+            <div>▼ <strong>Distribution :</strong> Convoyeurs dédiés sous la dalle reliant directement les fonderies aux constructeurs.</div>
+          </div>
+        `,
+        shopping: [{ name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 80, icon: "📦" }],
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_smelters", st)
+      });
+
+      // 5. Étape 5 : Pose Constructeurs
+      const constMachines = constructors.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+      steps.push({
+        baseId: "step_constructors_buildings",
+        tag: "5. POSE CONSTRUCTEURS",
+        title: `5. Pose des Constructeurs FICSIT (${constMachines} machine(s))`,
+        desc: "Installez les constructeurs sur la rangée intermédiaire.",
+        details: `
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div>🏭 <strong>Machines :</strong> ${constMachines}× Constructeur(s) FICSIT.</div>
+          </div>
+        `,
+        shopping: [{ name: "Plaque de fer renf.", qty: constMachines * 2, icon: "⚙️" }, { name: "Câble", qty: constMachines * 8, icon: "⚡" }],
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_constructors", st)
+      });
+
+      // 6. Étape 6 : Convoyeurs Constructeurs
+      steps.push({
+        baseId: "step_constructors_conveyors",
+        tag: "6. CONVOYEURS CONSTRUCTEURS",
+        title: "6. Réseau de Convoyeurs d'Usinage & Manifolds en Sous-Sol",
+        desc: "Raccordez les manifolds d'usinage et les convoyeurs dédiés d'évacuation vers les assembleuses.",
+        details: `
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div>▼ <strong>Logistique :</strong> Tapis d'usinage et passe-dalles en sous-sol.</div>
+          </div>
+        `,
+        shopping: [{ name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 80, icon: "📦" }],
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_constructors", st)
+      });
+
+      // 7. Étape 7 : Pose Assembleuses
+      const assMachines = assemblers.reduce((sum, s) => sum + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+      steps.push({
+        baseId: "step_assemblers_buildings",
+        tag: "7. POSE ASSEMBLEUSES",
+        title: `7. Pose des Assembleuses FICSIT (${assMachines} machine(s))`,
+        desc: "Installez les assembleuses pour fabriquer le produit fini.",
+        details: `
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div>🏭 <strong>Machines :</strong> ${assMachines}× Assembleuse(s) FICSIT.</div>
+            <div>🎯 <strong>Produit Fini :</strong> <span style="color: #10b981; font-weight: bold;">${targetName}</span>.</div>
+          </div>
+        `,
+        shopping: [{ name: "Cadre modulaire", qty: assMachines * 4, icon: "🏗️" }, { name: "Rotor", qty: assMachines * 8, icon: "🔄" }],
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_assemblers", st)
+      });
+
+      // 8. Étape 8 : Convoyeurs Assembleuses
+      steps.push({
+        baseId: "step_assemblers_conveyors",
+        tag: "8. CONVOYEURS ASSEMBLEUSES",
+        title: "8. Réseau de Convoyeurs d'Assemblage & Bus Dédiés Sous-Sol",
+        desc: "Raccordez le double bus mono-composant d'alimentation et le convoyeur final d'évacuation.",
+        details: `
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div>▼ <strong>Double Bus :</strong> Alimentation distincte pour chaque port d'entrée.</div>
+          </div>
+        `,
+        shopping: [{ name: `Plaque de fer (Tapis Mk.${maxBeltMk})`, qty: 60, icon: "📦" }],
+        svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_assemblers", st)
+      });
+
+      // 9. Étape 9 : Stockage & Électricité
+      steps.push({
+        baseId: "step_output_storage",
+        tag: "9. STOCKAGE & ÉLECTRICITÉ",
+        title: `9. Pose des Conteneurs de Stockage FICSIT & Câblage Électrique (${results.totalPowerMW || 0} MW)`,
+        desc: "Posez le conteneur de stockage industriel au Nord, câblez les machines et mettez l'usine sous tension.",
+        details: `
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div>📦 <strong>Stockage :</strong> 1 Conteneur Industriel FICSIT.</div>
+            <div>⚡ <strong>Puissance Totale :</strong> <span style="color: #f59e0b; font-weight: 800;">${results.totalPowerMW || 0} MW</span>.</div>
           </div>
         `,
         shopping: [
           { name: "Plaque de fer renf.", qty: 10, icon: "📦" },
-          { name: "Tige de fer", qty: 20, icon: "🔩" }
+          { name: "Tige de fer", qty: 20, icon: "🔩" },
+          { name: "Câble", qty: 40, icon: "⚡" }
         ],
         svg: (st) => this.generateTopDownFactoryBlueprintSVG(results, "step_output_storage", st)
       });
@@ -3829,6 +4950,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const prefix = isMs ? "guide-ms-" : "guide-";
       const btnPrefix = isMs ? "btn-guide-ms-" : "btn-guide-";
 
+      if (state.floorFilter === undefined || state.floorFilter === null) {
+        if (typeof step.targetFloor === "number") {
+          state.activeFloor = step.targetFloor;
+        }
+      }
+
       const badgeEl = document.getElementById(`${prefix}step-counter-badge`);
       const tagEl = document.getElementById(`${prefix}step-tag`);
       const titleEl = document.getElementById(`${prefix}step-title`);
@@ -3840,6 +4967,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const progressPct = document.getElementById(`${prefix}progress-pct`);
       const validateBtn = document.getElementById(`${btnPrefix}validate-step`);
       const toggleFullBtn = document.getElementById(`${btnPrefix}toggle-full-view`);
+
+      // Sélecteur de plancher (affiché si multi_floor)
+      const floorSelectorCont = document.getElementById(`${prefix}floor-selector-container`);
+      if (floorSelectorCont) {
+        floorSelectorCont.style.display = state.architectureMode === "multi_floor" ? "flex" : "none";
+        floorSelectorCont.querySelectorAll(`.${btnPrefix}floor-tab, .btn-guide-floor-tab`).forEach(btn => {
+          const fl = parseInt(btn.getAttribute("data-floor"), 10);
+          if (fl === state.activeFloor) {
+            btn.style.borderColor = "#a855f7";
+            btn.style.color = "#a855f7";
+            btn.style.background = "rgba(168, 85, 247, 0.2)";
+          } else {
+            btn.style.borderColor = "rgba(255, 255, 255, 0.2)";
+            btn.style.color = "#94a3b8";
+            btn.style.background = "transparent";
+          }
+        });
+      }
 
       if (badgeEl) badgeEl.innerText = `Étape ${state.currentStepIndex + 1} / ${state.steps.length}`;
       if (tagEl) tagEl.innerText = step.tag;
@@ -3856,16 +5001,74 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (svgViewport) {
+        const floorToRender = (state.floorFilter !== undefined && state.floorFilter !== null && state.floorFilter !== "all") ? state.floorFilter : state.activeFloor;
+        const renderState = { ...state, activeFloor: floorToRender };
         if (state.currentViewMode === "full" && state.lastResults) {
-          svgViewport.innerHTML = this.generateTopDownFactoryBlueprintSVG(state.lastResults, null, state);
+          svgViewport.innerHTML = this.generateTopDownFactoryBlueprintSVG(state.lastResults, null, renderState);
         } else {
-          svgViewport.innerHTML = typeof step.svg === "function" ? step.svg(state) : step.svg;
+          svgViewport.innerHTML = typeof step.svg === "function" ? step.svg(renderState) : step.svg;
         }
+        // Attacher l'interactivité sur les machines et convoyeurs
+        this.attachGuideInteractivity(svgViewport, state.lastResults, isMs);
       }
 
       if (toggleFullBtn) {
         toggleFullBtn.innerText = state.currentViewMode === "full" ? "🎯 Vue Étape Ciblée" : "🗺️ Vue Usine Complète 2D";
         toggleFullBtn.style.background = state.currentViewMode === "full" ? "rgba(56, 189, 248, 0.2)" : "transparent";
+      }
+
+      // Synchronisation du Visualiseur 3D Three.js & Contrôles d'Étages
+      const floorControls3D = document.getElementById(isMs ? "guide-ms-3d-floor-controls" : "guide-3d-floor-controls");
+      if (floorControls3D) {
+        floorControls3D.style.display = state.architectureMode === "multi_floor" ? "flex" : "none";
+        const currentActiveFilter = (state.floorFilter !== undefined && state.floorFilter !== null) ? state.floorFilter.toString() : state.activeFloor.toString();
+        floorControls3D.querySelectorAll(".btn-3d-floor").forEach(b => {
+          const fl = b.getAttribute("data-floor");
+          if (fl === currentActiveFilter) {
+            b.classList.add("active");
+          } else {
+            b.classList.remove("active");
+          }
+        });
+      }
+
+      const viewer = isMs ? this.ms3DViewer : this.single3DViewer;
+      if (viewer && viewer.isInitialized) {
+        viewer.goToStep(state.currentStepIndex, state.viewMode3D || "step");
+        const floorToFilter = (state.floorFilter !== undefined && state.floorFilter !== null)
+          ? state.floorFilter
+          : (state.architectureMode === "multi_floor" && typeof step.targetFloor === "number" ? step.targetFloor : "all");
+        viewer.setFloorFilter(floorToFilter);
+      }
+
+      // Synchronisation du HUD et des Flèches de Navigation d'Étape 3D
+      const btn3DPrev = document.getElementById(isMs ? "btn-3d-ms-prev-step" : "btn-3d-prev-step");
+      const btn3DNext = document.getElementById(isMs ? "btn-3d-ms-next-step" : "btn-3d-next-step");
+      const btn3DHudPrev = document.getElementById(isMs ? "btn-3d-ms-hud-prev" : "btn-3d-hud-prev");
+      const btn3DHudNext = document.getElementById(isMs ? "btn-3d-ms-hud-next" : "btn-3d-hud-next");
+      const btn3DHudVal = document.getElementById(isMs ? "btn-3d-ms-hud-validate" : "btn-3d-hud-validate");
+      const hud3DNum = document.getElementById(isMs ? "guide-ms-3d-step-hud-num" : "guide-3d-step-hud-num");
+      const hud3DTitle = document.getElementById(isMs ? "guide-ms-3d-step-hud-title" : "guide-3d-step-hud-title");
+
+      if (btn3DPrev) btn3DPrev.disabled = (state.currentStepIndex <= 0);
+      if (btn3DNext) btn3DNext.disabled = (state.currentStepIndex >= state.steps.length - 1);
+      if (btn3DHudPrev) btn3DHudPrev.disabled = (state.currentStepIndex <= 0);
+      if (btn3DHudNext) btn3DHudNext.disabled = (state.currentStepIndex >= state.steps.length - 1);
+      if (hud3DNum) hud3DNum.innerText = `Étape ${state.currentStepIndex + 1} / ${state.steps.length}`;
+      if (hud3DTitle) hud3DTitle.innerText = step.title;
+
+      // Synchronisation du Plan 2D Incrusté sur le Visuel 3D
+      const inset2DSvg = document.getElementById(isMs ? "guide-ms-3d-2d-svg-content" : "guide-3d-2d-svg-content");
+      const inset2DFloorBadge = document.getElementById(isMs ? "guide-ms-3d-2d-floor-badge" : "guide-3d-2d-floor-badge");
+      if (inset2DSvg) {
+        const floorToRender = (state.floorFilter !== undefined && state.floorFilter !== null && state.floorFilter !== "all") ? state.floorFilter : state.activeFloor;
+        const renderState = { ...state, activeFloor: floorToRender };
+        const svgContent = typeof step.svg === "function" ? step.svg(renderState) : step.svg;
+        inset2DSvg.innerHTML = svgContent;
+        if (inset2DFloorBadge) {
+          const fl = typeof floorToRender === "number" ? floorToRender : 0;
+          inset2DFloorBadge.innerText = fl === 0 ? "RDC" : `Ét. ${fl}`;
+        }
       }
 
       // Progression par calcul
@@ -3881,6 +5084,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (validateBtn) {
         validateBtn.innerText = isDone ? "✅ Étape Validée (Fait)" : "✓ Valider cette étape";
         validateBtn.style.background = isDone ? "#059669" : "#10b981";
+      }
+      if (btn3DHudVal) {
+        btn3DHudVal.innerText = isDone ? "✅ Validé" : "✓ Fait";
+        btn3DHudVal.style.background = isDone ? "#059669" : "#10b981";
       }
     },
 
@@ -3902,8 +5109,13 @@ document.addEventListener("DOMContentLoaded", () => {
       state.steps = this.generateSteps(results, isMs);
       state.currentStepIndex = 0;
       state.currentViewMode = "step";
+      state.selectedMachine = null;
+      state.viewType = state.viewType || "2d";
+      state.viewMode3D = state.viewMode3D || "step";
+
       this.renderCurrentStep(isMs);
 
+      const prefix = isMs ? "guide-ms-" : "guide-";
       const btnPrefix = isMs ? "btn-guide-ms-" : "btn-guide-";
       const prevBtn = document.getElementById(`${btnPrefix}prev-step`);
       const nextBtn = document.getElementById(`${btnPrefix}next-step`);
@@ -3911,22 +5123,377 @@ document.addEventListener("DOMContentLoaded", () => {
       const toggleFullBtn = document.getElementById(`${btnPrefix}toggle-full-view`);
       const fullscreenBtn = document.getElementById(`${btnPrefix}fullscreen`);
 
-      if (prevBtn) {
-        prevBtn.onclick = () => {
-          if (state.currentStepIndex > 0) {
-            state.currentStepIndex--;
-            this.renderCurrentStep(isMs);
+      // Téléchargement direct du Blueprint (.sbp / .sbpcfg) depuis la notice de montage
+      const downloadSbpBtn = document.getElementById(`${btnPrefix}download-sbp`);
+      if (downloadSbpBtn) {
+        downloadSbpBtn.onclick = async () => {
+          try {
+            downloadSbpBtn.disabled = true;
+            downloadSbpBtn.innerHTML = "⏳ Génération...";
+
+            const targetItem = results.targets && results.targets[0] ? results.targets[0] : { item: 'production', rate: 0 };
+            const targetName = ITEM_NAMES[targetItem.item] || targetItem.item;
+            const totalMachines = results.productionSteps.reduce((acc, s) => acc + (s.physicalMachines || Math.ceil(s.machinesCount)), 0);
+
+            const bldCount = {};
+            results.productionSteps.forEach(s => {
+              const bId = s.building?.id || 'constructor';
+              const count = s.physicalMachines || Math.ceil(s.machinesCount);
+              bldCount[bId] = (bldCount[bId] || 0) + count;
+            });
+
+            const materialsNeeded = {};
+            results.productionSteps.forEach(s => {
+              const bld = (typeof BUILDINGS !== 'undefined' && BUILDINGS[s.building?.id]) ? BUILDINGS[s.building?.id] : null;
+              const count = s.physicalMachines || Math.ceil(s.machinesCount);
+              if (bld && bld.cost) {
+                Object.entries(bld.cost).forEach(([mat, qty]) => {
+                  materialsNeeded[mat] = (materialsNeeded[mat] || 0) + qty * count;
+                });
+              }
+            });
+
+            const bpPayload = {
+              id: isMs ? `bp_ms_${(results.milestoneName || 'complexe').replace(/[^a-zA-Z0-9_]/g, '_')}` : `bp_calc_${(targetItem.item || 'usine').replace(/[^a-zA-Z0-9_]/g, '_')}`,
+              title: isMs ? `🏭 Complexe ${results.milestoneName || 'Jalon'}` : `🏭 Usine ${targetName} (${targetItem.rate}/min)`,
+              name: isMs ? `Complexe ${results.milestoneName || 'Jalon'}` : `Usine ${targetName}`,
+              category: "production",
+              designerSize: totalMachines <= 12 ? "4x4 Fondations (Designer Mk.1)" : (totalMachines <= 20 ? "5x5 Fondations (Designer Mk.2)" : "6x6 Fondations (Designer Mk.3)"),
+              description: isMs 
+                ? `Complexe complet généré pour ${results.milestoneName || 'Jalon'}.\n• Machines: ${totalMachines} unités\n• Puissance: ${Math.round(results.totalPowerMW || 0)} MW.`
+                : `Usine complète générée pour ${targetName} à ${targetItem.rate}/min.\n• Machines: ${totalMachines} unités\n• Puissance: ${Math.round(results.totalPowerMW || 0)} MW.`,
+              inputs: Object.entries(results.rawResources || {}).map(([r, rate]) => `${Math.round(rate * 10) / 10}/m ${ITEM_NAMES[r] || r}`),
+              outputs: isMs ? (results.targets || []).map(t => `+${t.rate}/min ${ITEM_NAMES[t.item] || t.item}`) : [`+${targetItem.rate}/min ${targetName}`],
+              powerMW: Math.round(results.totalPowerMW || 0),
+              buildingsCount: bldCount,
+              materialsNeeded: materialsNeeded
+            };
+
+            showToast(`⏳ Génération du Blueprint (.sbp) pour ${bpPayload.name}...`);
+            const generator = (typeof BlueprintFileGenerator !== 'undefined') ? BlueprintFileGenerator : window.BlueprintFileGenerator;
+            const activePlanData = {
+              ...results,
+              architectureMode: state.architectureMode,
+              densityProfile: state.densityProfile,
+              footprintMode: state.footprintMode || "auto",
+              maxBeltMk: state.maxBeltMk,
+              floorFilter: state.floorFilter,
+              activeFloor: state.activeFloor
+            };
+            const files = await generator.generateFiles(bpPayload, activePlanData);
+            generator.downloadBlob(files.sbpBlob, files.sbpFilename);
+            setTimeout(() => {
+              generator.downloadBlob(files.sbpcfgBlob, files.sbpcfgFilename);
+            }, 100);
+            showToast(`✅ Blueprint ${bpPayload.name} téléchargé (.sbp & .sbpcfg) !`);
+          } catch(err) {
+            console.error(err);
+            showToast(`Erreur export blueprint : ${err.message}`);
+          } finally {
+            downloadSbpBtn.disabled = false;
+            downloadSbpBtn.innerHTML = "📥 Télécharger le Blueprint (.sbp) (En cours de dev) (En cours de dev)";
           }
         };
       }
 
-      if (nextBtn) {
-        nextBtn.onclick = () => {
-          if (state.currentStepIndex < state.steps.length - 1) {
-            state.currentStepIndex++;
-            this.renderCurrentStep(isMs);
+      // =====================================================================
+      // 0. BASCULE 2D CAD TOP-DOWN / 3D INTERACTIVE THREE.JS
+      // =====================================================================
+      const btnView2D = document.getElementById(isMs ? "btn-guide-ms-view-2d" : "btn-guide-view-2d");
+      const btnView3D = document.getElementById(isMs ? "btn-guide-ms-view-3d" : "btn-guide-view-3d");
+      const container2D = document.getElementById(isMs ? "guide-ms-2d-container" : "guide-2d-container");
+      const container3D = document.getElementById(isMs ? "guide-ms-3d-container" : "guide-3d-container");
+      const viewport3DId = isMs ? "guide-ms-step-3d-viewport" : "guide-step-3d-viewport";
+
+      const setup3DViewer = () => {
+        let viewerInstance = isMs ? this.ms3DViewer : this.single3DViewer;
+        if (!viewerInstance) {
+          if (typeof Factory3DViewer !== "undefined") {
+            viewerInstance = new Factory3DViewer(viewport3DId);
+            if (isMs) this.ms3DViewer = viewerInstance;
+            else this.single3DViewer = viewerInstance;
+          }
+        }
+        if (viewerInstance) {
+          viewerInstance.buildFactoryFromPlan({
+            ...results,
+            architectureMode: state.architectureMode,
+            densityProfile: state.densityProfile,
+            footprintMode: state.footprintMode || "auto",
+            maxBeltMk: state.maxBeltMk
+          }, state.steps);
+          viewerInstance.goToStep(state.currentStepIndex, state.viewMode3D || "step");
+          const floorToFilter = (state.floorFilter !== undefined && state.floorFilter !== null)
+            ? state.floorFilter
+            : (state.architectureMode === "multi_floor" && state.steps[state.currentStepIndex]?.targetFloor !== undefined ? state.steps[state.currentStepIndex].targetFloor : "all");
+          viewerInstance.setFloorFilter(floorToFilter);
+          setTimeout(() => viewerInstance.resize(), 60);
+        }
+      };
+
+      if (btnView2D && btnView3D && container2D && container3D) {
+        btnView2D.onclick = () => {
+          state.viewType = "2d";
+          btnView2D.classList.add("active");
+          btnView3D.classList.remove("active");
+          container2D.style.display = "block";
+          container3D.style.display = "none";
+        };
+
+        btnView3D.onclick = () => {
+          state.viewType = "3d";
+          btnView3D.classList.add("active");
+          btnView2D.classList.remove("active");
+          container2D.style.display = "none";
+          container3D.style.display = "block";
+          setup3DViewer();
+          showToast("🧊 Notice 3D Active : Clic gauche pour orbiter, clic droit pour translater, molette pour zoomer.");
+        };
+      }
+
+      // Si le mode 3D était déjà actif, reconstruire la scène
+      if (state.viewType === "3d" && container3D && container3D.style.display !== "none") {
+        setup3DViewer();
+      }
+
+      // Contrôles Caméra 3D (ISO, Top, Face, Côté)
+      const camIsoBtn = document.getElementById(isMs ? "btn-3d-ms-cam-iso" : "btn-3d-cam-iso");
+      const camTopBtn = document.getElementById(isMs ? "btn-3d-ms-cam-top" : "btn-3d-cam-top");
+      const camFrontBtn = document.getElementById(isMs ? "btn-3d-ms-cam-front" : "btn-3d-cam-front");
+      const camSideBtn = document.getElementById(isMs ? "btn-3d-ms-cam-side" : "btn-3d-cam-side");
+
+      const updateCamActiveBtn = (targetBtn) => {
+        [camIsoBtn, camTopBtn, camFrontBtn, camSideBtn].forEach(b => {
+          if (b) b.classList.remove("active");
+        });
+        if (targetBtn) targetBtn.classList.add("active");
+      };
+
+      if (camIsoBtn) camIsoBtn.onclick = () => { const v = isMs ? this.ms3DViewer : this.single3DViewer; if (v) v.setCameraPreset("iso"); updateCamActiveBtn(camIsoBtn); };
+      if (camTopBtn) camTopBtn.onclick = () => { const v = isMs ? this.ms3DViewer : this.single3DViewer; if (v) v.setCameraPreset("top"); updateCamActiveBtn(camTopBtn); };
+      if (camFrontBtn) camFrontBtn.onclick = () => { const v = isMs ? this.ms3DViewer : this.single3DViewer; if (v) v.setCameraPreset("front"); updateCamActiveBtn(camFrontBtn); };
+      if (camSideBtn) camSideBtn.onclick = () => { const v = isMs ? this.ms3DViewer : this.single3DViewer; if (v) v.setCameraPreset("side"); updateCamActiveBtn(camSideBtn); };
+
+      // Toggle Sous-Étages Logistiques (Vides Techniques)
+      const subfloorToggleBtn = document.getElementById(isMs ? "btn-3d-ms-toggle-subfloor" : "btn-3d-toggle-subfloor");
+      if (subfloorToggleBtn) {
+        subfloorToggleBtn.onclick = () => {
+          const v = isMs ? this.ms3DViewer : this.single3DViewer;
+          if (v) {
+            const isTransparent = v.toggleSubfloorView();
+            subfloorToggleBtn.style.color = isTransparent ? "var(--ficsit-amber)" : "var(--text-secondary)";
+            subfloorToggleBtn.style.borderColor = isTransparent ? "var(--ficsit-amber)" : "";
+            showToast(`🔧 Vides Techniques : ${isTransparent ? "Mode Écorché (Planchers Transparents)" : "Mode Hall de Production (Normal)"}`);
           }
         };
+      }
+
+      // Toggle Badges / Étiquettes 3D
+      const labelsToggleBtn = document.getElementById(isMs ? "btn-3d-ms-toggle-labels" : "btn-3d-toggle-labels");
+      if (labelsToggleBtn) {
+        labelsToggleBtn.onclick = () => {
+          const v = isMs ? this.ms3DViewer : this.single3DViewer;
+          if (v) {
+            const isVisible = v.toggleLabels();
+            labelsToggleBtn.style.color = isVisible ? "var(--ficsit-cyan)" : "var(--text-secondary)";
+            labelsToggleBtn.style.borderColor = isVisible ? "var(--ficsit-cyan)" : "";
+            showToast(`🏷️ Badges 3D : ${isVisible ? "Affichés" : "Masqués"}`);
+          }
+        };
+      }
+
+      // Toggle Mode Fantôme 3D
+      const ghostToggleBtn = document.getElementById(isMs ? "btn-3d-ms-toggle-ghost" : "btn-3d-toggle-ghost");
+      if (ghostToggleBtn) {
+        ghostToggleBtn.onclick = () => {
+          state.viewMode3D = state.viewMode3D === "ghost" ? "step" : "ghost";
+          ghostToggleBtn.style.color = state.viewMode3D === "ghost" ? "var(--ficsit-cyan)" : "";
+          ghostToggleBtn.style.borderColor = state.viewMode3D === "ghost" ? "var(--ficsit-cyan)" : "";
+          const v = isMs ? this.ms3DViewer : this.single3DViewer;
+          if (v) v.goToStep(state.currentStepIndex, state.viewMode3D);
+          showToast(`👻 Mode 3D : ${state.viewMode3D === "ghost" ? "Hologramme futur actif" : "Étapes séquentielles"}`);
+        };
+      }
+
+      // Toggle Plein Écran 3D
+      const fullscreen3DBtn = document.getElementById(isMs ? "btn-3d-ms-toggle-fullscreen" : "btn-3d-toggle-fullscreen");
+      const viewportWrapper = document.getElementById(isMs ? "guide-ms-3d-viewport-wrapper" : "guide-3d-viewport-wrapper");
+      if (fullscreen3DBtn && viewportWrapper) {
+        fullscreen3DBtn.onclick = () => {
+          viewportWrapper.classList.toggle("is-fullscreen");
+          const isFull = viewportWrapper.classList.contains("is-fullscreen");
+          fullscreen3DBtn.textContent = isFull ? "✕ Quitter Plein Écran" : "⛶ Plein Écran";
+          const v = isMs ? this.ms3DViewer : this.single3DViewer;
+          if (v) setTimeout(() => v.resize(), 100);
+        };
+      }
+
+      // 1. Liaison Tapis Max
+      const beltSelect = document.getElementById(`${prefix}belt-tier`);
+      if (beltSelect) {
+        beltSelect.value = state.maxBeltMk.toString();
+        beltSelect.onchange = () => {
+          state.maxBeltMk = parseInt(beltSelect.value, 10);
+          state.steps = this.generateSteps(state.lastResults, isMs);
+          this.renderCurrentStep(isMs);
+          if (state.viewType === "3d") setup3DViewer();
+          showToast(`⚙️ Logistique ajustée pour Tapis Max Mk.${state.maxBeltMk}`);
+        };
+      }
+
+      // 2. Liaison Profil de Densité
+      const densitySelect = document.getElementById(`${prefix}density-profile`);
+      if (densitySelect) {
+        densitySelect.value = state.densityProfile;
+        densitySelect.onchange = () => {
+          state.densityProfile = densitySelect.value;
+          state.steps = this.generateSteps(state.lastResults, isMs);
+          this.renderCurrentStep(isMs);
+          if (state.viewType === "3d") setup3DViewer();
+          showToast(`🎛️ Profil appliqué : ${state.densityProfile === "compact" ? "Micro-Usine (250% Overclock)" : (state.densityProfile === "somersloop" ? "Somersloop ×2 (Doublement)" : "Standard 100%")}`);
+        };
+      }
+
+      // 3. Liaison Architecture Mode & Multi-Étages
+      const archSelect = document.getElementById(`${prefix}architecture-mode`);
+      if (archSelect) {
+        archSelect.value = state.architectureMode;
+        archSelect.onchange = () => {
+          state.architectureMode = archSelect.value;
+          state.activeFloor = 0;
+          state.steps = this.generateSteps(state.lastResults, isMs);
+          this.renderCurrentStep(isMs);
+          if (state.viewType === "3d") setup3DViewer();
+          showToast(`🏢 Mode Bâtiment : ${state.architectureMode === "multi_floor" ? "Vertical (3 Étages + Ascenseurs)" : "Plain-Pied (1 Étage)"}`);
+        };
+      }
+
+      // 3. bis Liaison Gabarit de Dalle (Illimité vs Compact 6x6)
+      const footprintSelect = document.getElementById(`${prefix}footprint-mode`);
+      if (footprintSelect) {
+        footprintSelect.value = state.footprintMode || "auto";
+        footprintSelect.onchange = () => {
+          state.footprintMode = footprintSelect.value;
+          state.steps = this.generateSteps(state.lastResults, isMs);
+          this.renderCurrentStep(isMs);
+          if (state.viewType === "3d") setup3DViewer();
+          showToast(`📐 Gabarit de Dalle : ${state.footprintMode === "compact" ? "Standard Blueprint (48m × 48m)" : "Méga-Usine Illimitée (Auto-Fit 100% Machines)"}`);
+        };
+      }
+
+      // 4. Liaison Onglets d'Étages (2D & 3D)
+      const floorCont = document.getElementById(`${prefix}floor-selector-container`);
+      const floorControls3D = document.getElementById(isMs ? "guide-ms-3d-floor-controls" : "guide-3d-floor-controls");
+
+      const selectFloor = (flStr) => {
+        const v = isMs ? this.ms3DViewer : this.single3DViewer;
+        if (flStr === "all") {
+          state.activeFloor = 0;
+          state.floorFilter = "all";
+          if (v) v.setFloorFilter("all");
+          showToast("🏢 Vue 3D : Tour Complète");
+        } else {
+          const targetFloorNum = parseInt(flStr, 10);
+          state.activeFloor = targetFloorNum;
+          state.floorFilter = targetFloorNum;
+          const targetStepIdx = state.steps.findIndex(s => s.targetFloor === targetFloorNum);
+          if (targetStepIdx !== -1) {
+            state.currentStepIndex = targetStepIdx;
+          }
+          if (v) v.setFloorFilter(targetFloorNum);
+          showToast(`🏢 Focus Étage ${targetFloorNum === 0 ? 'RDC' : targetFloorNum}`);
+        }
+        this.renderCurrentStep(isMs);
+      };
+
+      if (floorControls3D) {
+        floorControls3D.style.display = state.architectureMode === "multi_floor" ? "flex" : "none";
+        floorControls3D.querySelectorAll(".btn-3d-floor").forEach(b => {
+          b.onclick = () => {
+            selectFloor(b.getAttribute("data-floor"));
+          };
+        });
+      }
+
+      if (floorCont) {
+        floorCont.querySelectorAll("button").forEach(btn => {
+          btn.onclick = () => {
+            selectFloor(btn.getAttribute("data-floor"));
+          };
+        });
+      }
+
+      // 5. Gestion des Flèches et Navigation d'Étapes 3D
+      const btn3DPrev = document.getElementById(isMs ? "btn-3d-ms-prev-step" : "btn-3d-prev-step");
+      const btn3DNext = document.getElementById(isMs ? "btn-3d-ms-next-step" : "btn-3d-next-step");
+      const btn3DHudPrev = document.getElementById(isMs ? "btn-3d-ms-hud-prev" : "btn-3d-hud-prev");
+      const btn3DHudNext = document.getElementById(isMs ? "btn-3d-ms-hud-next" : "btn-3d-hud-next");
+      const btn3DHudVal = document.getElementById(isMs ? "btn-3d-ms-hud-validate" : "btn-3d-hud-validate");
+
+      const handleStepPrev = () => {
+        if (state.currentStepIndex > 0) {
+          state.currentStepIndex--;
+          state.floorFilter = null;
+          this.renderCurrentStep(isMs);
+        }
+      };
+
+      const handleStepNext = () => {
+        if (state.currentStepIndex < state.steps.length - 1) {
+          state.currentStepIndex++;
+          state.floorFilter = null;
+          this.renderCurrentStep(isMs);
+        }
+      };
+
+      if (btn3DPrev) btn3DPrev.onclick = handleStepPrev;
+      if (btn3DNext) btn3DNext.onclick = handleStepNext;
+      if (btn3DHudPrev) btn3DHudPrev.onclick = handleStepPrev;
+      if (btn3DHudNext) btn3DHudNext.onclick = handleStepNext;
+      if (btn3DHudVal && validateBtn) {
+        btn3DHudVal.onclick = () => validateBtn.click();
+      }
+
+      // 6. Gestion du Plan 2D Incrusté sur le Visuel 3D
+      const toggle2DPlanBtn = document.getElementById(isMs ? "btn-3d-ms-toggle-2d-plan" : "btn-3d-toggle-2d-plan");
+      const inset2DContainer = document.getElementById(isMs ? "guide-ms-3d-2d-inset" : "guide-3d-2d-inset");
+      const inset2DCloseBtn = document.getElementById(isMs ? "btn-3d-ms-2d-inset-close" : "btn-3d-2d-inset-close");
+      const inset2DToggleSizeBtn = document.getElementById(isMs ? "btn-3d-ms-2d-inset-toggle-size" : "btn-3d-2d-inset-toggle-size");
+
+      if (toggle2DPlanBtn && inset2DContainer) {
+        toggle2DPlanBtn.onclick = () => {
+          inset2DContainer.classList.toggle("is-hidden");
+          const isHidden = inset2DContainer.classList.contains("is-hidden");
+          toggle2DPlanBtn.classList.toggle("active", !isHidden);
+          toggle2DPlanBtn.style.color = !isHidden ? "var(--ficsit-cyan)" : "var(--text-secondary)";
+          toggle2DPlanBtn.style.borderColor = !isHidden ? "var(--ficsit-cyan)" : "";
+          showToast(`📐 Plan 2D Incrusté : ${!isHidden ? "Affiché" : "Masqué"}`);
+        };
+      }
+
+      if (inset2DCloseBtn && inset2DContainer && toggle2DPlanBtn) {
+        inset2DCloseBtn.onclick = () => {
+          inset2DContainer.classList.add("is-hidden");
+          toggle2DPlanBtn.classList.remove("active");
+          toggle2DPlanBtn.style.color = "var(--text-secondary)";
+          toggle2DPlanBtn.style.borderColor = "";
+        };
+      }
+
+      if (inset2DToggleSizeBtn && inset2DContainer) {
+        inset2DToggleSizeBtn.onclick = () => {
+          inset2DContainer.classList.toggle("is-expanded");
+          const isExp = inset2DContainer.classList.contains("is-expanded");
+          inset2DToggleSizeBtn.textContent = isExp ? "🗕" : "⛶";
+        };
+      }
+
+      if (prevBtn) {
+        prevBtn.onclick = handleStepPrev;
+      }
+
+      if (nextBtn) {
+        nextBtn.onclick = handleStepNext;
       }
 
       if (toggleFullBtn) {
@@ -3944,6 +5511,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ? this.generateTopDownFactoryBlueprintSVG(results, null, state)
             : (state.steps[state.currentStepIndex] ? (typeof state.steps[state.currentStepIndex].svg === 'function' ? state.steps[state.currentStepIndex].svg(state) : state.steps[state.currentStepIndex].svg) : this.generateTopDownFactoryBlueprintSVG(results, null, state));
           openBlueprintModal(`📐 Plan d'Implantation Top-Down 2D : ${targetName}`, svgContent);
+          const modalSvgContainer = document.getElementById("modal-bp-dynamic-svg");
+          if (modalSvgContainer) {
+            this.attachGuideInteractivity(modalSvgContainer, results, isMs);
+          }
         };
       }
 
@@ -3969,8 +5540,42 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         };
       }
+
+      // Raccourcis Clavier Globaux (Flèche Droite = Suivant, Flèche Gauche = Précédent, Espace = Valider & Enchaîner)
+      if (!window._ficsitGuideKeydownAttached) {
+        window._ficsitGuideKeydownAttached = true;
+        window.addEventListener("keydown", (e) => {
+          if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+          const isMsActive = document.getElementById("calc-ms-construction-guide-section")?.style.display !== "none";
+          const activeSec = isMsActive ? "calc-ms-construction-guide-section" : "calc-construction-guide-section";
+          const secEl = document.getElementById(activeSec);
+          if (!secEl || secEl.style.display === "none") return;
+          const st = isMsActive ? FactoryConstructionGuide.msState : FactoryConstructionGuide.singleState;
+          if (!st || !st.steps || st.steps.length === 0) return;
+
+          if (e.key === "ArrowRight") {
+            if (st.currentStepIndex < st.steps.length - 1) {
+              st.currentStepIndex++;
+              FactoryConstructionGuide.renderCurrentStep(isMsActive);
+            }
+          } else if (e.key === "ArrowLeft") {
+            if (st.currentStepIndex > 0) {
+              st.currentStepIndex--;
+              FactoryConstructionGuide.renderCurrentStep(isMsActive);
+            }
+          } else if (e.key === " " || e.key === "Enter") {
+            const valBtn = document.getElementById(isMsActive ? "btn-guide-ms-validate-step" : "btn-guide-validate-step");
+            if (valBtn) {
+              e.preventDefault();
+              valBtn.click();
+            }
+          }
+        });
+      }
     }
   };
+
+  window.FactoryConstructionGuide = FactoryConstructionGuide;
 
   function renderCalculationResults(results) {
     const tableBody = document.getElementById("calc-table-body");
@@ -4059,7 +5664,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <button type="button" id="btn-download-all-integrated-sbp" class="btn-ficsit" style="font-size: 11px; padding: 5px 12px; background: var(--ficsit-orange); color: #000; font-weight: 800; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(250,149,73,0.3);">
-              📥 Télécharger Tout le Complexe (.sbp)
+              📥 Télécharger Tout le Complexe (.sbp) (En cours de dev)
             </button>
           </div>
         `;
@@ -4114,7 +5719,7 @@ document.addEventListener("DOMContentLoaded", () => {
               showToast(`Erreur export : ${err.message}`);
             } finally {
               downloadAllComplexBtn.disabled = false;
-              downloadAllComplexBtn.innerHTML = "📥 Télécharger Tout le Complexe (.sbp)";
+              downloadAllComplexBtn.innerHTML = "📥 Télécharger Tout le Complexe (.sbp) (En cours de dev) (En cours de dev)";
             }
           };
         }
@@ -4244,7 +5849,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
               <button type="button" class="btn-ficsit btn-download-calc-sbp" data-mod-idx="${modIdx}" style="font-size: 11px; padding: 5px 12px; background: var(--ficsit-orange); color: #000; font-weight: 800; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none;">
-                📥 Télécharger (.sbp/.sbpcfg)
+                📥 Télécharger (.sbp/.sbpcfg) (En cours de dev)
               </button>
               <button type="button" class="btn-outline btn-open-step-mk3-modal" onclick="window.openMk3PlanModal(${modIdx})" data-mod-idx="${modIdx}" style="font-size: 11px; padding: 5px 12px; border-color: #38bdf8; background: rgba(56, 189, 248, 0.12); color: #38bdf8; font-weight: bold; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
                 📐 Ouvrir le Plan Mk.3 HD
@@ -4342,7 +5947,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast(`Erreur génération : ${err.message}`);
         } finally {
           btn.disabled = false;
-          btn.innerHTML = "📥 Télécharger (.sbp/.sbpcfg)";
+          btn.innerHTML = "📥 Télécharger (.sbp/.sbpcfg) (En cours de dev) (En cours de dev)";
         }
       };
     });
@@ -4795,356 +6400,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =========================================================================
   // CATALOGUE DE PLANS & BLUEPRINTS (.SBP / .SBPCFG NATIVE ENGINE)
+  // Utilise BlueprintFileGenerator défini dans blueprintGenerator.js
   // =========================================================================
-
-  class BlueprintBinaryWriter {
-    constructor() {
-      this.chunks = [];
-    }
-    writeInt8(val) {
-      const b = new Uint8Array(1);
-      new DataView(b.buffer).setInt8(0, val);
-      this.chunks.push(b);
-    }
-    writeUInt8(val) {
-      const b = new Uint8Array(1);
-      new DataView(b.buffer).setUint8(0, val);
-      this.chunks.push(b);
-    }
-    writeInt16(val) {
-      const b = new Uint8Array(2);
-      new DataView(b.buffer).setInt16(0, val, true);
-      this.chunks.push(b);
-    }
-    writeInt32(val) {
-      const b = new Uint8Array(4);
-      new DataView(b.buffer).setInt32(0, val, true);
-      this.chunks.push(b);
-    }
-    writeUInt32(val) {
-      const b = new Uint8Array(4);
-      new DataView(b.buffer).setUint32(0, val, true);
-      this.chunks.push(b);
-    }
-    writeInt64(val) {
-      const b = new Uint8Array(8);
-      new DataView(b.buffer).setBigInt64(0, BigInt(val), true);
-      this.chunks.push(b);
-    }
-    writeFloat(val) {
-      const b = new Uint8Array(4);
-      new DataView(b.buffer).setFloat32(0, val, true);
-      this.chunks.push(b);
-    }
-    writeString(str) {
-      if (!str || str.length === 0) {
-        this.writeInt32(0);
-        return;
-      }
-      const encoder = new TextEncoder();
-      const encoded = encoder.encode(str + '\0');
-      this.writeInt32(encoded.length);
-      this.chunks.push(encoded);
-    }
-    writeBuffer(buf) {
-      if (buf instanceof Uint8Array) {
-        this.chunks.push(buf);
-      } else {
-        this.chunks.push(new Uint8Array(buf));
-      }
-    }
-    getUint8Array() {
-      let totalLen = this.chunks.reduce((acc, c) => acc + c.length, 0);
-      let result = new Uint8Array(totalLen);
-      let offset = 0;
-      for (let c of this.chunks) {
-        result.set(c, offset);
-        offset += c.length;
-      }
-      return result;
-    }
-  }
-
-  async function compressZlibStream(uint8Arr) {
-    if (typeof CompressionStream !== 'undefined') {
-      const cs = new CompressionStream('deflate');
-      const writer = cs.writable.getWriter();
-      writer.write(uint8Arr);
-      writer.close();
-      const response = new Response(cs.readable);
-      const arrayBuffer = await response.arrayBuffer();
-      return new Uint8Array(arrayBuffer);
-    }
-    throw new Error('CompressionStream non supporté.');
-  }
-
-  const BlueprintFileGenerator = {
-    async generateFiles(bp) {
-      let sizeX = 4, sizeY = 4, sizeZ = 4;
-      if (bp.designerSize && bp.designerSize.includes('5x5')) {
-        sizeX = 5; sizeY = 5; sizeZ = 5;
-      } else if (bp.designerSize && bp.designerSize.includes('6x6')) {
-        sizeX = 6; sizeY = 6; sizeZ = 6;
-      }
-
-      const UOBJECT_CLASSES = {
-        foundation_8x4: '/Game/FactoryGame/Buildable/Building/Foundation/Build_Foundation_8x4_01.Build_Foundation_8x4_01_C',
-        foundation_glass: '/Game/FactoryGame/Buildable/Building/Foundation/Build_Foundation_Glass_01.Build_Foundation_Glass_01_C',
-        wall_glass: '/Game/FactoryGame/Buildable/Building/Wall/Build_Wall_Glass_8x4_01.Build_Wall_Glass_8x4_01_C',
-        smelter: '/Game/FactoryGame/Buildable/Factory/SmelterMk1/Build_SmelterMk1.Build_SmelterMk1_C',
-        foundry: '/Game/FactoryGame/Buildable/Factory/FoundryMk1/Build_FoundryMk1.Build_FoundryMk1_C',
-        constructor: '/Game/FactoryGame/Buildable/Factory/ConstructorMk1/Build_ConstructorMk1.Build_ConstructorMk1_C',
-        assembler: '/Game/FactoryGame/Buildable/Factory/AssemblerMk1/Build_AssemblerMk1.Build_AssemblerMk1_C',
-        manufacturer: '/Game/FactoryGame/Buildable/Factory/ManufacturerMk1/Build_ManufacturerMk1.Build_ManufacturerMk1_C',
-        refinery: '/Game/FactoryGame/Buildable/Factory/OilRefinery/Build_OilRefinery.Build_OilRefinery_C',
-        generator_coal: '/Game/FactoryGame/Buildable/Factory/GeneratorCoal/Build_GeneratorCoal.Build_GeneratorCoal_C',
-        generator_fuel: '/Game/FactoryGame/Buildable/Factory/GeneratorFuel/Build_GeneratorFuel.Build_GeneratorFuel_C',
-        powerpole: '/Game/FactoryGame/Buildable/Factory/PowerPoleMk1/Build_PowerPoleMk1.Build_PowerPoleMk1_C',
-        train_station: '/Game/FactoryGame/Buildable/Factory/Train/Station/Build_TrainStation.Build_TrainStation_C',
-        freight_platform: '/Game/FactoryGame/Buildable/Factory/Train/Station/Build_TrainDockingStation.Build_TrainDockingStation_C',
-        storage_ind: '/Game/FactoryGame/Buildable/Factory/StorageContainerMk2/Build_StorageContainerMk2.Build_StorageContainerMk2_C'
-      };
-
-      const ITEM_DESC_CLASSES = {
-        concrete: '/Game/FactoryGame/Resource/Parts/Concrete/Desc_Concrete.Desc_Concrete_C',
-        iron_plate: '/Game/FactoryGame/Resource/Parts/IronPlate/Desc_IronPlate.Desc_IronPlate_C',
-        iron_rod: '/Game/FactoryGame/Resource/Parts/IronRod/Desc_IronRod.Desc_IronRod_C',
-        wire: '/Game/FactoryGame/Resource/Parts/Wire/Desc_Wire.Desc_Wire_C',
-        cable: '/Game/FactoryGame/Resource/Parts/Cable/Desc_Cable.Desc_Cable_C',
-        steel_beam: '/Game/FactoryGame/Resource/Parts/SteelPlate/Desc_SteelPlate.Desc_SteelPlate_C',
-        steel_pipe: '/Game/FactoryGame/Resource/Parts/SteelPipe/Desc_SteelPipe.Desc_SteelPipe_C',
-        reinforced_iron_plate: '/Game/FactoryGame/Resource/Parts/ReinforcedIronPlate/Desc_ReinforcedIronPlate.Desc_ReinforcedIronPlate_C',
-        rotor: '/Game/FactoryGame/Resource/Parts/Rotor/Desc_Rotor.Desc_Rotor_C',
-        modular_frame: '/Game/FactoryGame/Resource/Parts/ModularFrame/Desc_ModularFrame.Desc_ModularFrame_C',
-        heavy_modular_frame: '/Game/FactoryGame/Resource/Parts/ModularFrameHeavy/Desc_ModularFrameHeavy.Desc_ModularFrameHeavy_C',
-        computer: '/Game/FactoryGame/Resource/Parts/Computer/Desc_Computer.Desc_Computer_C',
-        motor: '/Game/FactoryGame/Resource/Parts/Motor/Desc_Motor.Desc_Motor_C'
-      };
-
-      const buildings = [];
-      const halfSpan = sizeX * 400;
-      const step = 800;
-
-      // Plateforme 8x4 complète
-      for (let x = -halfSpan + 400; x <= halfSpan - 400; x += step) {
-        for (let y = -halfSpan + 400; y <= halfSpan - 400; y += step) {
-          buildings.push({
-            className: UOBJECT_CLASSES.foundation_8x4,
-            instanceName: `Build_Foundation_8x4_01_C_${Math.floor(2147400000 + Math.random() * 80000)}`,
-            pos: [x, y, 200],
-            rot: [0, 0, 0, 1],
-            scale: [1, 1, 1]
-          });
-        }
-      }
-
-      // Machines
-      const bldCount = bp.buildingsCount || {};
-      const machineEntries = Object.entries(bldCount).filter(([k]) => !k.includes('wall') && !k.includes('pillar') && !k.includes('switch') && !k.includes('signal'));
-
-      let machineIndex = 0;
-      machineEntries.forEach(([bldKey, count]) => {
-        const classPath = UOBJECT_CLASSES[bldKey] || UOBJECT_CLASSES.constructor;
-        const num = Math.min(count, 12);
-        for (let i = 0; i < num; i++) {
-          const row = Math.floor(machineIndex / 4);
-          const col = machineIndex % 4;
-          const x = -1200 + col * 800;
-          const y = -600 + row * 1200;
-          
-          buildings.push({
-            className: classPath,
-            instanceName: `${classPath.split('.').pop()}_${Math.floor(2147400000 + Math.random() * 80000)}`,
-            pos: [x, y, 400],
-            rot: [0, 0, 0, 1],
-            scale: [1, 1, 1]
-          });
-          machineIndex++;
-        }
-      });
-
-      // Pylone central
-      buildings.push({
-        className: UOBJECT_CLASSES.powerpole,
-        instanceName: `Build_PowerPoleMk1_C_${Math.floor(2147400000 + Math.random() * 80000)}`,
-        pos: [0, 0, 400],
-        rot: [0, 0, 0, 1],
-        scale: [1, 1, 1]
-      });
-
-      // Coûts
-      const costs = [];
-      if (bp.materialsNeeded) {
-        Object.entries(bp.materialsNeeded).forEach(([mat, qty]) => {
-          costs.push({
-            item: ITEM_DESC_CLASSES[mat] || `/Game/FactoryGame/Resource/Parts/Concrete/Desc_Concrete.Desc_Concrete_C`,
-            amount: qty
-          });
-        });
-      } else {
-        costs.push({ item: ITEM_DESC_CLASSES.concrete, amount: 80 });
-      }
-
-      const recipes = [
-        '/Game/FactoryGame/Recipes/Buildings/Recipe_Foundation_8x4_01.Recipe_Foundation_8x4_01_C',
-        '/Game/FactoryGame/Recipes/Buildings/Recipe_PowerPoleMk1.Recipe_PowerPoleMk1_C'
-      ];
-
-      // Payload
-      const objHeaderWriter = new BlueprintBinaryWriter();
-      objHeaderWriter.writeInt32(buildings.length);
-
-      buildings.forEach(b => {
-        objHeaderWriter.writeInt32(1);
-        objHeaderWriter.writeString(b.className);
-        objHeaderWriter.writeString('Persistent_Level');
-        objHeaderWriter.writeString(`Persistent_Level:PersistentLevel.${b.instanceName}`);
-        objHeaderWriter.writeInt32(8); // flags
-        objHeaderWriter.writeInt32(1); // needTransform
-        objHeaderWriter.writeFloat(b.rot[0]);
-        objHeaderWriter.writeFloat(b.rot[1]);
-        objHeaderWriter.writeFloat(b.rot[2]);
-        objHeaderWriter.writeFloat(b.rot[3]);
-        objHeaderWriter.writeFloat(b.pos[0]);
-        objHeaderWriter.writeFloat(b.pos[1]);
-        objHeaderWriter.writeFloat(b.pos[2]);
-        objHeaderWriter.writeFloat(b.scale[0]);
-        objHeaderWriter.writeFloat(b.scale[1]);
-        objHeaderWriter.writeFloat(b.scale[2]);
-        objHeaderWriter.writeInt32(0);
-      });
-
-      const objHeaderBuf = objHeaderWriter.getUint8Array();
-
-      const propWriter = new BlueprintBinaryWriter();
-      propWriter.writeInt32(buildings.length);
-
-      buildings.forEach(b => {
-        const entPropWriter = new BlueprintBinaryWriter();
-        entPropWriter.writeString('Persistent_Level');
-        entPropWriter.writeString(`Persistent_Level:PersistentLevel.${b.instanceName}`);
-        entPropWriter.writeString('None');
-        const entBuf = entPropWriter.getUint8Array();
-        propWriter.writeInt32(entBuf.length + 4);
-        propWriter.writeBuffer(entBuf);
-      });
-
-      const propBuf = propWriter.getUint8Array();
-
-      // Total Body
-      const totalBodyPayload = new Uint8Array(objHeaderBuf.length + propBuf.length);
-      totalBodyPayload.set(objHeaderBuf, 0);
-      totalBodyPayload.set(propBuf, objHeaderBuf.length);
-
-      const bodyWriter = new BlueprintBinaryWriter();
-      bodyWriter.writeInt32(totalBodyPayload.length + 4);
-      bodyWriter.writeInt32(objHeaderBuf.length);
-      bodyWriter.writeBuffer(totalBodyPayload);
-
-      const uncompressedBody = bodyWriter.getUint8Array();
-      const compressedBody = await compressZlibStream(uncompressedBody);
-
-      // SBP Full File
-      const sbpWriter = new BlueprintBinaryWriter();
-      sbpWriter.writeInt32(2);
-      sbpWriter.writeInt32(60);
-      sbpWriter.writeInt32(491125);
-      sbpWriter.writeInt32(sizeX);
-      sbpWriter.writeInt32(sizeY);
-      sbpWriter.writeInt32(sizeZ);
-
-      sbpWriter.writeInt32(costs.length);
-      costs.forEach(c => {
-        sbpWriter.writeInt32(0);
-        sbpWriter.writeString(c.item);
-        sbpWriter.writeInt32(c.amount);
-      });
-
-      sbpWriter.writeInt32(recipes.length);
-      recipes.forEach(r => {
-        sbpWriter.writeInt32(0);
-        sbpWriter.writeString(r);
-      });
-
-      sbpWriter.writeInt32(0);
-      sbpWriter.writeInt32(522);
-      sbpWriter.writeInt32(1017);
-      sbpWriter.writeInt32(3);
-      sbpWriter.writeInt16(5);
-      sbpWriter.writeInt16(6);
-      sbpWriter.writeInt16(1);
-      sbpWriter.writeUInt32(2147974773);
-      sbpWriter.writeString('++FactoryGame+rel-main-1.2.0');
-
-      const customVersions = [
-        { guid: '2f3e0421d61fe613519d3b5130a23636', ver: 60 },
-        { guid: 'c11de6f4ce9a027c61d5d7853d6a2fe4', ver: 28 },
-        { guid: '81d57d69ab414fe6ec514aaa28b6b7be', ver: 121 },
-        { guid: '525dda5948493212785978b88be9b870', ver: 9 },
-        { guid: '425e9bd8464dbd24a8ac1284791764df', ver: 56 },
-        { guid: '86181d60844f64acded316aad6c7ea0d', ver: 207 },
-        { guid: '3f74fccf8044b043df14919373201d17', ver: 37 },
-        { guid: '686308e7584c236b701b3984915e2616', ver: 17 }
-      ];
-
-      sbpWriter.writeInt32(customVersions.length);
-      customVersions.forEach(cv => {
-        const match = cv.guid.match(/.{1,2}/g);
-        const guidBytes = new Uint8Array(match.map(byte => parseInt(byte, 16)));
-        sbpWriter.writeBuffer(guidBytes);
-        sbpWriter.writeInt32(cv.ver);
-      });
-
-      sbpWriter.writeUInt32(0x9E2A83C1);
-      sbpWriter.writeUInt32(0x22222222);
-      sbpWriter.writeInt64(131072);
-      sbpWriter.writeUInt8(3);
-      sbpWriter.writeInt64(compressedBody.length);
-      sbpWriter.writeInt64(uncompressedBody.length);
-      sbpWriter.writeInt64(compressedBody.length);
-      sbpWriter.writeInt64(uncompressedBody.length);
-      sbpWriter.writeBuffer(compressedBody);
-
-      const sbpArray = sbpWriter.getUint8Array();
-
-      // SBPCFG File
-      const cfgWriter = new BlueprintBinaryWriter();
-      cfgWriter.writeInt32(0);
-      const desc = `⚡ **${bp.title || bp.name}**\n\n${bp.description || ''}\n\n• Puissance : ${bp.powerMW || 0} MW\n• Dimensions : ${bp.designerSize || '4x4'}\n• Entrées : ${(bp.inputs || []).join(', ')}\n• Sorties : ${(bp.outputs || []).join(', ')}`;
-      cfgWriter.writeString(desc);
-      cfgWriter.writeInt32(782);
-      cfgWriter.writeFloat(0.12);
-      cfgWriter.writeFloat(0.65);
-      cfgWriter.writeFloat(0.85);
-      cfgWriter.writeFloat(1.0);
-      cfgWriter.writeString('/Game/FactoryGame/-Shared/Blueprint/IconLibrary');
-      cfgWriter.writeString('IconLibrary');
-      cfgWriter.writeInt32(0);
-
-      const cfgArray = cfgWriter.getUint8Array();
-      const filename = (bp.id || bp.title || "blueprint").replace(/[^a-zA-Z0-9_]/g, "_");
-
-      return {
-        sbpBlob: new Blob([sbpArray], { type: "application/octet-stream" }),
-        sbpFilename: `${filename}.sbp`,
-        sbpcfgBlob: new Blob([cfgArray], { type: "application/octet-stream" }),
-        sbpcfgFilename: `${filename}.sbpcfg`
-      };
-    },
-
-    downloadBlob(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 200);
-    }
-  };
 
   function renderBlueprints() {
     const filterBar = document.getElementById("bp-filters-bar");
@@ -5287,7 +6544,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="btn-ficsit btn-download-bp-single" data-bpid="${bp.id}" style="flex: 1; font-size: 11.5px; padding: 6px;">
-                📥 Télécharger (.sbp/.sbpcfg)
+                📥 Télécharger (.sbp/.sbpcfg) (En cours de dev)
               </button>
             </div>
           </div>
@@ -5314,7 +6571,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast(`Erreur de génération : ${err.message}`);
           } finally {
             btn.disabled = false;
-            btn.innerText = "📥 Télécharger (.sbp/.sbpcfg)";
+            btn.innerText = "📥 Télécharger (.sbp/.sbpcfg) (En cours de dev) (En cours de dev)";
           }
         }
       };

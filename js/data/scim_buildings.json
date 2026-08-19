@@ -1,0 +1,359 @@
+{
+  "Build_MinerMk1_C": {
+    "class": "Build_MinerMk1_C",
+    "urlName": "Foreuse+Mk.1",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_MinerMk2_256.png",
+    "name": "Foreuse Mk.2",
+    "localPath": "images/buildings/IconDesc_MinerMk2_256.png"
+  },
+  "Build_MinerMk2_C": {
+    "class": "Build_MinerMk2_C",
+    "urlName": "Foreuse+Mk.2",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_MinerMk3_256.png",
+    "name": "Foreuse Mk.3",
+    "localPath": "images/buildings/IconDesc_MinerMk3_256.png"
+  },
+  "Build_MinerMk3_C": {
+    "class": "Build_MinerMk3_C",
+    "urlName": "Foreuse+Mk.3",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/OilPump_256.png",
+    "name": "Pompe à pétrole",
+    "localPath": "images/buildings/OilPump_256.png"
+  },
+  "Build_OilPump_C": {
+    "class": "Build_OilPump_C",
+    "urlName": "Pompe+%C3%A0+p%C3%A9trole",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/Waterpump_256.png",
+    "name": "Pompe à eau",
+    "localPath": "images/buildings/Waterpump_256.png"
+  },
+  "Build_WaterPump_C": {
+    "class": "Build_WaterPump_C",
+    "urlName": "Pompe+%C3%A0+eau",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Smasher_256.png",
+    "name": "Pressuriseur",
+    "localPath": "images/buildings/IconDesc_Smasher_256.png"
+  },
+  "Build_FrackingSmasher_C": {
+    "class": "Build_FrackingSmasher_C",
+    "urlName": "Pressuriseur",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Extractor_256.png",
+    "name": "Extracteur de puits de ressources",
+    "localPath": "images/buildings/IconDesc_Extractor_256.png"
+  },
+  "Build_FrackingExtractor_C": {
+    "class": "Build_FrackingExtractor_C",
+    "urlName": "Extracteur+de+puits+de+ressources",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_SmelterMk1_256.png",
+    "name": "Haut fourneau",
+    "localPath": "images/buildings/IconDesc_SmelterMk1_256.png"
+  },
+  "Build_SmelterMk1_C": {
+    "class": "Build_SmelterMk1_C",
+    "urlName": "Haut+fourneau",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Foundry_256.png",
+    "name": "Fonderie",
+    "localPath": "images/buildings/IconDesc_Foundry_256.png"
+  },
+  "Build_FoundryMk1_C": {
+    "class": "Build_FoundryMk1_C",
+    "urlName": "Fonderie",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_ConstructorMk1_256.png",
+    "name": "Constructeur",
+    "localPath": "images/buildings/IconDesc_ConstructorMk1_256.png"
+  },
+  "Build_ConstructorMk1_C": {
+    "class": "Build_ConstructorMk1_C",
+    "urlName": "Constructeur",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_AssemblerMk1_256.png",
+    "name": "Assembleuse",
+    "localPath": "images/buildings/IconDesc_AssemblerMk1_256.png"
+  },
+  "Build_AssemblerMk1_C": {
+    "class": "Build_AssemblerMk1_C",
+    "urlName": "Assembleuse",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Manufacturer_256.png",
+    "name": "Façonneuse",
+    "localPath": "images/buildings/IconDesc_Manufacturer_256.png"
+  },
+  "Build_ManufacturerMk1_C": {
+    "class": "Build_ManufacturerMk1_C",
+    "urlName": "Fa%C3%A7onneuse",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_OilRefinery_256.png",
+    "name": "Raffinerie",
+    "localPath": "images/buildings/IconDesc_OilRefinery_256.png"
+  },
+  "Build_OilRefinery_C": {
+    "class": "Build_OilRefinery_C",
+    "urlName": "Raffinerie",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Packager_256.png",
+    "name": "Conditionneur",
+    "localPath": "images/buildings/IconDesc_Packager_256.png"
+  },
+  "Build_Packager_C": {
+    "class": "Build_Packager_C",
+    "urlName": "Conditionneur",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Blender_256.png",
+    "name": "Mélangeur",
+    "localPath": "images/buildings/IconDesc_Blender_256.png"
+  },
+  "Build_Blender_C": {
+    "class": "Build_Blender_C",
+    "urlName": "M%C3%A9langeur",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_HadronCollider_256.png",
+    "name": "Accélérateur de particules",
+    "localPath": "images/buildings/IconDesc_HadronCollider_256.png"
+  },
+  "Build_HadronCollider_C": {
+    "class": "Build_HadronCollider_C",
+    "urlName": "Acc%C3%A9l%C3%A9rateur+de+particules",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_QuantumEncoder_256.png",
+    "name": "Encodeur quantique",
+    "localPath": "images/buildings/IconDesc_QuantumEncoder_256.png"
+  },
+  "Build_QuantumEncoder_C": {
+    "class": "Build_QuantumEncoder_C",
+    "urlName": "Encodeur+quantique",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_Converter_256.png",
+    "name": "Convertisseur",
+    "localPath": "images/buildings/IconDesc_Converter_256.png"
+  },
+  "Build_Converter_C": {
+    "class": "Build_Converter_C",
+    "urlName": "Convertisseur",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_BiomassGenerator_256.png",
+    "name": "Brûleur de biomasse",
+    "localPath": "images/buildings/IconDesc_BiomassGenerator_256.png"
+  },
+  "Build_GeneratorBiomass_Automated_C": {
+    "class": "Build_GeneratorBiomass_Automated_C",
+    "urlName": "Br%C3%BBleur+de+biomasse",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_CoalGenerator_256.png",
+    "name": "Générateur à charbon",
+    "localPath": "images/buildings/IconDesc_CoalGenerator_256.png"
+  },
+  "Build_GeneratorCoal_C": {
+    "class": "Build_GeneratorCoal_C",
+    "urlName": "G%C3%A9n%C3%A9rateur+%C3%A0+charbon",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/FuelGenerator_256.png",
+    "name": "Générateur à carburant",
+    "localPath": "images/buildings/FuelGenerator_256.png"
+  },
+  "Build_GeneratorFuel_C": {
+    "class": "Build_GeneratorFuel_C",
+    "urlName": "G%C3%A9n%C3%A9rateur+%C3%A0+carburant",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.1/GeoThermalPowerGenerator_256.png",
+    "name": "Générateur géothermique",
+    "localPath": "images/buildings/GeoThermalPowerGenerator_256.png"
+  },
+  "Build_GeneratorGeoThermal_C": {
+    "class": "Build_GeneratorGeoThermal_C",
+    "urlName": "G%C3%A9n%C3%A9rateur+g%C3%A9othermique",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/NuclearPowerplant_256.png",
+    "name": "Centrale nucléaire",
+    "localPath": "images/buildings/NuclearPowerplant_256.png"
+  },
+  "Build_GeneratorNuclear_C": {
+    "class": "Build_GeneratorNuclear_C",
+    "urlName": "Centrale+nucl%C3%A9aire",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_PowerStorage_256.png",
+    "name": "Accumulateur",
+    "localPath": "images/buildings/IconDesc_PowerStorage_256.png"
+  },
+  "Build_PowerStorageMk1_C": {
+    "class": "Build_PowerStorageMk1_C",
+    "urlName": "Accumulateur",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_AlienPowerAugmenter_256.png",
+    "name": "Accélérateur extraterrestre",
+    "localPath": "images/buildings/IconDesc_AlienPowerAugmenter_256.png"
+  },
+  "Build_AlienPowerBuilding_C": {
+    "class": "Build_AlienPowerBuilding_C",
+    "urlName": "Acc%C3%A9l%C3%A9rateur+extraterrestre",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/Hub_256.png",
+    "name": "Le H.U.B.",
+    "localPath": "images/buildings/Hub_256.png"
+  },
+  "Build_TradingPost_C": {
+    "class": "Build_TradingPost_C",
+    "urlName": "Le+H.U.B.",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/MAM_256.png",
+    "name": "M.A.M.",
+    "localPath": "images/buildings/MAM_256.png"
+  },
+  "Build_Mam_C": {
+    "class": "Build_Mam_C",
+    "urlName": "M.A.M.",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.2/IconDesc_PortableToilet_256.png",
+    "name": "SPWN",
+    "localPath": "images/buildings/IconDesc_PortableToilet_256.png"
+  },
+  "Build_PortalPotty_C": {
+    "class": "Build_PortalPotty_C",
+    "urlName": "SPWN",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/SpaceElevator_256.png",
+    "name": "Ascenseur orbital",
+    "localPath": "images/buildings/SpaceElevator_256.png"
+  },
+  "Build_SpaceElevator_C": {
+    "class": "Build_SpaceElevator_C",
+    "urlName": "Ascenseur+orbital",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_BlueprintDesigner_256.png",
+    "name": "Modeleur de plan Mk.1",
+    "localPath": "images/buildings/IconDesc_BlueprintDesigner_256.png"
+  },
+  "Build_BlueprintDesigner_C": {
+    "class": "Build_BlueprintDesigner_C",
+    "urlName": "Modeleur+de+plan+Mk.1",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_BlueprintDesignerMK2_256.png",
+    "name": "Modeleur de plan Mk.2",
+    "localPath": "images/buildings/IconDesc_BlueprintDesignerMK2_256.png"
+  },
+  "Build_BlueprintDesigner_MK2_C": {
+    "class": "Build_BlueprintDesigner_MK2_C",
+    "urlName": "Modeleur+de+plan+Mk.2",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_BlueprintDesignerMK3_256.png",
+    "name": "Modeleur de plan Mk.3",
+    "localPath": "images/buildings/IconDesc_BlueprintDesignerMK3_256.png"
+  },
+  "Build_BlueprintDesigner_Mk3_C": {
+    "class": "Build_BlueprintDesigner_Mk3_C",
+    "urlName": "Modeleur+de+plan+Mk.3",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/ResourceSink_256.png",
+    "name": "Broyeur A.W.E.S.O.M.E.",
+    "localPath": "images/buildings/ResourceSink_256.png"
+  },
+  "Build_ResourceSink_C": {
+    "class": "Build_ResourceSink_C",
+    "urlName": "Broyeur+A.W.E.S.O.M.E.",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/ResourceSinkShop_256.png",
+    "name": "Boutique A.W.E.S.O.M.E.",
+    "localPath": "images/buildings/ResourceSinkShop_256.png"
+  },
+  "Build_ResourceSinkShop_C": {
+    "class": "Build_ResourceSinkShop_C",
+    "urlName": "Boutique+A.W.E.S.O.M.E.",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/Workbench_256.png",
+    "name": "Établi",
+    "localPath": "images/buildings/Workbench_256.png"
+  },
+  "Build_WorkBench_C": {
+    "class": "Build_WorkBench_C",
+    "urlName": "%C3%89tabli",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/Workshop_256.png",
+    "name": "Atelier d'équipement",
+    "localPath": "images/buildings/Workshop_256.png"
+  },
+  "Build_Workshop_C": {
+    "class": "Build_Workshop_C",
+    "urlName": "Atelier+d%27%C3%A9quipement",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/PlayerStorage_256.png",
+    "name": "Coffre individuel",
+    "localPath": "images/buildings/PlayerStorage_256.png"
+  },
+  "Build_StoragePlayer_C": {
+    "class": "Build_StoragePlayer_C",
+    "urlName": "Coffre+individuel",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_StorageMedkit_256.png",
+    "name": "Coffre « Premiers secours »",
+    "localPath": "images/buildings/IconDesc_StorageMedkit_256.png"
+  },
+  "Build_StorageMedkit_C": {
+    "class": "Build_StorageMedkit_C",
+    "urlName": "Coffre+%C2%AB%C2%A0Premiers+secours%C2%A0%C2%BB",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_StorageHazard_256.png",
+    "name": "Coffre « Danger biologique »",
+    "localPath": "images/buildings/IconDesc_StorageHazard_256.png"
+  },
+  "Build_StorageHazard_C": {
+    "class": "Build_StorageHazard_C",
+    "urlName": "Coffre+%C2%AB%C2%A0Danger+biologique%C2%A0%C2%BB",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_StorageContainer_256.png",
+    "name": "Conteneur de stockage",
+    "localPath": "images/buildings/IconDesc_StorageContainer_256.png"
+  },
+  "Build_StorageContainerMk1_C": {
+    "class": "Build_StorageContainerMk1_C",
+    "urlName": "Conteneur+de+stockage",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_StorageContainerMk2_256.png",
+    "name": "Conteneur industriel",
+    "localPath": "images/buildings/IconDesc_StorageContainerMk2_256.png"
+  },
+  "Build_StorageContainerMk2_C": {
+    "class": "Build_StorageContainerMk2_C",
+    "urlName": "Conteneur+industriel",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/FluidStorage_256.png",
+    "name": "Réservoir",
+    "localPath": "images/buildings/FluidStorage_256.png"
+  },
+  "Build_PipeStorageTank_C": {
+    "class": "Build_PipeStorageTank_C",
+    "urlName": "R%C3%A9servoir",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/FluidStorageIndustrial_256.png",
+    "name": "Réservoir industriel",
+    "localPath": "images/buildings/FluidStorageIndustrial_256.png"
+  },
+  "Build_IndustrialTank_C": {
+    "class": "Build_IndustrialTank_C",
+    "urlName": "R%C3%A9servoir+industriel",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_CentralStorage_256.png",
+    "name": "Relais du dépôt dimensionnel",
+    "localPath": "images/buildings/IconDesc_CentralStorage_256.png"
+  },
+  "Build_CentralStorage_C": {
+    "class": "Build_CentralStorage_C",
+    "urlName": "Relais+du+d%C3%A9p%C3%B4t+dimensionnel",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.1/IconDesc_StackableShelf_256.png",
+    "name": "Étagère basique",
+    "localPath": "images/buildings/IconDesc_StackableShelf_256.png"
+  },
+  "Build_StackableShelf_C": {
+    "class": "Build_StackableShelf_C",
+    "urlName": "%C3%89tag%C3%A8re+basique",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_TruckStation_256.png",
+    "name": "Station pour camions",
+    "localPath": "images/buildings/IconDesc_TruckStation_256.png"
+  },
+  "Build_TruckStation_C": {
+    "class": "Build_TruckStation_C",
+    "urlName": "Station+pour+camions",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.2/IconDesc_TruckStation_Fluid_256.png",
+    "name": "Fluid Truck Station",
+    "localPath": "images/buildings/IconDesc_TruckStation_Fluid_256.png"
+  },
+  "Build_FluidTruckStation_C": {
+    "class": "Build_FluidTruckStation_C",
+    "urlName": "Fluid+Truck+Station",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_DronePort_256.png",
+    "name": "Héliport",
+    "localPath": "images/buildings/IconDesc_DronePort_256.png"
+  },
+  "Build_DroneStation_C": {
+    "class": "Build_DroneStation_C",
+    "urlName": "H%C3%A9liport",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_DockingStation_256.png",
+    "name": "Plateforme de chargement",
+    "localPath": "images/buildings/IconDesc_DockingStation_256.png"
+  },
+  "Build_TrainDockingStation_C": {
+    "class": "Build_TrainDockingStation_C",
+    "urlName": "Plateforme+de+chargement",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/IconDesc_TrainDockingFluid_256.png",
+    "name": "Plateforme de chargement de fluide",
+    "localPath": "images/buildings/IconDesc_TrainDockingFluid_256.png"
+  },
+  "Build_TrainDockingStationLiquid_C": {
+    "class": "Build_TrainDockingStationLiquid_C",
+    "urlName": "Plateforme+de+chargement+de+fluide",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/LookOutTower_256.png",
+    "name": "Tour d'observation",
+    "localPath": "images/buildings/LookOutTower_256.png"
+  },
+  "Build_LookoutTower_C": {
+    "class": "Build_LookoutTower_C",
+    "urlName": "Tour+d%27observation",
+    "imgUrl": "https://static.satisfactory-calculator.com/img/gameStable1.0/RadarTower_256.png",
+    "name": "Tour radar",
+    "localPath": "images/buildings/RadarTower_256.png"
+  }
+}

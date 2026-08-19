@@ -7,6 +7,7 @@ const BUILDINGS = {
     category: "extraction",
     powerMW: 5,
     icon: "⛏️",
+    image: "images/buildings/IconDesc_MinerMk1_256.png",
     cost: { portable_miner: 1, iron_plate: 10, concrete: 10 }
   },
   miner_mk2: {
@@ -15,6 +16,7 @@ const BUILDINGS = {
     category: "extraction",
     powerMW: 12,
     icon: "⛏️",
+    image: "images/buildings/IconDesc_MinerMk2_256.png",
     cost: { miner_mk1: 1, reinforced_iron_plate: 10, concrete: 20, modular_frame: 10 }
   },
   miner_mk3: {
@@ -23,6 +25,7 @@ const BUILDINGS = {
     category: "extraction",
     powerMW: 30,
     icon: "⛏️",
+    image: "images/buildings/IconDesc_MinerMk3_256.png",
     cost: { miner_mk2: 1, fused_modular_frame: 3, turbo_motor: 2, steel_pipe: 30 }
   },
   water_extractor: {
@@ -31,6 +34,7 @@ const BUILDINGS = {
     category: "extraction",
     powerMW: 20,
     icon: "💧",
+    image: "images/buildings/Waterpump_256.png",
     cost: { copper_sheet: 20, reinforced_iron_plate: 10, rotor: 10 }
   },
   oil_extractor: {
@@ -39,6 +43,7 @@ const BUILDINGS = {
     category: "extraction",
     powerMW: 40,
     icon: "🛢️",
+    image: "images/buildings/OilPump_256.png",
     cost: { motor: 15, encased_industrial_beam: 20, steel_pipe: 60 }
   },
   resource_well_pressurizer: {
@@ -47,6 +52,7 @@ const BUILDINGS = {
     category: "extraction",
     powerMW: 150,
     icon: "🌀",
+    image: "images/buildings/IconDesc_Smasher_256.png",
     cost: { wire: 200, rubber: 50, encased_industrial_beam: 50, motor: 50 }
   },
 
@@ -57,6 +63,7 @@ const BUILDINGS = {
     category: "smelting",
     powerMW: 4,
     icon: "🔥",
+    image: "images/buildings/IconDesc_SmelterMk1_256.png",
     cost: { iron_rod: 5, wire: 8 }
   },
   foundry: {
@@ -65,6 +72,7 @@ const BUILDINGS = {
     category: "smelting",
     powerMW: 16,
     icon: "🌋",
+    image: "images/buildings/IconDesc_Foundry_256.png",
     cost: { modular_frame: 2, rotor: 4, concrete: 8 }
   },
 
@@ -75,6 +83,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 4,
     icon: "⚙️",
+    image: "images/buildings/IconDesc_ConstructorMk1_256.png",
     cost: { reinforced_iron_plate: 2, cable: 2 }
   },
   assembler: {
@@ -83,6 +92,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 15,
     icon: "🔩",
+    image: "images/buildings/IconDesc_AssemblerMk1_256.png",
     cost: { reinforced_iron_plate: 8, rotor: 4, cable: 10 }
   },
   manufacturer: {
@@ -91,6 +101,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 55,
     icon: "🏭",
+    image: "images/buildings/IconDesc_Manufacturer_256.png",
     cost: { motor: 10, heavy_modular_frame: 10, cable: 50, plastic: 50 }
   },
   packager: {
@@ -99,6 +110,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 10,
     icon: "📦",
+    image: "images/buildings/IconDesc_Packager_256.png",
     cost: { reinforced_iron_plate: 20, rubber: 10, steel_pipe: 20 }
   },
   refinery: {
@@ -107,6 +119,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 30,
     icon: "🧪",
+    image: "images/buildings/IconDesc_OilRefinery_256.png",
     cost: { motor: 10, encased_industrial_beam: 10, steel_pipe: 30, copper_sheet: 20 }
   },
   blender: {
@@ -115,6 +128,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 75,
     icon: "🍹",
+    image: "images/buildings/IconDesc_Blender_256.png",
     cost: { motor: 10, heavy_modular_frame: 4, aluminum_casing: 50, radio_control_unit: 5 }
   },
   particle_accelerator: {
@@ -123,6 +137,7 @@ const BUILDINGS = {
     category: "production",
     powerMW: 1000, // Moyenne de puissance variable
     icon: "⚛️",
+    image: "images/buildings/IconDesc_HadronCollider_256.png",
     cost: { reinforced_iron_plate: 100, electromagnetic_control_rod: 25, fused_modular_frame: 10, cooling_system: 20 }
   },
   converter: {
@@ -131,6 +146,7 @@ const BUILDINGS = {
     category: "quantum",
     powerMW: 250,
     icon: "💠",
+    image: "images/buildings/IconDesc_Converter_256.png",
     cost: { fused_modular_frame: 15, radio_control_unit: 10, cooling_system: 10, sam: 50 }
   },
   quantum_encoder: {
@@ -139,7 +155,26 @@ const BUILDINGS = {
     category: "quantum",
     powerMW: 2000,
     icon: "🌌",
+    image: "images/buildings/IconDesc_QuantumEncoder_256.png",
     cost: { dark_matter_crystal: 20, supercomputer: 10, fused_modular_frame: 10, time_crystal: 10 }
+  },
+  storage_container: {
+    id: "storage_container",
+    name: "Conteneur de stockage",
+    category: "logistics",
+    powerMW: 0,
+    icon: "📦",
+    image: "images/buildings/IconDesc_StorageContainer_256.png",
+    cost: { iron_plate: 10, iron_rod: 10 }
+  },
+  storage_container_mk2: {
+    id: "storage_container_mk2",
+    name: "Conteneur industriel",
+    category: "logistics",
+    powerMW: 0,
+    icon: "📦",
+    image: "images/buildings/IconDesc_StorageContainerMk2_256.png",
+    cost: { steel_beam: 10, steel_pipe: 20 }
   }
 };
 

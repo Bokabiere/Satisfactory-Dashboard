@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FICSIT Factory Companion - Satisfactory 1.0+ Dashboard</title>
   <meta name="description" content="Tableau de bord de progression, calculateur de ratios avec recettes alternatives, gestionnaire de jalons, architecture Grand Palais et blueprints pour Satisfactory 1.0.">
+  <!-- Moteur 3D WebGL Three.js & Contrôles Orbit -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <style>
 /* ==========================================================================
    FICSIT INDUSTRIAL DESIGN SYSTEM - SATISFACTORY DASHBOARD
@@ -899,23 +902,7 @@ body {
 </head>
 <body>
 
-  <!-- EN-TÊTE FICSIT HUD -->
-  <header class="hud-header">
-    <div class="brand-section">
-      <div class="ficsit-badge">FICSIT INC.</div>
-      <h1 class="app-title">Compagnon Industriel <span>Satisfactory 1.2</span></h1>
-    </div>
-    <div class="quick-stats">
-      <div class="stat-pill">
-        <span class="stat-label">Jalons Débloqués</span>
-        <span class="stat-value" id="stat-completed-milestones">0</span>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-label">Puissance Calculée</span>
-        <span class="stat-value" id="stat-total-power">0 MW</span>
-      </div>
-    </div>
-  </header>
+
 
   <!-- BARRE DE NAVIGATION -->
   <nav class="nav-tabs-bar">
@@ -1020,7 +1007,7 @@ body {
               🏭 Usines Complètes de Jalons ➔
             </button>
             <button class="btn-ficsit" id="btn-calc-download-sbp-top" style="background: linear-gradient(135deg, #fa9549 0%, #ff5e3a 100%); font-weight: 800; box-shadow: 0 0 15px rgba(250, 149, 73, 0.4);">
-              <span>📥</span> Télécharger le Blueprint (.sbp)
+              <span>📥</span> Télécharger le Blueprint (.sbp) <span style="font-size: 10px; opacity: 0.85; margin-left: 4px; color: #fff;">(En cours de dev)</span>
             </button>
             <button class="btn-ficsit" id="btn-send-checklist">
               <span>🏗️</span> Envoyer vers la Checklist
@@ -1069,7 +1056,7 @@ body {
               <span>🚀</span> Optimiser (Min. d'Usines)
             </button>
             <button type="button" class="btn-ficsit" id="btn-calc-download-sbp-main" style="height: 42px; background: #059669; color: #ffffff; font-weight: 800; border: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);" title="Télécharge directement le fichier .sbp & .sbpcfg pour le jeu">
-              <span>📥</span> Télécharger Blueprint (.sbp)
+              <span>📥</span> Télécharger Blueprint (.sbp) <span style="font-size: 10px; opacity: 0.85; margin-left: 4px; color: #fff;">(En cours de dev)</span>
             </button>
           </div>
         </div>
@@ -1216,8 +1203,11 @@ body {
                 <span style="font-size: 11px; color: var(--text-muted);">Tutoriel d'assemblage guidé étape par étape pour construire cette usine en jeu sans erreur de ratio</span>
               </div>
             </div>
-            <!-- Contrôles d'étapes -->
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <!-- Contrôles d'étapes & Export Blueprint -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-guide-download-sbp" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 14px; background: var(--ficsit-orange); color: #000; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(250,149,73,0.35); border: none; border-radius: var(--radius-sm); cursor: pointer;" title="Télécharger le blueprint (.sbp et .sbpcfg) prêt à importer dans Satisfactory">
+                📥 Télécharger le Blueprint (.sbp) (En cours de dev)
+              </button>
               <span id="guide-step-counter-badge" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 4px;">
                 Étape 1 / 5
               </span>
@@ -1242,31 +1232,188 @@ body {
             <span id="guide-progress-pct" style="font-size: 12px; font-weight: 800; color: #10b981; min-width: 40px; text-align: right;">20%</span>
           </div>
 
+          <!-- Barre d'Options et Réglages du Chantier (Tapis, Profil Densité, Multi-Étages) -->
+          <div style="background: #0d1624; padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <!-- 1. Tiers de Tapis -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #38bdf8;">⚙️ Tapis Max :</span>
+                <select id="guide-belt-tier" style="background: #090e17; border: 1px solid #38bdf8; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="1">Mk.1 (60/m)</option>
+                  <option value="2">Mk.2 (120/m)</option>
+                  <option value="3" selected>Mk.3 (270/m)</option>
+                  <option value="4">Mk.4 (480/m)</option>
+                  <option value="5">Mk.5 (780/m)</option>
+                </select>
+              </div>
+
+              <!-- 2. Profil de Densité -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #f59e0b;">🎛️ Profil :</span>
+                <select id="guide-density-profile" style="background: #090e17; border: 1px solid #f59e0b; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="standard" selected>⚡ Standard (100%)</option>
+                  <option value="compact">🚀 Micro-Usine (250% Overclock)</option>
+                  <option value="somersloop">🔮 Somersloop ×2 (Doublement)</option>
+                </select>
+              </div>
+
+              <!-- 3. Architecture Verticale -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #a855f7;">🏢 Bâtiment :</span>
+                <select id="guide-architecture-mode" style="background: #090e17; border: 1px solid #a855f7; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="multi_floor" selected>🏢 Tour Verticale (Chantier par Étage)</option>
+                  <option value="single_floor">📐 Plain-Pied (1 Étage)</option>
+                </select>
+              </div>
+
+              <!-- 4. Gabarit Dalle & Hauteur (Illimité vs Compact) -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #10b981;">📐 Dalle :</span>
+                <select id="guide-footprint-mode" style="background: #090e17; border: 1px solid #10b981; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="auto" selected>🚀 Illimitée (Auto-Fit 100% Machines)</option>
+                  <option value="compact">📦 Blueprint 6×6 (48m × 48m)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Sélecteur d'Étage Actif (affiché en mode multi-étages) -->
+            <div id="guide-floor-selector-container" style="display: none; align-items: center; gap: 6px;">
+              <span style="font-size: 10.5px; font-weight: 800; color: #a855f7; text-transform: uppercase;">Étage Vue :</span>
+              <button type="button" class="btn-guide-floor-tab btn-outline is-active" data-floor="0" style="font-size: 10.5px; padding: 2px 8px; border-color: #a855f7; color: #a855f7;">RDC (Fonderies)</button>
+              <button type="button" class="btn-guide-floor-tab btn-outline" data-floor="1" style="font-size: 10.5px; padding: 2px 8px;">Étage 1 (Constructeurs)</button>
+              <button type="button" class="btn-guide-floor-tab btn-outline" data-floor="2" style="font-size: 10.5px; padding: 2px 8px;">Étage 2 (Assembleuses)</button>
+            </div>
+          </div>
+
           <!-- Corps du Guide Interactif -->
           <div id="guide-step-body" style="padding: 16px; display: grid; grid-template-columns: minmax(320px, 1.2fr) minmax(300px, 1fr); gap: 16px; align-items: start;">
-            <!-- Colonne 1 : Visualiseur Schéma CAD / SVG de l'étape -->
+            <!-- Colonne 1 : Visualiseur Schéma CAD 2D / Notice 3D Interactive -->
             <div style="background: #070c14; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 12px; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">📐 Plan d'Implantation 2D (Top-Down)</span>
-                  <span id="guide-step-tag" style="font-size: 10px; padding: 2px 8px; border-radius: 3px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: bold;">Fondations</span>
+              <!-- Onglets de bascule 2D / 3D -->
+              <div class="ficsit-view-switch-tabs">
+                <button type="button" id="btn-guide-view-2d" class="ficsit-view-switch-btn active" title="Plan d'Implantation Vectoriel 2D Top-Down">
+                  <span>📐</span> Plan 2D CAD Top-Down
+                </button>
+                <button type="button" id="btn-guide-view-3d" class="ficsit-view-switch-btn" title="Maquette 3D Interactive WebGL (Three.js)">
+                  <span>🧊</span> Notice 3D Interactive WebGL
+                </button>
+              </div>
+
+              <!-- VUE 2D CAD -->
+              <div id="guide-2d-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">📐 Plan Top-Down</span>
+                    <span id="guide-step-tag" style="font-size: 10px; padding: 2px 8px; border-radius: 3px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: bold;">Fondations</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" id="btn-guide-zoom-in" class="btn-outline" style="font-size: 11px; padding: 3px 8px; font-weight: bold;" title="Zoom Avant (ou Molette Souris)">➕</button>
+                    <button type="button" id="btn-guide-zoom-out" class="btn-outline" style="font-size: 11px; padding: 3px 8px; font-weight: bold;" title="Zoom Arrière (ou Molette Souris)">➖</button>
+                    <button type="button" id="btn-guide-reset-zoom" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px;" title="Recentrer le plan 2D">🔄</button>
+                    <button type="button" id="btn-guide-toggle-full-view" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;" title="Basculer entre la vue étape ciblée et le plan complet d'usine 2D">
+                      🗺️ Vue Usine 2D
+                    </button>
+                    <button type="button" id="btn-guide-fullscreen" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: #10b981; color: #10b981;" title="Agrandir en plein écran haute définition (HD)">
+                      🔍 Zoom HD
+                    </button>
+                  </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <button type="button" id="btn-guide-toggle-full-view" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;" title="Basculer entre la vue étape ciblée et le plan complet d'usine 2D">
-                    🗺️ Vue Usine 2D
-                  </button>
-                  <button type="button" id="btn-guide-fullscreen" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: #10b981; color: #10b981;" title="Agrandir en plein écran haute définition (HD)">
-                    🔍 Zoom HD
-                  </button>
+                <div id="guide-step-svg-viewport" style="width: 100%; min-height: 440px; background: #04070d; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.04);">
+                  <!-- SVG de l'étape injecté par JS -->
                 </div>
               </div>
-              <div id="guide-step-svg-viewport" style="width: 100%; min-height: 440px; background: #04070d; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.04);">
-                <!-- SVG de l'étape injecté par JS -->
+
+              <!-- VUE 3D THREE.JS -->
+              <div id="guide-3d-container" style="display: none;">
+                <div class="ficsit-3d-viewport-wrapper" id="guide-3d-viewport-wrapper">
+                  <div class="ficsit-3d-overlay-bar">
+                    <!-- Contrôles caméra -->
+                    <div class="ficsit-3d-cam-controls">
+                      <button type="button" class="btn-3d-cam active" data-cam="iso" id="btn-3d-cam-iso">ISO 3D</button>
+                      <button type="button" class="btn-3d-cam" data-cam="top" id="btn-3d-cam-top">Dessus</button>
+                      <button type="button" class="btn-3d-cam" data-cam="front" id="btn-3d-cam-front">Face</button>
+                      <button type="button" class="btn-3d-cam" data-cam="side" id="btn-3d-cam-side">Profil</button>
+                    </div>
+
+                    <!-- Contrôles Étages 3D (affichés en mode multi-étages) -->
+                    <div class="ficsit-3d-floor-controls" id="guide-3d-floor-controls" style="display: none;">
+                      <button type="button" class="btn-3d-floor active" data-floor="all" id="btn-3d-floor-all">🏢 Tous</button>
+                      <button type="button" class="btn-3d-floor" data-floor="0" id="btn-3d-floor-0">RDC</button>
+                      <button type="button" class="btn-3d-floor" data-floor="1" id="btn-3d-floor-1">Ét. 1</button>
+                      <button type="button" class="btn-3d-floor" data-floor="2" id="btn-3d-floor-2">Ét. 2</button>
+                    </div>
+
+                    <!-- Badge Statut WebGL -->
+                    <div class="ficsit-3d-badge-hud">
+                      <span class="dot-live"></span>
+                      <span>FICSIT 3D LIVE</span>
+                    </div>
+                  </div>
+
+                  <!-- Flèches Flottantes de Changement d'Étape -->
+                  <button type="button" class="ficsit-3d-step-nav nav-prev" id="btn-3d-prev-step" title="Étape précédente (Flèche Gauche ◄)">
+                    ◀
+                  </button>
+                  <button type="button" class="ficsit-3d-step-nav nav-next" id="btn-3d-next-step" title="Étape suivante (Flèche Droite ►)">
+                    ▶
+                  </button>
+
+                  <!-- Incrustation Plan 2D Top-Down CAD sur le Visuel 3D -->
+                  <div class="ficsit-3d-2d-inset" id="guide-3d-2d-inset">
+                    <div class="ficsit-3d-2d-inset-header">
+                      <span>📐 Plan 2D Top-Down CAD</span>
+                      <span class="badge-floor" id="guide-3d-2d-floor-badge">RDC</span>
+                      <div class="inset-actions">
+                        <button type="button" id="btn-3d-2d-inset-toggle-size" title="Agrandir / Réduire le plan 2D">⛶</button>
+                        <button type="button" id="btn-3d-2d-inset-close" title="Masquer l'incrustation 2D">✕</button>
+                      </div>
+                    </div>
+                    <div class="ficsit-3d-2d-inset-body" id="guide-3d-2d-svg-content">
+                      <!-- SVG de l'étape 2D injecté dynamiquement -->
+                    </div>
+                  </div>
+
+                  <!-- Conteneur WebGL Canvas -->
+                  <div id="guide-step-3d-viewport" class="ficsit-3d-canvas-container"></div>
+
+                  <!-- Barre HUD d'Étape Inférieure -->
+                  <div class="ficsit-3d-bottom-hud">
+                    <button type="button" class="btn-3d-hud-step" id="btn-3d-hud-prev" title="Étape précédente">◀</button>
+                    <div class="ficsit-3d-step-info" id="guide-3d-step-hud-info">
+                      <span class="step-num" id="guide-3d-step-hud-num">Étape 1 / 5</span>
+                      <span class="step-title" id="guide-3d-step-hud-title">1. Pose de la dalle</span>
+                    </div>
+                    <button type="button" class="btn-3d-hud-step" id="btn-3d-hud-next" title="Étape suivante">▶</button>
+                    <button type="button" class="btn-3d-hud-validate" id="btn-3d-hud-validate" title="Valider cette étape">✓ Fait</button>
+                  </div>
+
+                  <!-- Toggles mode 3D & Plein écran -->
+                  <div class="ficsit-3d-mode-toggles">
+                    <button type="button" class="btn-outline active" id="btn-3d-toggle-2d-plan" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px); color: var(--ficsit-cyan); border-color: var(--ficsit-cyan);" title="Afficher ou masquer l'incrustation du plan 2D Top-Down sur la vue 3D">
+                      📐 Plan 2D
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-toggle-subfloor" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px); color: var(--ficsit-amber); border-color: var(--ficsit-amber);" title="Afficher ou masquer les dalles pour inspecter les sous-étages logistiques">
+                      🔧 Vides Techniques
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-toggle-labels" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px); color: var(--ficsit-cyan); border-color: var(--ficsit-cyan);" title="Afficher ou masquer les étiquettes et débits au-dessus des machines">
+                      🏷️ Badges
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-toggle-ghost" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px);" title="Afficher les étapes futures en hologramme transparent">
+                      👻 Hologramme Futur
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-toggle-fullscreen" style="font-size: 10.5px; padding: 4px 8px; border-color: var(--ficsit-orange); color: var(--ficsit-orange); background: rgba(14,18,23,0.85); backdrop-filter: blur(4px);" title="Plein Écran 3D">
+                      ⛶ Plein Écran
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Colonne 2 : Instructions FICSIT & Shopping List -->
             <div style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Fiche Machine & Recette Interactive (Inspector au clic sur le plan 2D) -->
+              <div id="guide-machine-inspector-card" class="guide-machine-inspector-container"></div>
+
               <!-- Carte Titre & Objectif -->
               <div style="background: #111827; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-sm); padding: 12px 16px;">
                 <h5 id="guide-step-title" style="margin: 0 0 6px 0; font-size: 15px; color: #f8fafc; font-weight: 800;">
@@ -1390,7 +1537,7 @@ body {
               🔩 Pièce Unique ➔
             </button>
             <button class="btn-ficsit" id="btn-calc-ms-download-sbp-top" style="background: linear-gradient(135deg, #fa9549 0%, #ff5e3a 100%); font-weight: 800; box-shadow: 0 0 15px rgba(250, 149, 73, 0.4);">
-              <span>📥</span> Télécharger le Blueprint (.sbp)
+              <span>📥</span> Télécharger le Blueprint (.sbp) <span style="font-size: 10px; opacity: 0.85; margin-left: 4px; color: #fff;">(En cours de dev)</span>
             </button>
             <button class="btn-ficsit" id="btn-calc-ms-send-checklist-top">
               <span>🏗️</span> Envoyer vers la Checklist
@@ -1426,7 +1573,7 @@ body {
               <span>🚀</span> Optimiser (Min. d'Usines)
             </button>
             <button type="button" class="btn-ficsit" id="btn-calc-ms-download-sbp-main" style="height: 42px; background: #059669; color: #ffffff; font-weight: 800; border: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);" title="Télécharge directement le fichier .sbp & .sbpcfg pour le jeu">
-              <span>📥</span> Télécharger Blueprint (.sbp)
+              <span>📥</span> Télécharger Blueprint (.sbp) <span style="font-size: 10px; opacity: 0.85; margin-left: 4px; color: #fff;">(En cours de dev)</span>
             </button>
           </div>
         </div>
@@ -1492,6 +1639,263 @@ body {
           </div>
         </div>
 
+        <!-- GUIDE DE CHANTIER PAS-À-PAS INTERACTIF DU JALON (FONCTION PRINCIPALE) -->
+        <div id="calc-ms-construction-guide-section" style="margin-top: 20px; background: #0c121d; border: 2px solid #10b981; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 6px 30px rgba(16, 185, 129, 0.15);">
+          <!-- En-tête Guide de Chantier -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #111a28; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;">🏗️</span>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h4 style="margin: 0; font-family: var(--font-display); font-size: 15px; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Notice de Montage & Chantier Pas-à-Pas (Usine Complète de Jalon)
+                  </h4>
+                  <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">
+                    ★ FONCTION PRINCIPALE
+                  </span>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted);">Tutoriel d'assemblage guidé étape par étape pour construire tout le complexe en jeu</span>
+              </div>
+            </div>
+            <!-- Contrôles d'étapes & Export Blueprint -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-guide-ms-download-sbp" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 14px; background: var(--ficsit-orange); color: #000; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(250,149,73,0.35); border: none; border-radius: var(--radius-sm); cursor: pointer;" title="Télécharger le blueprint (.sbp et .sbpcfg) prêt à importer dans Satisfactory">
+                📥 Télécharger le Blueprint (.sbp) (En cours de dev)
+              </button>
+              <span id="guide-ms-step-counter-badge" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 4px;">
+                Étape 1 / 5
+              </span>
+              <button type="button" id="btn-guide-ms-prev-step" class="btn-outline" style="font-size: 11.5px; padding: 5px 12px;" title="Étape précédente">
+                ◀ Précédent
+              </button>
+              <button type="button" id="btn-guide-ms-next-step" class="btn-outline" style="font-size: 11.5px; padding: 5px 12px; border-color: #38bdf8; color: #38bdf8;" title="Étape suivante">
+                Suivant ▶
+              </button>
+              <button type="button" id="btn-guide-ms-validate-step" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 14px; background: #10b981; color: #000; font-weight: 800;">
+                ✓ Étape Réalisée
+              </button>
+            </div>
+          </div>
+
+          <!-- Barre de Progression du Chantier -->
+          <div style="background: #090e17; padding: 8px 18px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 14px;">
+            <span style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; white-space: nowrap;">Progression Chantier Jalon :</span>
+            <div style="flex: 1; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
+              <div id="guide-ms-progress-bar-fill" style="width: 20%; height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); transition: width 0.3s ease;"></div>
+            </div>
+            <span id="guide-ms-progress-pct" style="font-size: 12px; font-weight: 800; color: #10b981; min-width: 40px; text-align: right;">20%</span>
+          </div>
+
+          <!-- Barre d'Options et Réglages du Chantier (Tapis, Profil Densité, Multi-Étages) -->
+          <div style="background: #0d1624; padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <!-- 1. Tiers de Tapis -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #38bdf8;">⚙️ Tapis Max :</span>
+                <select id="guide-ms-belt-tier" style="background: #090e17; border: 1px solid #38bdf8; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="1">Mk.1 (60/m)</option>
+                  <option value="2">Mk.2 (120/m)</option>
+                  <option value="3" selected>Mk.3 (270/m)</option>
+                  <option value="4">Mk.4 (480/m)</option>
+                  <option value="5">Mk.5 (780/m)</option>
+                </select>
+              </div>
+
+              <!-- 2. Profil de Densité -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #f59e0b;">🎛️ Profil :</span>
+                <select id="guide-ms-density-profile" style="background: #090e17; border: 1px solid #f59e0b; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="standard" selected>⚡ Standard (100%)</option>
+                  <option value="compact">🚀 Micro-Usine (250% Overclock)</option>
+                  <option value="somersloop">🔮 Somersloop ×2 (Doublement)</option>
+                </select>
+              </div>
+
+              <!-- 3. Architecture Verticale -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #a855f7;">🏢 Bâtiment :</span>
+                <select id="guide-ms-architecture-mode" style="background: #090e17; border: 1px solid #a855f7; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="multi_floor" selected>🏢 Tour Verticale (Chantier par Étage)</option>
+                  <option value="single_floor">📐 Plain-Pied (1 Étage)</option>
+                </select>
+              </div>
+
+              <!-- 4. Gabarit Dalle & Hauteur (Illimité vs Compact) -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #10b981;">📐 Dalle :</span>
+                <select id="guide-ms-footprint-mode" style="background: #090e17; border: 1px solid #10b981; color: #f8fafc; font-size: 11px; font-weight: bold; border-radius: 4px; padding: 3px 8px; cursor: pointer;">
+                  <option value="auto" selected>🚀 Illimitée (Auto-Fit 100% Machines)</option>
+                  <option value="compact">📦 Blueprint 6×6 (48m × 48m)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Sélecteur d'Étage Actif (affiché en mode multi-étages) -->
+            <div id="guide-ms-floor-selector-container" style="display: none; align-items: center; gap: 6px;">
+              <span style="font-size: 10.5px; font-weight: 800; color: #a855f7; text-transform: uppercase;">Étage Vue :</span>
+              <button type="button" class="btn-guide-ms-floor-tab btn-outline is-active" data-floor="0" style="font-size: 10.5px; padding: 2px 8px; border-color: #a855f7; color: #a855f7;">RDC (Fonderies)</button>
+              <button type="button" class="btn-guide-ms-floor-tab btn-outline" data-floor="1" style="font-size: 10.5px; padding: 2px 8px;">Étage 1 (Constructeurs)</button>
+              <button type="button" class="btn-guide-ms-floor-tab btn-outline" data-floor="2" style="font-size: 10.5px; padding: 2px 8px;">Étage 2 (Assembleuses)</button>
+            </div>
+          </div>
+
+          <!-- Corps du Guide Interactif -->
+          <div id="guide-ms-step-body" style="padding: 16px; display: grid; grid-template-columns: minmax(320px, 1.2fr) minmax(300px, 1fr); gap: 16px; align-items: start;">
+            <!-- Colonne 1 : Visualiseur Schéma CAD 2D / Notice 3D Interactive -->
+            <div style="background: #070c14; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 12px; overflow: hidden;">
+              <!-- Onglets de bascule 2D / 3D -->
+              <div class="ficsit-view-switch-tabs">
+                <button type="button" id="btn-guide-ms-view-2d" class="ficsit-view-switch-btn active" title="Plan d'Implantation Vectoriel 2D Top-Down">
+                  <span>📐</span> Plan 2D CAD Top-Down
+                </button>
+                <button type="button" id="btn-guide-ms-view-3d" class="ficsit-view-switch-btn" title="Maquette 3D Interactive WebGL (Three.js)">
+                  <span>🧊</span> Notice 3D Interactive WebGL
+                </button>
+              </div>
+
+              <!-- VUE 2D CAD -->
+              <div id="guide-ms-2d-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">📐 Plan Top-Down</span>
+                    <span id="guide-ms-step-tag" style="font-size: 10px; padding: 2px 8px; border-radius: 3px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: bold;">Fondations</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" id="btn-guide-ms-zoom-in" class="btn-outline" style="font-size: 11px; padding: 3px 8px; font-weight: bold;" title="Zoom Avant (ou Molette Souris)">➕</button>
+                    <button type="button" id="btn-guide-ms-zoom-out" class="btn-outline" style="font-size: 11px; padding: 3px 8px; font-weight: bold;" title="Zoom Arrière (ou Molette Souris)">➖</button>
+                    <button type="button" id="btn-guide-ms-reset-zoom" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px;" title="Recentrer le plan 2D">🔄</button>
+                    <button type="button" id="btn-guide-ms-toggle-full-view" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;" title="Basculer entre la vue étape ciblée et le plan complet d'usine 2D">
+                      🗺️ Vue Usine 2D
+                    </button>
+                    <button type="button" id="btn-guide-ms-fullscreen" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: #10b981; color: #10b981;" title="Agrandir en plein écran haute définition (HD)">
+                      🔍 Zoom HD
+                    </button>
+                  </div>
+                </div>
+                <div id="guide-ms-step-svg-viewport" style="width: 100%; min-height: 440px; background: #04070d; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.04);">
+                  <!-- SVG de l'étape injecté par JS -->
+                </div>
+              </div>
+
+              <!-- VUE 3D THREE.JS -->
+              <div id="guide-ms-3d-container" style="display: none;">
+                <div class="ficsit-3d-viewport-wrapper" id="guide-ms-3d-viewport-wrapper">
+                  <div class="ficsit-3d-overlay-bar">
+                    <!-- Contrôles caméra -->
+                    <div class="ficsit-3d-cam-controls">
+                      <button type="button" class="btn-3d-cam active" data-cam="iso" id="btn-3d-ms-cam-iso">ISO 3D</button>
+                      <button type="button" class="btn-3d-cam" data-cam="top" id="btn-3d-ms-cam-top">Dessus</button>
+                      <button type="button" class="btn-3d-cam" data-cam="front" id="btn-3d-ms-cam-front">Face</button>
+                      <button type="button" class="btn-3d-cam" data-cam="side" id="btn-3d-ms-cam-side">Profil</button>
+                    </div>
+
+                    <!-- Contrôles Étages 3D (affichés en mode multi-étages) -->
+                    <div class="ficsit-3d-floor-controls" id="guide-ms-3d-floor-controls" style="display: none;">
+                      <button type="button" class="btn-3d-floor active" data-floor="all" id="btn-3d-ms-floor-all">🏢 Tous</button>
+                      <button type="button" class="btn-3d-floor" data-floor="0" id="btn-3d-ms-floor-0">RDC</button>
+                      <button type="button" class="btn-3d-floor" data-floor="1" id="btn-3d-ms-floor-1">Ét. 1</button>
+                      <button type="button" class="btn-3d-floor" data-floor="2" id="btn-3d-ms-floor-2">Ét. 2</button>
+                    </div>
+
+                    <!-- Badge Statut WebGL -->
+                    <div class="ficsit-3d-badge-hud">
+                      <span class="dot-live"></span>
+                      <span>FICSIT 3D LIVE</span>
+                    </div>
+                  </div>
+
+                  <!-- Flèches Flottantes de Changement d'Étape -->
+                  <button type="button" class="ficsit-3d-step-nav nav-prev" id="btn-3d-ms-prev-step" title="Étape précédente (Flèche Gauche ◄)">
+                    ◀
+                  </button>
+                  <button type="button" class="ficsit-3d-step-nav nav-next" id="btn-3d-ms-next-step" title="Étape suivante (Flèche Droite ►)">
+                    ▶
+                  </button>
+
+                  <!-- Incrustation Plan 2D Top-Down CAD sur le Visuel 3D -->
+                  <div class="ficsit-3d-2d-inset" id="guide-ms-3d-2d-inset">
+                    <div class="ficsit-3d-2d-inset-header">
+                      <span>📐 Plan 2D Top-Down CAD</span>
+                      <span class="badge-floor" id="guide-ms-3d-2d-floor-badge">RDC</span>
+                      <div class="inset-actions">
+                        <button type="button" id="btn-3d-ms-2d-inset-toggle-size" title="Agrandir / Réduire le plan 2D">⛶</button>
+                        <button type="button" id="btn-3d-ms-2d-inset-close" title="Masquer l'incrustation 2D">✕</button>
+                      </div>
+                    </div>
+                    <div class="ficsit-3d-2d-inset-body" id="guide-ms-3d-2d-svg-content">
+                      <!-- SVG de l'étape 2D injecté dynamiquement -->
+                    </div>
+                  </div>
+
+                  <!-- Conteneur WebGL Canvas -->
+                  <div id="guide-ms-step-3d-viewport" class="ficsit-3d-canvas-container"></div>
+
+                  <!-- Barre HUD d'Étape Inférieure -->
+                  <div class="ficsit-3d-bottom-hud">
+                    <button type="button" class="btn-3d-hud-step" id="btn-3d-ms-hud-prev" title="Étape précédente">◀</button>
+                    <div class="ficsit-3d-step-info" id="guide-ms-3d-step-hud-info">
+                      <span class="step-num" id="guide-ms-3d-step-hud-num">Étape 1 / 5</span>
+                      <span class="step-title" id="guide-ms-3d-step-hud-title">1. Pose de la dalle</span>
+                    </div>
+                    <button type="button" class="btn-3d-hud-step" id="btn-3d-ms-hud-next" title="Étape suivante">▶</button>
+                    <button type="button" class="btn-3d-hud-validate" id="btn-3d-ms-hud-validate" title="Valider cette étape">✓ Fait</button>
+                  </div>
+
+                  <!-- Toggles mode 3D & Plein écran -->
+                  <div class="ficsit-3d-mode-toggles">
+                    <button type="button" class="btn-outline active" id="btn-3d-ms-toggle-2d-plan" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px); color: var(--ficsit-cyan); border-color: var(--ficsit-cyan);" title="Afficher ou masquer l'incrustation du plan 2D Top-Down sur la vue 3D">
+                      📐 Plan 2D
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-ms-toggle-subfloor" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px); color: var(--ficsit-amber); border-color: var(--ficsit-amber);" title="Afficher ou masquer les dalles pour inspecter les sous-étages logistiques">
+                      🔧 Vides Techniques
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-ms-toggle-labels" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px); color: var(--ficsit-cyan); border-color: var(--ficsit-cyan);" title="Afficher ou masquer les étiquettes et débits au-dessus des machines">
+                      🏷️ Badges
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-ms-toggle-ghost" style="font-size: 10.5px; padding: 4px 8px; background: rgba(14,18,23,0.85); backdrop-filter: blur(4px);" title="Afficher les étapes futures en hologramme transparent">
+                      👻 Hologramme Futur
+                    </button>
+                    <button type="button" class="btn-outline" id="btn-3d-ms-toggle-fullscreen" style="font-size: 10.5px; padding: 4px 8px; border-color: var(--ficsit-orange); color: var(--ficsit-orange); background: rgba(14,18,23,0.85); backdrop-filter: blur(4px);" title="Plein Écran 3D">
+                      ⛶ Plein Écran
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Colonne 2 : Instructions FICSIT & Shopping List -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Fiche Machine & Recette Interactive (Inspector au clic sur le plan 2D) -->
+              <div id="guide-ms-machine-inspector-card" class="guide-machine-inspector-container"></div>
+
+              <!-- Carte Titre & Objectif -->
+              <div style="background: #111827; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-sm); padding: 12px 16px;">
+                <h5 id="guide-ms-step-title" style="margin: 0 0 6px 0; font-size: 15px; color: #f8fafc; font-weight: 800;">
+                  1. Pose de la dalle de fondations
+                </h5>
+                <div id="guide-ms-step-description" style="font-size: 12.5px; color: #cbd5e1; line-height: 1.5;">
+                  Installez une dalle de fondation plane pour accueillir l'ensemble des lignes de production.
+                </div>
+              </div>
+
+              <!-- Fiches Détails Techniques -->
+              <div id="guide-ms-step-details-card" style="background: #0d1522; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 12px;">
+                <!-- Détails injectés par JS -->
+              </div>
+
+              <!-- Shopping List de l'étape -->
+              <div style="background: #0f1c18; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 10px 14px;">
+                <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                  <span>🎒</span> Matériaux Requis pour cette étape :
+                </div>
+                <div id="guide-ms-step-shopping-list" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <!-- Tags de matériaux -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- SATISFACTORY CALCULATOR (SCIM) PRODUCTION FLOWCHART DAG DU JALON -->
         <div id="calc-ms-chain-flow" style="margin-top: 20px; background: #0f1319; border: 1px solid rgba(75, 179, 253, 0.4); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: block;">
           <!-- En-tête avec Contrôles SCIM -->
@@ -1532,8 +1936,8 @@ body {
           </div>
         </div>
 
-        <!-- MICRO-USINES INTÉGRÉES MK.3 / MÉGA-COMPLEXE DU JALON -->
-        <div id="calc-ms-integrated-module-section" style="margin-top: 20px; background: #0c111a; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+        <!-- MICRO-USINES INTÉGRÉES MK.3 / MÉGA-COMPLEXE DU JALON (MASQUÉ) -->
+        <div id="calc-ms-integrated-module-section" style="display: none !important; margin-top: 20px; background: #0c111a; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #131a26; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 20px;">🏛️</span>
@@ -1562,98 +1966,6 @@ body {
           <!-- Barre d'infos de la Micro-Usine -->
           <div id="integrated-ms-module-summary-bar" style="padding: 10px 18px; background: #0f1622; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <!-- Rempli par app.js -->
-          </div>
-        </div>
-
-        <!-- GUIDE DE CHANTIER PAS-À-PAS INTERACTIF DU JALON -->
-        <div id="calc-ms-construction-guide-section" style="margin-top: 20px; background: #0c121d; border: 1.5px solid #10b981; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 6px 28px rgba(0,0,0,0.65);">
-          <!-- En-tête Guide de Chantier -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #111a28; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 22px;">🏗️</span>
-              <div>
-                <h4 style="margin: 0; font-family: var(--font-display); font-size: 15px; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">
-                  Notice de Montage & Chantier Pas-à-Pas (Usine Complète de Jalon)
-                </h4>
-                <span style="font-size: 11px; color: var(--text-muted);">Tutoriel d'assemblage guidé étape par étape pour construire tout le complexe en jeu</span>
-              </div>
-            </div>
-            <!-- Contrôles d'étapes -->
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span id="guide-ms-step-counter-badge" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 4px;">
-                Étape 1 / 5
-              </span>
-              <button type="button" id="btn-guide-ms-prev-step" class="btn-outline" style="font-size: 11.5px; padding: 5px 12px;" title="Étape précédente">
-                ◀ Précédent
-              </button>
-              <button type="button" id="btn-guide-ms-next-step" class="btn-outline" style="font-size: 11.5px; padding: 5px 12px; border-color: #38bdf8; color: #38bdf8;" title="Étape suivante">
-                Suivant ▶
-              </button>
-              <button type="button" id="btn-guide-ms-validate-step" class="btn-ficsit" style="font-size: 11.5px; padding: 5px 14px; background: #10b981; color: #000; font-weight: 800;">
-                ✓ Étape Réalisée
-              </button>
-            </div>
-          </div>
-
-          <!-- Barre de Progression du Chantier -->
-          <div style="background: #090e17; padding: 8px 18px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 14px;">
-            <span style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; white-space: nowrap;">Progression Chantier Jalon :</span>
-            <div style="flex: 1; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
-              <div id="guide-ms-progress-bar-fill" style="width: 20%; height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); transition: width 0.3s ease;"></div>
-            </div>
-            <span id="guide-ms-progress-pct" style="font-size: 12px; font-weight: 800; color: #10b981; min-width: 40px; text-align: right;">20%</span>
-          </div>
-
-          <!-- Corps du Guide Interactif -->
-          <div id="guide-ms-step-body" style="padding: 16px; display: grid; grid-template-columns: minmax(320px, 1.2fr) minmax(300px, 1fr); gap: 16px; align-items: start;">
-            <!-- Colonne 1 : Visualiseur Schéma CAD / SVG de l'étape -->
-            <div style="background: #070c14; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 12px; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">📐 Plan d'Implantation 2D (Top-Down)</span>
-                  <span id="guide-ms-step-tag" style="font-size: 10px; padding: 2px 8px; border-radius: 3px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: bold;">Fondations</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <button type="button" id="btn-guide-ms-toggle-full-view" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;" title="Basculer entre la vue étape ciblée et le plan complet d'usine 2D">
-                    🗺️ Vue Usine 2D
-                  </button>
-                  <button type="button" id="btn-guide-ms-fullscreen" class="btn-outline" style="font-size: 10.5px; padding: 3px 8px; border-color: #10b981; color: #10b981;" title="Agrandir en plein écran haute définition (HD)">
-                    🔍 Zoom HD
-                  </button>
-                </div>
-              </div>
-              <div id="guide-ms-step-svg-viewport" style="width: 100%; min-height: 440px; background: #04070d; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.04);">
-                <!-- SVG de l'étape injecté par JS -->
-              </div>
-            </div>
-
-            <!-- Colonne 2 : Instructions FICSIT & Shopping List -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-              <!-- Carte Titre & Objectif -->
-              <div style="background: #111827; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-sm); padding: 12px 16px;">
-                <h5 id="guide-ms-step-title" style="margin: 0 0 6px 0; font-size: 15px; color: #f8fafc; font-weight: 800;">
-                  1. Pose de la dalle de fondations
-                </h5>
-                <div id="guide-ms-step-description" style="font-size: 12.5px; color: #cbd5e1; line-height: 1.5;">
-                  Installez une dalle de fondation plane pour accueillir l'ensemble des lignes de production.
-                </div>
-              </div>
-
-              <!-- Fiches Détails Techniques -->
-              <div id="guide-ms-step-details-card" style="background: #0d1522; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 12px;">
-                <!-- Détails injectés par JS -->
-              </div>
-
-              <!-- Shopping List de l'étape -->
-              <div style="background: #0f1c18; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 10px 14px;">
-                <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                  <span>🎒</span> Matériaux Requis pour cette étape :
-                </div>
-                <div id="guide-ms-step-shopping-list" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                  <!-- Tags de matériaux -->
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -8816,7 +9128,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <button type="button" id="btn-download-all-integrated-sbp" class="btn-ficsit" style="font-size: 11px; padding: 5px 12px; background: var(--ficsit-orange); color: #000; font-weight: 800; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(250,149,73,0.3);">
-              📥 Télécharger Tout le Complexe (.sbp)
+              📥 Télécharger Tout le Complexe (.sbp) (En cours de dev)
             </button>
           </div>
         `;
@@ -8871,7 +9183,7 @@ document.addEventListener("DOMContentLoaded", () => {
               showToast(`Erreur export : ${err.message}`);
             } finally {
               downloadAllComplexBtn.disabled = false;
-              downloadAllComplexBtn.innerHTML = "📥 Télécharger Tout le Complexe (.sbp)";
+              downloadAllComplexBtn.innerHTML = "📥 Télécharger Tout le Complexe (.sbp) (En cours de dev)";
             }
           };
         }
@@ -9001,7 +9313,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
               <button type="button" class="btn-ficsit btn-download-calc-sbp" data-mod-idx="${modIdx}" style="font-size: 11px; padding: 5px 12px; background: var(--ficsit-orange); color: #000; font-weight: 800; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none;">
-                📥 Télécharger (.sbp/.sbpcfg)
+                📥 Télécharger (.sbp/.sbpcfg) (En cours de dev)
               </button>
               <button type="button" class="btn-outline btn-open-step-mk3-modal" onclick="window.openMk3PlanModal(${modIdx})" data-mod-idx="${modIdx}" style="font-size: 11px; padding: 5px 12px; border-color: #38bdf8; background: rgba(56, 189, 248, 0.12); color: #38bdf8; font-weight: bold; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
                 📐 Ouvrir le Plan Mk.3 HD
@@ -9099,7 +9411,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast(`Erreur génération : ${err.message}`);
         } finally {
           btn.disabled = false;
-          btn.innerHTML = "📥 Télécharger (.sbp/.sbpcfg)";
+          btn.innerHTML = "📥 Télécharger (.sbp/.sbpcfg) (En cours de dev)";
         }
       };
     });
@@ -10031,7 +10343,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="btn-ficsit btn-download-bp-single" data-bpid="${bp.id}" style="flex: 1; font-size: 11.5px; padding: 6px;">
-                📥 Télécharger (.sbp/.sbpcfg)
+                📥 Télécharger (.sbp/.sbpcfg) (En cours de dev)
               </button>
             </div>
           </div>
@@ -10058,7 +10370,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast(`Erreur de génération : ${err.message}`);
           } finally {
             btn.disabled = false;
-            btn.innerText = "📥 Télécharger (.sbp/.sbpcfg)";
+            btn.innerText = "📥 Télécharger (.sbp/.sbpcfg) (En cours de dev)";
           }
         }
       };

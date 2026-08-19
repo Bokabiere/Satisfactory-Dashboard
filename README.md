@@ -58,8 +58,8 @@ Le tableau de bord regroupe **7 modules spécialisés** directement accessibles 
   * Déplacement libre des blocs de machines (drag & drop) et mode heatmap de diagnostic énergétique.
   * Basculement d'orientation Haut ➔ Bas ou Gauche ➔ Droite.
 * **Micro-Usines Intégrées Mk.3** (6×6 Fondations) : vue top-down 2D avec raccordements et suivi de chantier machine par machine.
-* **Téléchargement direct de Blueprints natifs du jeu (`.sbp` & `.sbpcfg`)** prêts à importer dans votre dossier de sauvegarde Satisfactory.
-* **Guide de Construction Pas-à-Pas 2D CAD** : étapes détaillées, shopping list de matériaux d'inventaire et validation progressive.
+* **Téléchargement direct 1-clic de Blueprints natifs du jeu (`.sbp` & `.sbpcfg`)** directement accessible dans l'en-tête de la Notice de montage, prêt à importer dans votre dossier de sauvegarde Satisfactory 1.0+.
+* **Guide de Construction Pas-à-Pas 2D CAD & 3D Interactive WebGL (Three.js)** : Notice de montage complète étape par étape (Fondations ➔ Logistique ➔ Implantation des Machines ➔ Réseau Électrique), caméra orbitale 360°, mode écorché/hologramme, shopping list de matériaux par étape, validation progressive et bouton d'exportation `.sbp` intégré.
 
 ---
 
@@ -68,7 +68,7 @@ Le tableau de bord regroupe **7 modules spécialisés** directement accessibles 
 * **Sélecteur de Jalon / Phase** avec aperçu immédiat des sous-objectifs de fabrication.
 * **Cadence temporelle ajustable** : calculez les débits nécessaires pour boucler l'objectif en 10 min, 15 min, 30 min, 45 min ou 1h.
 * **Optimisation IA Multi-Chaînes** : minimise le nombre total de machines requises en croisant l'intégralité des recettes alternatives sur toutes les branches du complexe.
-* **Schéma interactif SCIM multi-sorties** et intégration complète des blueprints Mk.3.
+* **Schéma interactif SCIM multi-sorties**, intégration complète des blueprints Mk.3, **Notice de Chantier 3D / 2D pas-à-pas** et **Bouton d'Export Blueprint `.sbp` du complexe complet**.
 * **Export instantané vers la Checklist de Chantier** pour préparer l'expédition des matériaux.
 
 ---

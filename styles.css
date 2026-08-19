@@ -1158,3 +1158,510 @@ body {
   user-select: none;
 }
 
+/* ==========================================================================
+   NOTICE DE MONTAGE 2D - INTERACTIVITÉ DES MACHINES & SURBRILLANCE I/O
+   ========================================================================== */
+
+@keyframes ficsitBeltFlowIn {
+  from {
+    stroke-dashoffset: 28;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ficsitBeltFlowOut {
+  from {
+    stroke-dashoffset: 28;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ficsitMachineSelectedGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 22px rgba(56, 189, 248, 0.7));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px #38bdf8) drop-shadow(0 0 32px rgba(56, 189, 248, 0.95));
+  }
+}
+
+.ficsit-guide-clickable-machine {
+  cursor: pointer !important;
+  transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.ficsit-guide-clickable-machine:hover {
+  filter: drop-shadow(0 0 14px #38bdf8) !important;
+}
+
+.ficsit-guide-clickable-machine.is-selected {
+  animation: ficsitMachineSelectedGlow 2s infinite ease-in-out !important;
+  opacity: 1 !important;
+}
+
+.ficsit-guide-clickable-machine.is-dimmed {
+  opacity: 0.22 !important;
+  filter: grayscale(70%) opacity(0.35) !important;
+}
+
+.ficsit-guide-conveyor {
+  transition: opacity 0.2s ease;
+}
+
+.ficsit-guide-conveyor.is-dimmed {
+  opacity: 0.15 !important;
+}
+
+.ficsit-guide-conveyor.is-input-flow path.flow-line {
+  stroke: #38bdf8 !important;
+  stroke-width: 5px !important;
+  stroke-dasharray: 6, 6 !important;
+  animation: ficsitBeltFlowIn 0.6s linear infinite !important;
+  filter: drop-shadow(0 0 8px #38bdf8) !important;
+}
+
+.ficsit-guide-conveyor.is-input-flow path.belt-track {
+  stroke: #0284c7 !important;
+}
+
+.ficsit-guide-conveyor.is-output-flow path.flow-line {
+  stroke: #10b981 !important;
+  stroke-width: 5px !important;
+  stroke-dasharray: 6, 6 !important;
+  animation: ficsitBeltFlowOut 0.6s linear infinite !important;
+  filter: drop-shadow(0 0 8px #10b981) !important;
+}
+
+.ficsit-guide-conveyor.is-output-flow path.belt-track {
+  stroke: #059669 !important;
+}
+
+.guide-machine-inspector-container {
+  transition: all 0.25s ease;
+}
+
+/* ==========================================================================
+   VISUALISEUR 3D THREE.JS - CHANTIER PAS-À-PAS & NOTICES DE MONTAGE
+   ========================================================================== */
+
+.ficsit-3d-viewport-wrapper {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  background: radial-gradient(circle at 50% 50%, #131b26 0%, #0b0e14 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.ficsit-3d-viewport-wrapper.is-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  border-radius: 0 !important;
+}
+
+.ficsit-3d-canvas-container {
+  width: 100%;
+  height: 100%;
+}
+
+.ficsit-3d-overlay-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ficsit-3d-cam-controls {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+  background: rgba(14, 18, 23, 0.85);
+  border: 1px solid var(--border-strong);
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+}
+
+.btn-3d-cam {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-3d-cam:hover {
+  color: var(--ficsit-orange);
+  background: rgba(250, 149, 73, 0.12);
+  border-color: var(--ficsit-orange);
+}
+
+.btn-3d-cam.active {
+  color: #0e1217;
+  background: var(--ficsit-orange);
+  border-color: var(--ficsit-orange);
+}
+
+.ficsit-3d-floor-controls {
+  display: flex;
+  gap: 4px;
+  pointer-events: auto;
+  background: rgba(14, 18, 23, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+}
+
+.btn-3d-floor {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-3d-floor:hover {
+  color: #d8b4fe;
+  background: rgba(168, 85, 247, 0.15);
+  border-color: #a855f7;
+}
+
+.btn-3d-floor.active {
+  color: #0e1217;
+  background: #a855f7;
+  border-color: #a855f7;
+}
+
+.ficsit-3d-badge-hud {
+  pointer-events: auto;
+  background: rgba(14, 18, 23, 0.85);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ficsit-cyan);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.ficsit-3d-badge-hud .dot-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ficsit-green);
+  box-shadow: 0 0 6px var(--ficsit-green);
+  animation: ficsitPulseDot 1.5s infinite;
+}
+
+@keyframes ficsitPulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+.ficsit-3d-mode-toggles {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.ficsit-view-switch-tabs {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.ficsit-view-switch-btn {
+  flex: 1;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ficsit-view-switch-btn.active {
+  background: var(--ficsit-orange);
+  color: #0e1217;
+}
+
+.ficsit-view-switch-btn:not(.active):hover {
+  background: rgba(250, 149, 73, 0.08);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   NAVIGATION ÉTAPES FLOTTANTE SUR VISUEL 3D
+   ========================================================================== */
+.ficsit-3d-step-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(10, 14, 22, 0.82);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px rgba(56, 189, 248, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.ficsit-3d-step-nav.nav-prev {
+  left: 14px;
+}
+
+.ficsit-3d-step-nav.nav-next {
+  right: 14px;
+}
+
+.ficsit-3d-step-nav:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #fff;
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 16px rgba(56, 189, 248, 0.5);
+}
+
+.ficsit-3d-step-nav:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.ficsit-3d-step-nav:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  box-shadow: none;
+}
+
+/* Barre HUD Inférieure d'étape 3D */
+.ficsit-3d-bottom-hud {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 14, 22, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 6px;
+  padding: 4px 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.btn-3d-hud-step {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-3d-hud-step:hover:not(:disabled) {
+  background: #38bdf8;
+  color: #0b0f19;
+}
+
+.btn-3d-hud-step:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ficsit-3d-step-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.ficsit-3d-step-info .step-num {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #10b981;
+  color: #a7f3d0;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.ficsit-3d-step-info .step-title {
+  color: #f1f5f9;
+  font-weight: 600;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-3d-hud-validate {
+  background: #10b981;
+  border: none;
+  color: #04100c;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-3d-hud-validate:hover {
+  background: #34d399;
+}
+
+/* ==========================================================================
+   INCRUSTATION DU PLAN 2D SUR LE VISUEL 3D (CAD PiP)
+   ========================================================================== */
+.ficsit-3d-2d-inset {
+  position: absolute;
+  top: 48px;
+  right: 12px;
+  width: 280px;
+  height: 200px;
+  background: rgba(4, 7, 13, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 6px;
+  z-index: 14;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 12px rgba(56, 189, 248, 0.15);
+  backdrop-filter: blur(10px);
+  transition: width 0.25s ease, height 0.25s ease, opacity 0.2s ease;
+  pointer-events: auto;
+}
+
+.ficsit-3d-2d-inset.is-expanded {
+  width: 480px;
+  height: 340px;
+}
+
+.ficsit-3d-2d-inset.is-hidden {
+  display: none !important;
+}
+
+.ficsit-3d-2d-inset-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  user-select: none;
+}
+
+.ficsit-3d-2d-inset-header .badge-floor {
+  background: rgba(168, 85, 247, 0.25);
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  color: #d8b4fe;
+  font-size: 9.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.ficsit-3d-2d-inset-header .inset-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ficsit-3d-2d-inset-header button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 11px;
+  border-radius: 3px;
+}
+
+.ficsit-3d-2d-inset-header button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ficsit-3d-2d-inset-body {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px;
+  background: #020408;
+}
+
+.ficsit-3d-2d-inset-body svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+
+
+
