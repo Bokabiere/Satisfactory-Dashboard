@@ -58,7 +58,48 @@ if (-not $statusLines) {
     exit 0
 }
 
-# Extraction des details des fichiers modifies
+# Extraction des details et detection automatique des fonctionnalites via git diff
+$diffText = git diff --cached -U0
+
+$detectedFeatures = @()
+$modifiedModules = @()
+
+foreach ($line in ($diffText -split "`r?`n")) {
+    if ($line -match '^\+\+\+ b\/(.+)$') {
+        $currentFile = $matches[1]
+        if ($currentFile -match 'recipes\.js') { $modifiedModules += "recettes" }
+        elseif ($currentFile -match 'calculator\.js') { $modifiedModules += "calculateur" }
+        elseif ($currentFile -match 'buildings\.js') { $modifiedModules += "batiments" }
+        elseif ($currentFile -match 'milestones\.js') { $modifiedModules += "jalons" }
+        elseif ($currentFile -match 'nodes\.js') { $modifiedModules += "gisements" }
+        elseif ($currentFile -match 'styles\.css') { $modifiedModules += "styles CSS" }
+        elseif ($currentFile -match 'README\.md') { $modifiedModules += "documentation" }
+    }
+    
+    # Detection de nouvelles fonctions JS (ex: function TOTO() ou const TOTO = ...)
+    if ($line -match '^\+\s*(?:async\s+)?function\s+([a-zA-Z0-9_$]+)\s*\(') {
+        $fName = $matches[1]
+        if ($fName -notmatch '^(init|ready|setup|callback)$') { $detectedFeatures += "fonction $fName()" }
+    } elseif ($line -match '^\+\s*(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s*)?\(') {
+        $fName = $matches[1]
+        $detectedFeatures += "fonction $fName()"
+    } 
+    # Detection de nouveaux onglets / sections / boutons HTML
+    elseif ($line -match '^\+\s*<[^>]+data-tab=["'']([^"'']+)["'']') {
+        $detectedFeatures += "onglet '$($matches[1])'"
+    } elseif ($line -match '^\+\s*<button[^>]+id=["'']btn-?([^"'']+)["'']') {
+        $detectedFeatures += "bouton '$($matches[1])'"
+    } elseif ($line -match '^\+\s*<div[^>]+id=["'']tab-?([^"'']+)["'']') {
+        $detectedFeatures += "onglet '$($matches[1])'"
+    } elseif ($line -match '^\+\s*<section[^>]+id=["'']([^"'']+)["'']') {
+        $detectedFeatures += "section '$($matches[1])'"
+    }
+}
+
+$detectedFeatures = $detectedFeatures | Select-Object -Unique
+$modifiedModules = $modifiedModules | Select-Object -Unique
+
+# Fichiers modifies
 $modified = @()
 $added = @()
 $deleted = @()
@@ -101,34 +142,27 @@ if ($allFiles.Count -gt 3) {
     $filesOverview += " (+$( $allFiles.Count - 3 ) autres)"
 }
 
-# Affichage des fichiers modifies
-Write-Host "   Fichiers detectes ($summaryStats) :" -ForegroundColor DarkCyan
-foreach ($d in $details) {
-    Write-Host "     $d" -ForegroundColor Gray
-}
-
-# 4. Demande de description fonctionnelle / personnalisee
+# 4. Construction automatique du titre du commit
 if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
-    Write-Host ""
-    Write-Host "   -------------------------------------------------------------" -ForegroundColor DarkGray
-    Write-Host "   Decrivez votre mise a jour (ex: Ajout fonction TOTO) :" -ForegroundColor Yellow
-    Write-Host "   [Appuyez sur Entree pour utiliser le titre automatique]" -ForegroundColor DarkGray
-    Write-Host "   -------------------------------------------------------------" -ForegroundColor DarkGray
-    $userInput = Read-Host "   > Message de commit"
-    
-    if (-not [string]::IsNullOrWhiteSpace($userInput)) {
-        $commitTitle = $userInput.Trim()
+    if ($detectedFeatures.Count -gt 0) {
+        $firstFeats = $detectedFeatures | Select-Object -First 2
+        $featText = $firstFeats -join " et "
+        if ($detectedFeatures.Count -gt 2) {
+            $featText += " (+$( $detectedFeatures.Count - 2 ) autres)"
+        }
+        $commitTitle = "feat: Ajout de $featText"
+    } elseif ($modifiedModules.Count -gt 0) {
+        $commitTitle = "MAJ: " + ($modifiedModules -join ", ") + " ($filesOverview)"
     } else {
         $commitTitle = "MAJ: $filesOverview ($summaryStats)"
     }
-    
+
     $CommitMessage = "$commitTitle`n`nDetails des changements :`n" + ($details -join "`n")
 } else {
     $CommitMessage = "$CommitMessage`n`nDetails des changements :`n" + ($details -join "`n")
 }
 
-Write-Host ""
-Write-Host "   -> Enregistrement du commit :" -ForegroundColor Gray
+Write-Host "   -> Message de commit genere automatiquement :" -ForegroundColor Cyan
 Write-Host "----------------------------------------------------" -ForegroundColor DarkGray
 Write-Host $CommitMessage -ForegroundColor White
 Write-Host "----------------------------------------------------" -ForegroundColor DarkGray
