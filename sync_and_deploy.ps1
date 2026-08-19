@@ -58,54 +58,76 @@ if (-not $statusLines) {
     exit 0
 }
 
-# 4. Construction du message de commit avec les modifications apportees
-if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
-    $modified = @()
-    $added = @()
-    $deleted = @()
-    $renamed = @()
-    $details = @()
+# Extraction des details des fichiers modifies
+$modified = @()
+$added = @()
+$deleted = @()
+$renamed = @()
+$details = @()
 
-    foreach ($line in $statusLines) {
-        if ([string]::IsNullOrWhiteSpace($line)) { continue }
-        $code = $line.Substring(0, 2).Trim()
-        $file = $line.Substring(2).Trim().Trim('"')
+foreach ($line in $statusLines) {
+    if ([string]::IsNullOrWhiteSpace($line)) { continue }
+    $code = $line.Substring(0, 2).Trim()
+    $file = $line.Substring(2).Trim().Trim('"')
 
-        if ($code -match 'M') {
-            $modified += $file
-            $details += "- Modifie : $file"
-        } elseif ($code -match '\?|A') {
-            $added += $file
-            $details += "- Ajoute  : $file"
-        } elseif ($code -match 'D') {
-            $deleted += $file
-            $details += "- Supprime: $file"
-        } elseif ($code -match 'R') {
-            $renamed += $file
-            $details += "- Renomme : $file"
-        } else {
-            $details += "- Modif ($code) : $file"
-        }
+    if ($code -match 'M') {
+        $modified += $file
+        $details += "- Modifie : $file"
+    } elseif ($code -match '\?|A') {
+        $added += $file
+        $details += "- Ajoute  : $file"
+    } elseif ($code -match 'D') {
+        $deleted += $file
+        $details += "- Supprime: $file"
+    } elseif ($code -match 'R') {
+        $renamed += $file
+        $details += "- Renomme : $file"
+    } else {
+        $details += "- Modif ($code) : $file"
     }
-
-    $summaryParts = @()
-    if ($modified.Count -gt 0) { $summaryParts += "Modif: $($modified.Count)" }
-    if ($added.Count -gt 0) { $summaryParts += "Ajout: $($added.Count)" }
-    if ($deleted.Count -gt 0) { $summaryParts += "Suppr: $($deleted.Count)" }
-    if ($renamed.Count -gt 0) { $summaryParts += "Renom: $($renamed.Count)" }
-
-    $summaryStats = $summaryParts -join ", "
-    $allFiles = @($modified + $added + $deleted + $renamed)
-    $firstFiles = $allFiles | Select-Object -First 3
-    $filesOverview = ($firstFiles | ForEach-Object { [System.IO.Path]::GetFileName($_) }) -join ", "
-    if ($allFiles.Count -gt 3) {
-        $filesOverview += " (+$( $allFiles.Count - 3 ) autres)"
-    }
-
-    $commitTitle = "MAJ: $filesOverview ($summaryStats)"
-    $CommitMessage = "$commitTitle`n`nDetails des changements :`n" + ($details -join "`n")
 }
 
+$summaryParts = @()
+if ($modified.Count -gt 0) { $summaryParts += "Modif: $($modified.Count)" }
+if ($added.Count -gt 0) { $summaryParts += "Ajout: $($added.Count)" }
+if ($deleted.Count -gt 0) { $summaryParts += "Suppr: $($deleted.Count)" }
+if ($renamed.Count -gt 0) { $summaryParts += "Renom: $($renamed.Count)" }
+$summaryStats = $summaryParts -join ", "
+
+$allFiles = @($modified + $added + $deleted + $renamed)
+$firstFiles = $allFiles | Select-Object -First 3
+$filesOverview = ($firstFiles | ForEach-Object { [System.IO.Path]::GetFileName($_) }) -join ", "
+if ($allFiles.Count -gt 3) {
+    $filesOverview += " (+$( $allFiles.Count - 3 ) autres)"
+}
+
+# Affichage des fichiers modifies
+Write-Host "   Fichiers detectes ($summaryStats) :" -ForegroundColor DarkCyan
+foreach ($d in $details) {
+    Write-Host "     $d" -ForegroundColor Gray
+}
+
+# 4. Demande de description fonctionnelle / personnalisee
+if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
+    Write-Host ""
+    Write-Host "   -------------------------------------------------------------" -ForegroundColor DarkGray
+    Write-Host "   Decrivez votre mise a jour (ex: Ajout fonction TOTO) :" -ForegroundColor Yellow
+    Write-Host "   [Appuyez sur Entree pour utiliser le titre automatique]" -ForegroundColor DarkGray
+    Write-Host "   -------------------------------------------------------------" -ForegroundColor DarkGray
+    $userInput = Read-Host "   > Message de commit"
+    
+    if (-not [string]::IsNullOrWhiteSpace($userInput)) {
+        $commitTitle = $userInput.Trim()
+    } else {
+        $commitTitle = "MAJ: $filesOverview ($summaryStats)"
+    }
+    
+    $CommitMessage = "$commitTitle`n`nDetails des changements :`n" + ($details -join "`n")
+} else {
+    $CommitMessage = "$CommitMessage`n`nDetails des changements :`n" + ($details -join "`n")
+}
+
+Write-Host ""
 Write-Host "   -> Enregistrement du commit :" -ForegroundColor Gray
 Write-Host "----------------------------------------------------" -ForegroundColor DarkGray
 Write-Host $CommitMessage -ForegroundColor White
