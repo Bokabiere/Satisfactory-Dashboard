@@ -1,4 +1,4 @@
-﻿param (
+param (
     [string]$CommitMessage = ""
 )
 
@@ -27,7 +27,7 @@ Write-Host "================================================================" -F
 
 # 2. Synchronisation locale vers le Tableau de bord PC (Mobro)
 $src = "c:\IA\Projets\Satisfactory-Dashboard"
-$dest = "c:\IA\Projets\Mobro-configuration\satisfactory"
+$dest = "c:\IA\Projets\Tableau de bord PC\satisfactory"
 
 Write-Host ""
 Write-Host "[1/3] Synchronisation vers le Tableau de bord PC..." -ForegroundColor Cyan

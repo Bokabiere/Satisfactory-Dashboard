@@ -190,7 +190,7 @@ const cbpJson = JSON.stringify(cbpPayload, null, 2);
 // Output Paths
 const projectDir = path.join(__dirname, 'satisfactory-dashboard', 'blueprints');
 const gameDir = 'C:\\Users\\y007\\AppData\\Local\\FactoryGame\\Saved\\SaveGames\\blueprints\\Boka_2026';
-const mobroDir = 'C:\\IA\\Projets\\Mobro-configuration\\satisfactory\\blueprints';
+const mobroDir = 'C:\\IA\\Projets\\Tableau de bord PC\\satisfactory\\blueprints';
 
 fs.writeFileSync(path.join(projectDir, 'Campus_1900_Cascades.cbp'), cbpJson, 'utf8');
 fs.writeFileSync(path.join(projectDir, 'campus_1900_cascades_megablueprint.json'), cbpJson, 'utf8');
