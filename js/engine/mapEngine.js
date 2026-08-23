@@ -11,7 +11,7 @@ class SatisfactoryMapEngine {
 
     // Viewport State
     this.scale = 1.0;
-    this.minScale = 0.5;
+    this.minScale = 0.1;
     this.maxScale = 6.0;
     this.offsetX = 0;
     this.offsetY = 0;
@@ -21,12 +21,11 @@ class SatisfactoryMapEngine {
 
     // Data State
     this.nodes = (typeof RESOURCE_NODES !== 'undefined') ? [...RESOURCE_NODES] : [];
-    this.filteredNodes = [...this.nodes];
+    this.filteredNodes = [];
     this.selectedNode = null;
     this.hoveredNode = null;
     this.activeFilters = {
-      types: new Set(Object.keys(typeof RESOURCE_TYPES !== 'undefined' ? RESOURCE_TYPES : {})),
-      purities: new Set(['pure', 'normal', 'impure']),
+      specifics: new Set(),
       search: ''
     };
 
@@ -60,11 +59,11 @@ class SatisfactoryMapEngine {
   initMapImages() {
     const satSrc = (typeof MAP_TEXTURES !== 'undefined' && MAP_TEXTURES.satellite) 
       ? MAP_TEXTURES.satellite 
-      : 'images/satisfactory_map.jpg';
+      : 'images/Map.jpg';
     
     const bioSrc = (typeof MAP_TEXTURES !== 'undefined' && MAP_TEXTURES.biomes) 
       ? MAP_TEXTURES.biomes 
-      : 'images/satisfactory_biomes.jpg';
+      : 'images/Biome_Map.jpg';
 
     this.satelliteImg.onload = () => {
       this.imagesLoaded.satellite = true;
@@ -115,9 +114,14 @@ class SatisfactoryMapEngine {
   }
 
   resetView() {
-    this.scale = Math.min(this.width, this.height) / 1050;
-    this.offsetX = (this.width - 1000 * this.scale) / 2;
-    this.offsetY = (this.height - 1000 * this.scale) / 2;
+    this.scale = Math.min(this.width, this.height) / 4500;
+    // Center roughly on the landmass instead of the raw 5000x5000 image center
+    // The landmass is heavily biased towards the bottom right (pixels ~2000 to ~4500)
+    const landmassCenterX = 2800;
+    const landmassCenterY = 2800;
+    
+    this.offsetX = (this.width / 2) - (landmassCenterX * this.scale);
+    this.offsetY = (this.height / 2) - (landmassCenterY * this.scale);
     this.render();
   }
 
@@ -153,13 +157,13 @@ class SatisfactoryMapEngine {
   }
 
   setFilters(filters) {
-    if (filters.types) this.activeFilters.types = filters.types;
-    if (filters.purities) this.activeFilters.purities = filters.purities;
+    if (filters.specifics) this.activeFilters.specifics = filters.specifics;
     if (filters.search !== undefined) this.activeFilters.search = filters.search.toLowerCase().trim();
 
     this.filteredNodes = this.nodes.filter(n => {
-      if (!this.activeFilters.types.has(n.type)) return false;
-      if (!this.activeFilters.purities.has(n.purity)) return false;
+      const specificKey = n.type + '-' + n.purity;
+      if (!this.activeFilters.specifics.has(specificKey)) return false;
+      
       if (this.activeFilters.search) {
         const typeMeta = (typeof RESOURCE_TYPES !== 'undefined') ? RESOURCE_TYPES[n.type] : null;
         const typeName = typeMeta ? typeMeta.name.toLowerCase() : '';
@@ -406,8 +410,8 @@ class SatisfactoryMapEngine {
     ctx.fillRect(0, 0, this.width, this.height);
 
     const topLeft = this.worldToScreen(0, 0);
-    const mapDrawWidth = 1000 * this.scale;
-    const mapDrawHeight = 1000 * this.scale;
+    const mapDrawWidth = 5000 * this.scale;
+    const mapDrawHeight = 5000 * this.scale;
 
     // Draw Real Terrain Satellite or Biome Map Image
     if (this.mapLayer === 'satellite' && this.imagesLoaded.satellite) {

@@ -8,6 +8,9 @@
   <!-- Moteur 3D WebGL Three.js & Contrôles Orbit -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="js/avatar.js"></script>
   <style>
 /* ==========================================================================
    FICSIT INDUSTRIAL DESIGN SYSTEM - SATISFACTORY DASHBOARD
@@ -2808,13 +2811,7 @@ body {
               <button type="button" class="map-layer-btn" data-layer="biomes" style="padding: 6px 12px; font-size: 12px; font-family: var(--font-display); background: transparent; color: var(--text-secondary); font-weight: 600; border: none; cursor: pointer;">
                 🗺️ Biomes
               </button>
-              <button type="button" class="map-layer-btn" data-layer="tactical" style="padding: 6px 12px; font-size: 12px; font-family: var(--font-display); background: transparent; color: var(--text-secondary); font-weight: 600; border: none; cursor: pointer;">
-                📐 Tactique
-              </button>
             </div>
-            <select id="map-biome-select" class="form-select" style="font-size: 13px; padding: 6px 12px; max-width: 240px; background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-              <option value="">-- Zoomer sur un Biome --</option>
-            </select>
             <button class="btn-outline" id="btn-map-reset-view">
               <span>🎯</span> Recentrer la Carte
             </button>
@@ -2928,21 +2925,16 @@ body {
             <!-- Filtres de Ressources -->
             <div class="map-panel-card">
               <div class="map-panel-title">
-                <span>Filtres de Gisements</span>
+                <span>Recherche</span>
                 <div style="display: flex; gap: 6px;">
                   <button id="btn-filter-all-res" class="btn-outline" style="font-size: 11px; padding: 2px 6px; cursor: pointer;">Tous</button>
                   <button id="btn-filter-none-res" class="btn-outline" style="font-size: 11px; padding: 2px 6px; cursor: pointer;">Aucun</button>
                 </div>
               </div>
 
-              <!-- Filtres Pureté -->
-              <div class="purity-filter-row">
-                <button class="purity-chip pure active" data-purity="pure">Pure (2x)</button>
-                <button class="purity-chip normal active" data-purity="normal">Normale (1x)</button>
-                <button class="purity-chip impure active" data-purity="impure">Impure (0.5x)</button>
-              </div>
 
-              <input type="text" id="map-search-input" class="form-input" placeholder="🔍 Rechercher minerai, biome..." style="margin-bottom: 12px; font-size: 12px; width: 100%;">
+              <input type="text" id="map-search-input" list="map-search-datalist" class="form-input" placeholder="🔍 Recherche..." style="margin-bottom: 12px; font-size: 12px;">
+              <datalist id="map-search-datalist"></datalist>
 
               <!-- Grille des Types de Ressources -->
               <div class="resource-filter-grid" id="map-resource-filter-grid">
@@ -3216,6 +3208,50 @@ body {
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Bulle de recherche globale (Assistant FICSIT) -->
+  <button type="button" id="ficsit-global-search-bubble" title="Assistant de Recherche FICSIT (Ctrl+K)" aria-label="Recherche globale">
+    <span>🔍</span>
+  </button>
+
+  <!-- Modal de Recherche Globale -->
+  <div id="ficsit-global-search-modal" style="display: none;" onclick="this.style.display='none'">
+    <div class="ficsit-search-container" onclick="event.stopPropagation()">
+      <!-- En-tête -->
+      <div class="ficsit-search-header">
+        <div class="ficsit-search-title-area">
+          <span style="font-size: 20px;">🖥️</span>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 14px; color: var(--ficsit-orange); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+              Terminal de Recherche FICSIT (ADA v1.2)
+            </h3>
+            <span style="font-size: 10.5px; color: var(--text-muted);">
+              Recherchez des recettes, jalons, gisements, bâtiments ou biomes...
+            </span>
+          </div>
+        </div>
+        <button type="button" id="btn-close-global-search" class="ficsit-close-btn">&times;</button>
+      </div>
+      
+      <!-- Zone de Saisie -->
+      <div class="ficsit-search-input-wrapper">
+        <input type="text" id="global-search-input" placeholder="Que recherchez-vous ? (ex: Vis, Charbon, Palier 3, Foreuse, Train...)" autocomplete="off">
+      </div>
+      
+      <!-- Résultats -->
+      <div id="global-search-results" class="ficsit-search-results-area">
+        <div class="ficsit-search-placeholder">
+          Saisissez au moins 2 caractères pour lancer la recherche...
+        </div>
+      </div>
+      
+      <!-- Pied de page -->
+      <div class="ficsit-search-footer">
+        <span>Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd></span>
+        <span>Appuyez sur <kbd>Échap</kbd> pour fermer</span>
+      </div>
     </div>
   </div>
 

@@ -9459,22 +9459,98 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Cliquez sur 2 points (ou gisements) de la carte pour tracer une ligne logistique !");
     });
 
-    // Populate Resource Chips
+            // Populate Resource Chips
     const resGrid = document.getElementById("map-resource-filter-grid");
     if (resGrid && typeof RESOURCE_TYPES !== 'undefined' && resGrid.children.length === 0) {
-      Object.entries(RESOURCE_TYPES).forEach(([typeKey, meta]) => {
-        const chip = document.createElement("div");
-        chip.className = "resource-chip active";
-        chip.setAttribute("data-res", typeKey);
-        chip.innerHTML = `
-          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${meta.color};"></span>
-          <span>${meta.name}</span>
-        `;
-        chip.addEventListener("click", () => {
-          chip.classList.toggle("active");
-          triggerFiltersUpdate();
+      // Change grid to 1 column for the rows
+      resGrid.style.gridTemplateColumns = "1fr";
+      resGrid.style.gap = "4px";
+
+      const groups = {
+        'Minerais': ['iron', 'copper', 'limestone', 'coal', 'caterium', 'bauxite', 'quartz', 'sulfur', 'uranium', 'sam'],
+        'Fluides & Gaz': ['oil', 'nitrogen', 'geothermal'],
+        'Exploration': ['somersloop', 'mercer_sphere', 'crash_site', 'slug_green', 'slug_yellow', 'slug_purple']
+      };
+      
+      Object.entries(groups).forEach(([groupName, keys]) => {
+        const groupTitle = document.createElement("div");
+        groupTitle.style = "font-weight: bold; color: var(--ficsit-orange); margin-top: 10px; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border-subtle); padding-bottom: 3px;";
+        groupTitle.innerText = groupName;
+        resGrid.appendChild(groupTitle);
+        
+        keys.forEach(typeKey => {
+          const meta = RESOURCE_TYPES[typeKey];
+          if (!meta) return;
+          
+          const row = document.createElement("div");
+          row.style = "display: flex; align-items: center; justify-content: space-between; padding: 4px 0;";
+          
+          const nameSpan = document.createElement("span");
+          nameSpan.style = "font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; cursor: pointer;";
+          nameSpan.innerText = meta.name;
+          nameSpan.title = "Cliquer pour basculer toutes les puret�s de cette ressource";
+          nameSpan.addEventListener("click", () => {
+            // Toggle all buttons in this row
+            const btns = buttonsContainer.querySelectorAll(".resource-specific-btn");
+            const allActive = Array.from(btns).every(b => b.classList.contains("active"));
+            btns.forEach(btn => {
+              if (allActive) {
+                btn.classList.remove("active");
+                btn.style.borderColor = '#444';
+                btn.style.background = '#222';
+              } else {
+                btn.classList.add("active");
+                btn.style.borderColor = 'var(--ficsit-orange)';
+                btn.style.background = '#333';
+              }
+            });
+            triggerFiltersUpdate();
+          });
+          row.appendChild(nameSpan);
+          
+          const buttonsContainer = document.createElement("div");
+          buttonsContainer.style = "display: flex; gap: 4px;";
+          
+          const purities = (groupName === 'Exploration' || !meta.pure) ? ['normal'] : ['impure', 'normal', 'pure'];
+          
+          purities.forEach(p => {
+            let color = '#f1c40f';
+            if (p === 'pure') color = '#2ecc71';
+            if (p === 'impure') color = '#e74c3c';
+            if (groupName === 'Exploration') color = meta.color;
+            
+            const btn = document.createElement("div");
+            btn.className = "resource-specific-btn";
+            btn.setAttribute("data-res", typeKey);
+            btn.setAttribute("data-purity", p);
+            btn.style = `display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 4px; background: #222; border: 2px solid #444; cursor: pointer; position: relative;`;
+            
+            const countStr = (meta[p] !== undefined) ? meta[p] : (p === 'normal' && meta.total) ? meta.total : '';
+            
+            btn.innerHTML = `
+              <div style="width: 20px; height: 20px; border-radius: 50%; background: ${meta.color}; border: 2px solid ${color}; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; box-sizing: border-box;">${meta.icon || ''}</div>
+              ${countStr ? `<div style="position: absolute; top: -6px; right: -6px; background: #e67e22; color: #fff; font-size: 9px; font-weight: bold; border-radius: 6px; padding: 1px 4px;">${countStr}</div>` : ''}
+            `;
+            
+            btn.addEventListener("click", () => {
+              if (btn.classList.contains('active')) {
+                btn.style.borderColor = '#444';
+                btn.style.background = '#222';
+                btn.classList.remove('active');
+              } else {
+                btn.style.borderColor = 'var(--ficsit-orange)';
+                btn.style.background = '#333';
+                btn.classList.add('active');
+              }
+              triggerFiltersUpdate();
+            });
+            
+            buttonsContainer.appendChild(btn);
+          });
+          
+          row.appendChild(buttonsContainer);
+          resGrid.appendChild(row);
         });
-        resGrid.appendChild(chip);
       });
     }
 
@@ -9482,7 +9558,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnAllRes = document.getElementById("btn-filter-all-res");
     if (btnAllRes) {
       btnAllRes.addEventListener("click", () => {
-        document.querySelectorAll(".resource-chip").forEach(c => c.classList.add("active"));
+        document.querySelectorAll(".resource-specific-btn").forEach(btn => {
+          btn.classList.add('active');
+          btn.style.borderColor = 'var(--ficsit-orange)';
+          btn.style.background = '#333';
+        });
         triggerFiltersUpdate();
       });
     }
@@ -9490,44 +9570,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnNoneRes = document.getElementById("btn-filter-none-res");
     if (btnNoneRes) {
       btnNoneRes.addEventListener("click", () => {
-        document.querySelectorAll(".resource-chip").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".resource-specific-btn").forEach(btn => {
+          btn.classList.remove('active');
+          btn.style.borderColor = '#444';
+          btn.style.background = '#222';
+        });
         triggerFiltersUpdate();
       });
     }
-
-    // Purity Chips
-    document.querySelectorAll(".purity-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        chip.classList.toggle("active");
-        triggerFiltersUpdate();
-      });
-    });
 
     // Search Input
     const searchInput = document.getElementById("map-search-input");
     if (searchInput) {
       searchInput.addEventListener("input", () => triggerFiltersUpdate());
+      
+      // Populate Datalist for autocomplete
+      const datalist = document.getElementById("map-search-datalist");
+      if (datalist && typeof RESOURCE_TYPES !== 'undefined') {
+        const uniqueEntries = new Set();
+        Object.values(RESOURCE_TYPES).forEach(meta => uniqueEntries.add(meta.name));
+        if (typeof BIOMES !== 'undefined') {
+          Object.values(BIOMES).forEach(b => uniqueEntries.add(b.name));
+        }
+        // Also add purity names
+        uniqueEntries.add("Pur");
+        uniqueEntries.add("Normal");
+        uniqueEntries.add("Impur");
+        
+        uniqueEntries.forEach(val => {
+          const opt = document.createElement("option");
+          opt.value = val;
+          datalist.appendChild(opt);
+        });
+      }
     }
 
     function triggerFiltersUpdate() {
       if (!mapEngineInstance) return;
-      const activeTypes = new Set();
-      document.querySelectorAll(".resource-chip.active").forEach(c => {
-        activeTypes.add(c.getAttribute("data-res"));
+      const specifics = new Set();
+      document.querySelectorAll(".resource-specific-btn.active").forEach(btn => {
+        specifics.add(btn.getAttribute("data-res") + '-' + btn.getAttribute("data-purity"));
       });
-
-      const activePurities = new Set();
-      document.querySelectorAll(".purity-chip.active").forEach(c => {
-        activePurities.add(c.getAttribute("data-purity"));
-      });
-
+      const searchInput = document.getElementById("map-search-input");
       const searchVal = searchInput ? searchInput.value : "";
-
-      mapEngineInstance.setFilters({
-        types: activeTypes,
-        purities: activePurities,
-        search: searchVal
-      });
+      mapEngineInstance.setFilters({ specifics, search: searchVal });
     }
 
     // Radius Distance Slider
@@ -10970,6 +11056,420 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
+  // LOGIQUE DE RECHERCHE GLOBALE & ASSISTANT DE TERMINAL FICSIT
+  // =========================================================================
+  function initGlobalSearch() {
+    const bubble = document.getElementById("ficsit-global-search-bubble");
+    const modal = document.getElementById("ficsit-global-search-modal");
+    const closeBtn = document.getElementById("btn-close-global-search");
+    const searchInput = document.getElementById("global-search-input");
+    const resultsArea = document.getElementById("global-search-results");
+
+    if (!bubble || !modal || !searchInput || !resultsArea) return;
+
+    let searchResults = [];
+    let selectedIndex = -1;
+
+    // --- Inject FICSIT Chat UI ---
+    let chatArea = document.getElementById("ficsit-chat-response");
+    if (!chatArea) {
+      chatArea = document.createElement("div");
+      chatArea.id = "ficsit-chat-response";
+      chatArea.style.display = "none";
+      chatArea.style.padding = "12px 16px";
+      chatArea.style.margin = "0 20px 10px 20px";
+      chatArea.style.backgroundColor = "rgba(250, 149, 73, 0.1)";
+      chatArea.style.borderLeft = "4px solid var(--ficsit-orange)";
+      chatArea.style.borderRadius = "4px";
+      chatArea.style.color = "var(--text-main)";
+      chatArea.style.fontFamily = "var(--font-main)";
+      chatArea.style.fontSize = "14px";
+      chatArea.style.lineHeight = "1.4";
+      chatArea.innerHTML = `<strong>ADA :</strong> <span id="ficsit-chat-text"></span>`;
+      
+      resultsArea.parentNode.insertBefore(chatArea, resultsArea);
+    }
+    const chatText = document.getElementById("ficsit-chat-text");
+    let chatTypingTimeout = null;
+    // -----------------------------
+
+    function openModal() {
+      modal.style.display = "flex";
+      searchInput.value = "";
+      resultsArea.innerHTML = `<div class="ficsit-search-placeholder">Saisissez au moins 2 caractères pour lancer la recherche...</div>`;
+      searchResults = [];
+      selectedIndex = -1;
+      if (chatArea) chatArea.style.display = "none";
+      setTimeout(() => searchInput.focus(), 50);
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    // Toggle click events
+    bubble.onclick = openModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", (e) => {
+      // Ctrl+K to open
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        openModal();
+      }
+      // Escape to close
+      if (e.key === "Escape" && modal.style.display === "flex") {
+        closeModal();
+      }
+    });
+
+    // Keyboard navigation within results
+    searchInput.addEventListener("keydown", (e) => {
+      const items = resultsArea.querySelectorAll(".ficsit-search-result-item");
+      if (items.length === 0) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % items.length;
+        updateSelection(items);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+        updateSelection(items);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+          executeResultAction(searchResults[selectedIndex]);
+        }
+      }
+    });
+
+    function updateSelection(items) {
+      items.forEach((item, idx) => {
+        if (idx === selectedIndex) {
+          item.classList.add("selected");
+          item.scrollIntoView({ block: "nearest" });
+        } else {
+          item.classList.remove("selected");
+        }
+      });
+    }
+
+    // Saisie utilisateur
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase().trim();
+      selectedIndex = -1;
+      
+      // Animation Thinking pendant la frappe
+      if (typeof playAvatarAnimation === 'function') {
+        playAvatarAnimation('thinking');
+      }
+      
+      clearTimeout(chatTypingTimeout);
+
+      if (q.length < 2) {
+        resultsArea.innerHTML = `<div class="ficsit-search-placeholder">Saisissez au moins 2 caractères pour lancer la recherche...</div>`;
+        searchResults = [];
+        if (chatArea) chatArea.style.display = "none";
+        return;
+      }
+
+      searchResults = performSearch(q);
+
+      if (searchResults.length === 0) {
+        resultsArea.innerHTML = `<div class="ficsit-search-placeholder">Aucun résultat trouvé pour "<strong>${q}</strong>".</div>`;
+      } else {
+        renderSearchResults(searchResults);
+      }
+      
+      // --- FICSIT Chatbot Logic (Debounced) ---
+      chatTypingTimeout = setTimeout(() => {
+        evaluateFicsitChat(q, searchResults.length);
+      }, 400);
+    });
+
+    function evaluateFicsitChat(query, resultCount) {
+      if (!chatArea || !chatText) return;
+      
+      let response = "";
+      let anim = "talking";
+      
+      if (query === "> danse" || query === "> dance") {
+        response = "Protocole de divertissement non autorisé activé. Veuillez ne pas le dire aux RH.";
+        anim = "dancing";
+      } 
+      else if (query.includes("pause") || query.includes("café") || query.includes("dormir") || query.includes("fatigue")) {
+        response = "FICSIT vous rappelle que le sommeil est une perte de productivité. Retournez au travail.";
+        anim = "whatever";
+      }
+      else if (query.includes("merci") || query.includes("bravo") || query.includes("super")) {
+        response = "Votre approbation n'est pas requise. Seule l'efficacité compte.";
+        anim = "victory";
+      }
+      else if (query.includes("aide") || query.includes("comment")) {
+        response = "Lisez le manuel FICSIT. Ou cherchez ci-dessous. Je ne suis pas payé pour vous tenir la main... ah, attendez, je ne suis pas payé du tout.";
+        anim = "talking";
+      }
+      else if (resultCount === 0) {
+        response = "Aucun résultat. Avez-vous mal épelé ce mot ou l'avez-vous inventé pour justifier votre inactivité ?";
+        anim = "whatever";
+      } 
+      else {
+        response = `J'ai trouvé ${resultCount} résultat(s). Ne gaspillez pas le matériel de l'entreprise.`;
+        anim = "talking";
+      }
+      
+      chatText.textContent = response;
+      chatArea.style.display = "block";
+      
+      if (typeof playAvatarAnimation === 'function') {
+        playAvatarAnimation(anim);
+      }
+    }
+
+    function performSearch(q) {
+      const results = [];
+
+      // 1. Recettes et Produits (Recipes & Items)
+      if (typeof RECIPES !== 'undefined' && typeof ITEM_NAMES !== 'undefined') {
+        RECIPES.forEach(recipe => {
+          const isNameMatch = recipe.name.toLowerCase().includes(q);
+          const hasMatchedIngredients = recipe.ingredients.some(ing => {
+            const ingName = ITEM_NAMES[ing.item] || ing.item;
+            return ingName.toLowerCase().includes(q);
+          });
+          const hasMatchedProducts = recipe.products.some(p => {
+            const prodName = ITEM_NAMES[p.item] || p.item;
+            return prodName.toLowerCase().includes(q);
+          });
+
+          if (isNameMatch || hasMatchedIngredients || hasMatchedProducts) {
+            const mainProduct = recipe.products[0]?.item || "smart_plating";
+            results.push({
+              category: "Calculateur",
+              badgeClass: "badge-recipe",
+              title: recipe.name,
+              subtitle: `${recipe.isAlt ? 'Recette Alternative' : 'Recette Standard'} • Fabriqué dans : ${recipe.building ? (BUILDINGS[recipe.building]?.name || recipe.building) : 'Artisanat'}`,
+              icon: "🔩",
+              action: () => {
+                switchTab("calculator");
+                const select = document.getElementById("calc-item-select");
+                if (select) {
+                  select.value = mainProduct;
+                  select.dispatchEvent(new Event("change"));
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // 2. Bâtiments (Buildings)
+      if (typeof BUILDINGS !== 'undefined') {
+        Object.entries(BUILDINGS).forEach(([bId, building]) => {
+          if (building.name.toLowerCase().includes(q)) {
+            results.push({
+              category: "Bâtiment",
+              badgeClass: "badge-building",
+              title: building.name,
+              subtitle: `Énergie : ${building.powerMW} MW • Catégorie : ${building.category}`,
+              icon: building.icon || "🏭",
+              action: () => {
+                switchTab("checklist");
+                checklistSearchQuery = building.name;
+                const chkSearchInput = document.getElementById("checklist-search-input");
+                if (chkSearchInput) chkSearchInput.value = building.name;
+                renderChecklist();
+              }
+            });
+          }
+        });
+      }
+
+      // 3. Carte, Ressources & Biomes
+      if (typeof RESOURCE_TYPES !== 'undefined') {
+        Object.entries(RESOURCE_TYPES).forEach(([resId, resType]) => {
+          if (resType.name.toLowerCase().includes(q)) {
+            results.push({
+              category: "Carte (Gisements)",
+              badgeClass: "badge-map",
+              title: `Gisements : ${resType.name}`,
+              subtitle: `${resType.total} gisements répartis sur le monde (Pure : ${resType.pure})`,
+              icon: resType.icon || "🗺️",
+              action: () => {
+                switchTab("map");
+                const chip = document.querySelector(`.resource-chip[data-res="${resId}"]`);
+                if (chip) {
+                  document.querySelectorAll(".resource-chip").forEach(c => c.classList.remove("active"));
+                  chip.classList.add("active");
+                  const mapSearch = document.getElementById("map-search-input");
+                  if (mapSearch) mapSearch.value = "";
+                  if (mapEngineInstance) {
+                    mapEngineInstance.setFilters({
+                      types: new Set([resId]),
+                      purities: new Set(),
+                      search: ""
+                    });
+                  }
+                }
+              }
+            });
+          }
+        });
+      }
+
+      if (typeof BIOMES !== 'undefined') {
+        BIOMES.forEach(biome => {
+          if (biome.name.toLowerCase().includes(q) || (biome.desc && biome.desc.toLowerCase().includes(q))) {
+            results.push({
+              category: "Carte (Biome)",
+              badgeClass: "badge-biome",
+              title: biome.name,
+              subtitle: biome.desc,
+              icon: "🏞️",
+              action: () => {
+                switchTab("map");
+                const select = document.getElementById("map-biome-select");
+                if (select) {
+                  select.value = biome.id;
+                  select.dispatchEvent(new Event("change"));
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // 4. Jalons du HUB & Ascenseur Spatial
+      if (typeof MILESTONES_DATA !== 'undefined') {
+        MILESTONES_DATA.tiers.forEach(t => {
+          t.milestones.forEach(m => {
+            const unlocksMatch = m.unlockedItems && m.unlockedItems.some(item => item.toLowerCase().includes(q));
+            if (m.name.toLowerCase().includes(q) || unlocksMatch) {
+              results.push({
+                category: "Jalon du HUB",
+                badgeClass: "badge-milestone",
+                title: m.name,
+                subtitle: `${t.name} • Débloque : ${m.unlockedItems ? m.unlockedItems.join(', ') : 'Technologies'}`,
+                icon: "📋",
+                action: () => {
+                  switchTab("milestones");
+                  const targetBlock = document.getElementById(`tier-block-${t.tier}`);
+                  if (targetBlock) {
+                    targetBlock.classList.add("open");
+                    setTimeout(() => {
+                      targetBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+                      targetBlock.style.borderColor = "var(--ficsit-orange)";
+                      setTimeout(() => targetBlock.style.borderColor = "", 2000);
+                    }, 100);
+                  }
+                }
+              });
+            }
+          });
+        });
+
+        MILESTONES_DATA.phases.forEach(p => {
+          if (p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)) {
+            results.push({
+              category: "Ascenseur Spatial",
+              badgeClass: "badge-phase",
+              title: p.name,
+              subtitle: p.description,
+              icon: "🚀",
+              action: () => {
+                switchTab("phases");
+              }
+            });
+          }
+        });
+      }
+
+      // 5. Recherche MAM
+      if (typeof MAM_DATA !== 'undefined') {
+        Object.entries(MAM_DATA.trees).forEach(([treeId, tree]) => {
+          if (tree.name.toLowerCase().includes(q) || tree.description.toLowerCase().includes(q)) {
+            results.push({
+              category: "Arbre MAM",
+              badgeClass: "badge-mam",
+              title: `Arbre : ${tree.name}`,
+              subtitle: tree.description,
+              icon: tree.icon || "🔬",
+              action: () => {
+                switchTab("mam");
+                const treesBtn = document.querySelector('[data-mam-subtab="trees"]');
+                if (treesBtn) treesBtn.click();
+                activeMAMBranch = treeId;
+                renderMAMBranchChips();
+                renderMAMTree();
+              }
+            });
+          }
+
+          tree.nodes.forEach(node => {
+            const unlocksMatch = node.unlocks && node.unlocks.toLowerCase().includes(q);
+            if (node.name.toLowerCase().includes(q) || unlocksMatch) {
+              results.push({
+                category: "Recherche MAM",
+                badgeClass: "badge-mam-node",
+                title: node.name,
+                subtitle: `Arbre : ${tree.name} • Débloque : ${node.unlocks || 'Technologie'}`,
+                icon: node.icon || "🔬",
+                action: () => {
+                  switchTab("mam");
+                  const treesBtn = document.querySelector('[data-mam-subtab="trees"]');
+                  if (treesBtn) treesBtn.click();
+                  activeMAMBranch = treeId;
+                  renderMAMBranchChips();
+                  renderMAMTree();
+                }
+              });
+            }
+          });
+        });
+      }
+
+      return results.slice(0, 15);
+    }
+
+    function renderSearchResults(results) {
+      resultsArea.innerHTML = results.map((r, idx) => {
+        return `
+          <div class="ficsit-search-result-item" data-index="${idx}">
+            <div class="ficsit-search-result-icon">${r.icon}</div>
+            <div class="ficsit-search-result-content">
+              <div class="ficsit-search-result-title">
+                ${r.title}
+                <span class="ficsit-search-badge ${r.badgeClass}">${r.category}</span>
+              </div>
+              <div class="ficsit-search-result-subtitle">${r.subtitle}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Add click event listeners
+      resultsArea.querySelectorAll(".ficsit-search-result-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const idx = parseInt(item.getAttribute("data-index"), 10);
+          if (idx >= 0 && idx < searchResults.length) {
+            executeResultAction(searchResults[idx]);
+          }
+        });
+      });
+    }
+
+    function executeResultAction(result) {
+      if (typeof result.action === "function") {
+        result.action();
+      }
+      closeModal();
+      showToast(`🧭 Navigation : ${result.title}`);
+    }
+  }
+
+  // =========================================================================
   // DÉMARRAGE & INITIALISATION DE L'APPLICATION
   // =========================================================================
   initThemeSelector();
@@ -10989,6 +11489,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPrintModal();
   initInteractiveMap();
   DisplayPreferencesManager.init();
+  initGlobalSearch();
   updateHUDStats();
 });
 
