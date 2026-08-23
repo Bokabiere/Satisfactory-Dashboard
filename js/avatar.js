@@ -64,7 +64,40 @@ function initAvatar() {
   speechBubble.appendChild(triangle);
 
   container.appendChild(speechBubble);
+
+  // --- Intelligence de l'avatar ---
+  const avatarQuotes = [
+    "Besoin d'aide ?",
+    "L'usine doit grandir !",
+    "Efficacité à 99%.",
+    "Avez-vous pensé aux foreuses MK3 ?",
+    "Surveillez votre consommation électrique.",
+    "Optimisation requise.",
+    "FICSIT Inc. vous remercie.",
+    "Pionnier, au rapport.",
+    "Stockage saturé ?"
+  ];
+  
+  setInterval(() => {
+    // Changer la citation aléatoirement
+    const randomQuote = avatarQuotes[Math.floor(Math.random() * avatarQuotes.length)];
+    speechBubble.textContent = randomQuote;
+    
+    // Jouer une animation aléatoire
+    if (Math.random() > 0.5) {
+      const anims = ['talking', 'thinking', 'victory', 'whatever', 'dancing'];
+      const randomAnim = anims[Math.floor(Math.random() * anims.length)];
+      if (typeof playAvatarAnimation === 'function') {
+        playAvatarAnimation(randomAnim);
+        // Retourner à l'état idle après quelques secondes
+        setTimeout(() => {
+          playAvatarAnimation('idle');
+        }, 6000);
+      }
+    }
+  }, 12000);
   // ---------------------
+
 
   // --- Drag & Drop ---
   let isDragging = false;
