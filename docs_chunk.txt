@@ -1,0 +1,5 @@
+C:\IA\Projets\Satisfactory-Dashboard\README.md
+C:\IA\Projets\Satisfactory-Dashboard\index.html
+C:\IA\Projets\Satisfactory-Dashboard\satisfactory_dashboard.html
+C:\IA\Projets\Satisfactory-Dashboard\satisfactory_prototype.html
+C:\IA\Projets\Satisfactory-Dashboard\template.html
