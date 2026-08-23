@@ -19,6 +19,11 @@
 
 ## 🖥️ Modules & Fonctionnalités du Tableau de Bord
 
+### 🤖 **NOUVEAU** : Assistant IA FICSIT (Avatar Interactif)
+* **Chatbot Local Intégré** : Posez des questions en langage naturel (ex: "comment fabriquer une tige de fer").
+* **Détection Sémantique** : L'IA analyse votre requête, gère les synonymes (ex: "barre" -> "tige") et interroge la base de données du jeu instantanément.
+* **Animations de l'Avatar** : L'assistant réagit dynamiquement à vos requêtes directement dans l'interface de Synthèse Industrielle.
+
 Le tableau de bord regroupe **8 modules spécialisés** directement accessibles depuis la barre de navigation :
 
 ```text
@@ -29,9 +34,9 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
 
 ### 📊 1. Synthèse Industrielle & Salle de Contrôle FICSIT
 * **Poste de Commandement & HUD Rétro-Futuriste** :
-  * **Télémétrie Énergétique & Production** : jauges néon dynamiques (consommation, capacité réseau, indice d'efficacité FICSIT 98.6%, charge usine).
-  * **Radar Tactique Canvas 2D** : balayage circulaire fluorescent à 60 fps avec détection pulsée des gisements miniers et bouton *Ping Radar*.
-  * **Holo-Inspecteur 3D à Vue Éclatée (Three.js)** : modélisation modulaire des machines (*Constructeur*, *Assembleur*, *Raffinerie*, *Fonderie*, *Centrale*) avec curseur d'écartement dynamique des parois.
+// REMOVED_FEATURE:   
+// REMOVED_FEATURE:   * **Radar Tactique Canvas 2D** : balayage circulaire fluorescent à 60 fps avec détection pulsée des gisements miniers et bouton *Ping Radar*.
+// REMOVED_FEATURE:   * **Holo-Inspecteur 3D à Vue Éclatée (Three.js)** : modélisation modulaire des machines (*Constructeur*, *Assembleur*, *Raffinerie*, *Fonderie*, *Centrale*) avec curseur d'écartement dynamique des parois.
   * **Télex de Diagnostics en temps réel** : terminal défilant de télémétrie FICSIT et répliques sarcastiques de l'IA ADA.
   * **Filtres Rétro-Futuristes** : *Scanlines CRT*, *Bloom holographique* et mode plein écran natif.
 * **Synchroniseur & Importateur de Sauvegarde (.SAV) Intégré** : Glissez-déposez directement votre fichier de sauvegarde Satisfactory pour synchroniser en 1 clic vos jalons débloqués, phases spatiales, arbres du MAM et recettes alternatives scannées.
@@ -113,7 +118,7 @@ Le tableau de bord regroupe **8 modules spécialisés** directement accessibles 
   * Curseur d'overclocking (100% à 250%) et boost Somersloop.
   * Calcul instantané du rendement en pièces/minute.
   * Bouton **"Injecter dans le Calculateur"** pour démarrer une chaîne à partir du gisement sélectionné.
-* **Outil Radar de zone** : analyse instantanée de tous les gisements situés dans un rayon configurable (50 m à 3 500 m).
+// REMOVED_FEATURE: * **Outil Radar de zone** : analyse instantanée de tous les gisements situés dans un rayon configurable (50 m à 3 500 m).
 * **Outil Tracé & Mesure Logistique** : mesure de distance directe entre deux points ou gisements et transfert automatique vers le module Logistique.
 * **Affichage des Capsules de Sauvetage (Crash Sites)** avec conditions de déverrouillage de disques durs.
 * Filtres multi-critères par type de ressource et par niveau de pureté.
@@ -209,12 +214,13 @@ Activez GitHub Pages dans les options de votre dépôt GitHub (`Settings > Pages
 - [x] Moteur d'optimisation automatique des recettes alternatives (Minimum de machines).
 - [x] Visualiseur 3D temps réel WebGL (Three.js) avec modèle interactif des usines et sélecteur d'étages.
 - [x] Guide de construction visuel 2D CAD étape par étape avec isolation dynamique.
-- [x] Carte Canvas interactive avec inspecteur de foreuses, radar de zone et outil de tracé logistique.
+// REMOVED_FEATURE: - [x] Carte Canvas interactive avec inspecteur de foreuses, radar de zone et outil de tracé logistique.
 - [x] Simulateur Logistique & Réseaux de Fret (Trains, Drones, Camions & Matrice de rentabilité FICSIT).
 - [x] Simulateur de Centrales Électriques pour les 10 technologies 1.2 (Ficsonium, Rocket Fuel, Ionized Fuel, etc.).
 - [x] Arbre Technologique Complet du MAM & Traqueur de Disques Durs (Dépôt Dimensionnel 1.0, Tier-List S/A/B/C/D & Aide au tirage).
 - [x] Checklist de chantier interactive et fiche d'atelier imprimable.
 - [x] Synchroniseur et importateur de sauvegardes `.SAV` Satisfactory.
+- [x] Assistant IA Local FICSIT (Requêtes de recettes, Énergie, Animations).
 - [ ] 🟡 *En cours de développement* : **Générateur & Bibliothèque de Blueprints .sbp / .sbpcfg natifs** (phase expérimentale, enrichissement et stabilisation des modules compacts et plans d'architecte Blueprint Designer Mk.1 / Mk.2 / Mk.3).
 
 ---

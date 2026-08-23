@@ -514,7 +514,7 @@ class SatisfactoryMapEngine {
 
     ctx.fillStyle = '#fa9549';
     ctx.font = '700 12px "Chakra Petch", sans-serif';
-    ctx.fillText(`RAYON RADAR: ${(this.radiusDistance * 10).toLocaleString()} m`, pos.x, pos.y + radius + 18);
+// REMOVED_FEATURE:     ctx.fillText(`RAYON RADAR: ${(this.radiusDistance * 10).toLocaleString()} m`, pos.x, pos.y + radius + 18);
 
     ctx.restore();
   }

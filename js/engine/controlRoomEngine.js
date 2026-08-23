@@ -19,7 +19,7 @@ window.ControlRoomEngine = (function() {
     { type: 'info', text: 'FLUX MINERAIS: 100% d\'acheminement nominal sur les convoyeurs principaux.' },
     { type: 'warn', text: 'RÉSEAU: Stabilisation du réseau à découpage haute tension.' },
     { type: 'ficsit', text: 'FICSIT HQ: "Votre efficacité a été enregistrée à 99.4%. Continuez ainsi."' },
-    { type: 'info', text: 'RADAR: Analyse spectrale des gisements et filons purs à 3.5 km.' },
+// REMOVED_FEATURE:     { type: 'info', text: 'RADAR: Analyse spectrale des gisements et filons purs à 3.5 km.' },
     { type: 'warn', text: 'HYDRO-FLUX: Pression des conduites de fluides stabilisée à 600 m³/min.' }
   ];
 

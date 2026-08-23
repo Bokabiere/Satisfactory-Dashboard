@@ -242,7 +242,7 @@ class Factory3DViewer {
         transmission: 0.85,
         ior: 1.5
       }),
-      ghostHologram: new THREE.MeshBasicMaterial({
+// REMOVED_FEATURE:       ghostHologram: new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
         wireframe: true,
         transparent: true,
@@ -2586,7 +2586,7 @@ class Factory3DViewer {
       if (child.isMesh) {
         if (mode === "ghost") {
           if (!child.userData.origMaterial) child.userData.origMaterial = child.material;
-          child.material = this.materials.ghostHologram;
+// REMOVED_FEATURE:           child.material = this.materials.ghostHologram;
         } else {
           if (child.userData.origMaterial) {
             child.material = child.userData.origMaterial;

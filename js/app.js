@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <button type="button" class="btn-outline btn-synth-nav" data-tab="map" style="text-align: left; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.05); cursor: pointer; border-radius: var(--radius-sm);">
               <div>
                 <strong style="color: #a855f7; font-size: 13px;">🗺️ Carte des Ressources</strong>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Visualiseur satellite, radar et injection dans le calculateur</div>
+// REMOVED_FEATURE:                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Visualiseur satellite, radar et injection dans le calculateur</div>
               </div>
               <span style="font-size: 14px; color: #a855f7;">➔</span>
             </button>
@@ -9448,7 +9448,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (toolSelectBtn) toolSelectBtn.addEventListener("click", () => setToolActive("select", toolSelectBtn));
     if (toolRadiusBtn) toolRadiusBtn.addEventListener("click", () => {
       setToolActive("radius", toolRadiusBtn);
-      showToast("Cliquez sur la carte pour définir le centre du radar de zone !");
+// REMOVED_FEATURE:       showToast("Cliquez sur la carte pour définir le centre du radar de zone !");
     });
     if (toolPinBtn) toolPinBtn.addEventListener("click", () => {
       setToolActive("custom_pin", toolPinBtn);
@@ -9617,12 +9617,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Radius Distance Slider
-    const radarDistSlider = document.getElementById("radar-dist-slider");
-    const radarDistLabel = document.getElementById("radar-dist-label");
-    if (radarDistSlider) {
-      radarDistSlider.addEventListener("input", () => {
-        const val = parseInt(radarDistSlider.value, 10);
-        if (radarDistLabel) radarDistLabel.textContent = `${(val * 10).toLocaleString()} m`;
+// REMOVED_FEATURE:     const radarDistSlider = document.getElementById("radar-dist-slider");
+// REMOVED_FEATURE:     const radarDistLabel = document.getElementById("radar-dist-label");
+// REMOVED_FEATURE:     if (radarDistSlider) {
+// REMOVED_FEATURE:       radarDistSlider.addEventListener("input", () => {
+// REMOVED_FEATURE:         const val = parseInt(radarDistSlider.value, 10);
+// REMOVED_FEATURE:         if (radarDistLabel) radarDistLabel.textContent = `${(val * 10).toLocaleString()} m`;
         if (mapEngineInstance) mapEngineInstance.setRadiusDistance(val);
       });
     }
@@ -9746,15 +9746,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateRadiusPanel(data) {
-    const countEl = document.getElementById("radar-nodes-count");
-    const listEl = document.getElementById("radar-summary-list");
+// REMOVED_FEATURE:     const countEl = document.getElementById("radar-nodes-count");
+// REMOVED_FEATURE:     const listEl = document.getElementById("radar-summary-list");
     if (!listEl) return;
 
     if (countEl) countEl.textContent = `${data.totalNodes} gisement(s)`;
 
     listEl.innerHTML = "";
     if (data.totalNodes === 0) {
-      listEl.innerHTML = `<div style="font-size: 12px; color: var(--text-secondary); padding: 8px;">Aucun gisement dans ce rayon. Cliquez ailleurs pour déplacer le radar.</div>`;
+// REMOVED_FEATURE:       listEl.innerHTML = `<div style="font-size: 12px; color: var(--text-secondary); padding: 8px;">Aucun gisement dans ce rayon. Cliquez ailleurs pour déplacer le radar.</div>`;
       return;
     }
 

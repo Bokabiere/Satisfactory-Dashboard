@@ -1081,23 +1081,23 @@ body {
                 </div>
               </div>
 
-              <!-- Panneau 2 : Radar Tactique de Détection -->
+// REMOVED_FEATURE:               <!-- Panneau 2 : Radar Tactique de Détection -->
               <div class="hud-panel">
                 <div class="hud-panel-title">
-                  <span>📡 RADAR TACTIQUE & GISEMENTS</span>
-                  <button id="btn-radar-ping" class="hud-btn" style="padding: 2px 8px; font-size: 10px;">
-                    <span>🎯</span> Ping Radar
+// REMOVED_FEATURE:                   <span>📡 RADAR TACTIQUE & GISEMENTS</span>
+// REMOVED_FEATURE:                   <button id="btn-radar-ping" class="hud-btn" style="padding: 2px 8px; font-size: 10px;">
+// REMOVED_FEATURE:                     <span>🎯</span> Ping Radar
                   </button>
                 </div>
-                <div class="radar-wrapper">
-                  <canvas id="ficsit-tactical-radar" width="220" height="220"></canvas>
+// REMOVED_FEATURE:                 <div class="radar-wrapper">
+// REMOVED_FEATURE:                   <canvas id="ficsit-tactical-radar" width="220" height="220"></canvas>
                 </div>
               </div>
 
               <!-- Panneau 3 : Inspecteur 3D à Vue Éclatée -->
               <div class="hud-panel">
                 <div class="hud-panel-title">
-                  <span>🔬 HOLO-INSPECTEUR 3D // VUE ÉCLATÉE</span>
+// REMOVED_FEATURE:                   <span>🔬 HOLO-INSPECTEUR 3D // VUE ÉCLATÉE</span>
                   <select id="ficsit-holo-building-select" class="form-input" style="padding: 2px 8px; font-size: 11px; width: auto;">
                     <option value="constructor">Constructeur Mk.1</option>
                     <option value="assembler">Assembleuse</option>
@@ -2825,8 +2825,8 @@ body {
               <button class="map-btn active" id="tool-map-select" title="Mode Sélection & Déplacement">
                 <span>🖱️</span> Sélection
               </button>
-              <button class="map-btn" id="tool-map-radius" title="Radar de Rayon & Analyse de Zone">
-                <span>📡</span> Radar Zone
+// REMOVED_FEATURE:               <button class="map-btn" id="tool-map-radius" title="Radar de Rayon & Analyse de Zone">
+// REMOVED_FEATURE:                 <span>📡</span> Radar Zone
               </button>
               <button class="map-btn" id="tool-map-pin" title="Poser un Marqueur de Base">
                 <span>🚩</span> Ajouter Base
@@ -2904,20 +2904,20 @@ body {
               </div>
             </div>
 
-            <!-- Analyse de Zone Radar (Si outil radar actif) -->
+// REMOVED_FEATURE:             <!-- Analyse de Zone Radar (Si outil radar actif) -->
             <div class="map-panel-card" id="map-radius-panel" style="display: none;">
               <div class="map-panel-title">
-                <span>📡 Analyse de Zone Radar</span>
-                <span id="radar-nodes-count" style="color: var(--ficsit-cyan); font-size: 12px;">0 gisements</span>
+// REMOVED_FEATURE:                 <span>📡 Analyse de Zone Radar</span>
+// REMOVED_FEATURE:                 <span id="radar-nodes-count" style="color: var(--ficsit-cyan); font-size: 12px;">0 gisements</span>
               </div>
               <div class="slider-group">
                 <div class="slider-label-row">
                   <span>Rayon d'action :</span>
-                  <strong style="color: var(--ficsit-orange);" id="radar-dist-label">1 500 m</strong>
+// REMOVED_FEATURE:                   <strong style="color: var(--ficsit-orange);" id="radar-dist-label">1 500 m</strong>
                 </div>
-                <input type="range" id="radar-dist-slider" min="50" max="350" value="150" step="25" style="accent-color: var(--ficsit-orange); width: 100%;">
+// REMOVED_FEATURE:                 <input type="range" id="radar-dist-slider" min="50" max="350" value="150" step="25" style="accent-color: var(--ficsit-orange); width: 100%;">
               </div>
-              <div id="radar-summary-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto;">
+// REMOVED_FEATURE:               <div id="radar-summary-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto;">
                 <!-- Rempli dynamiquement -->
               </div>
             </div>

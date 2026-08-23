@@ -1,140 +1,224 @@
 {
   "batch_export_sbp.js": {
     "mtime": 1786915160.981156,
-    "seen": 1787094303.36533,
+    "seen": 1787519832.7847972,
     "ast_hash": "9b9f978ac83d65bb1d931e29a6484fbd",
     "semantic_hash": "9b9f978ac83d65bb1d931e29a6484fbd"
   },
   "blueprints/campus_1900_cascades_megablueprint.json": {
-    "mtime": 1786887868.9876127,
-    "seen": 1787094303.365334,
-    "ast_hash": "6113b6298d2b4d81111237577f85104d",
-    "semantic_hash": "6113b6298d2b4d81111237577f85104d"
+    "mtime": 1787351255.3760228,
+    "seen": 1787519832.784801,
+    "ast_hash": "d438140ddd9c8a447cc4e47c8d2d453a",
+    "semantic_hash": "d438140ddd9c8a447cc4e47c8d2d453a"
   },
   "build_full_cbp.js": {
-    "mtime": 1786887865.2050478,
-    "seen": 1787094303.3653362,
-    "ast_hash": "1c437896c99f32692e159f5938b99b4d",
-    "semantic_hash": "1c437896c99f32692e159f5938b99b4d"
+    "mtime": 1787351380.7428858,
+    "seen": 1787519832.7848034,
+    "ast_hash": "a0a29e4af8effb341fda5ee495c67c35",
+    "semantic_hash": "a0a29e4af8effb341fda5ee495c67c35"
   },
   "bundle.js": {
-    "mtime": 1787085418.618188,
-    "seen": 1787094303.3653371,
-    "ast_hash": "101329398da16d0bcc7b005f79239617",
-    "semantic_hash": "101329398da16d0bcc7b005f79239617"
+    "mtime": 1787155769.8208623,
+    "seen": 1787519832.7848053,
+    "ast_hash": "f759a43c12770713f5268c716c9eb964",
+    "semantic_hash": "f759a43c12770713f5268c716c9eb964"
   },
   "generate_sbp.js": {
     "mtime": 1786913168.4777994,
-    "seen": 1787094303.365338,
+    "seen": 1787519832.78481,
     "ast_hash": "e28ae05cf96107db66e9225f08c10bfb",
     "semantic_hash": "e28ae05cf96107db66e9225f08c10bfb"
   },
   "js/app.js": {
-    "mtime": 1787088410.3530483,
-    "seen": 1787094303.365339,
-    "ast_hash": "55b0ef408cfc1ca68829cd30b1bc430a",
-    "semantic_hash": "55b0ef408cfc1ca68829cd30b1bc430a"
+    "mtime": 1787519322.5088837,
+    "seen": 1787519832.7848122,
+    "ast_hash": "98791bc0b348046fc96b0a70d02a35ab",
+    "semantic_hash": "98791bc0b348046fc96b0a70d02a35ab"
   },
   "js/data/blueprints.js": {
     "mtime": 1786891003.0432978,
-    "seen": 1787094303.36534,
+    "seen": 1787519832.7848167,
     "ast_hash": "d64c4a0cf189eeeaa43709840774ad62",
     "semantic_hash": "d64c4a0cf189eeeaa43709840774ad62"
   },
   "js/data/buildingTextures.js": {
     "mtime": 1787085411.7293742,
-    "seen": 1787094303.3653407,
+    "seen": 1787519832.7848196,
     "ast_hash": "741ddfc147f70a5a655c5760e4e4fde0",
     "semantic_hash": "741ddfc147f70a5a655c5760e4e4fde0"
   },
   "js/data/buildings.js": {
-    "mtime": 1787085141.454537,
-    "seen": 1787094303.3653417,
-    "ast_hash": "5ff7bf52c66ef8bb27240e686c821e7b",
-    "semantic_hash": "5ff7bf52c66ef8bb27240e686c821e7b"
+    "mtime": 1787102824.867275,
+    "seen": 1787519832.784822,
+    "ast_hash": "cdc82a8e3be23da2a3dc952357efab5f",
+    "semantic_hash": "cdc82a8e3be23da2a3dc952357efab5f"
   },
   "js/data/mapTextures.js": {
-    "mtime": 1786915910.08218,
-    "seen": 1787094303.3653426,
-    "ast_hash": "54fb318b99dcbd7cce5b8a5890a5d026",
-    "semantic_hash": "54fb318b99dcbd7cce5b8a5890a5d026"
+    "mtime": 1787509695.2810943,
+    "seen": 1787519832.7848277,
+    "ast_hash": "dc38a15bf5dc1a59c232a1b7bc550abe",
+    "semantic_hash": "dc38a15bf5dc1a59c232a1b7bc550abe"
   },
   "js/data/milestones.js": {
-    "mtime": 1786880104.8843572,
-    "seen": 1787094303.3653436,
-    "ast_hash": "907e85220cf68ed6fe081de09da4d290",
-    "semantic_hash": "907e85220cf68ed6fe081de09da4d290"
+    "mtime": 1787102853.3997798,
+    "seen": 1787519832.7848296,
+    "ast_hash": "2169fc0ada7ae3355419aa197dfe693d",
+    "semantic_hash": "2169fc0ada7ae3355419aa197dfe693d"
   },
   "js/data/nodes.js": {
-    "mtime": 1786916329.3360655,
-    "seen": 1787094303.3653445,
-    "ast_hash": "2d5985c29d07a18ae1290fc478b71fea",
-    "semantic_hash": "2d5985c29d07a18ae1290fc478b71fea"
+    "mtime": 1787516750.6986854,
+    "seen": 1787519832.7848313,
+    "ast_hash": "f986497295e0c29eaaf1ad1f61947872",
+    "semantic_hash": "f986497295e0c29eaaf1ad1f61947872"
   },
   "js/data/recipes.js": {
-    "mtime": 1786880102.5314922,
-    "seen": 1787094303.3653457,
-    "ast_hash": "2fcff42c9ef4d9ea983c18cfcc04a1d6",
-    "semantic_hash": "2fcff42c9ef4d9ea983c18cfcc04a1d6"
+    "mtime": 1787102833.28703,
+    "seen": 1787519832.7848349,
+    "ast_hash": "4d2999537e5e2e3ea49336ffa9d0d2d0",
+    "semantic_hash": "4d2999537e5e2e3ea49336ffa9d0d2d0"
   },
   "js/data/scim_buildings.json": {
     "mtime": 1787085115.169443,
-    "seen": 1787094303.365347,
+    "seen": 1787519832.7848365,
     "ast_hash": "ced9fcf631f1bd31bba49616097c50f6",
     "semantic_hash": "ced9fcf631f1bd31bba49616097c50f6"
   },
   "js/engine/blueprintGenerator.js": {
-    "mtime": 1786913324.6694827,
-    "seen": 1787094303.3653476,
-    "ast_hash": "d82c33fc59f0aa20d553a3b094a51037",
-    "semantic_hash": "d82c33fc59f0aa20d553a3b094a51037"
+    "mtime": 1787351380.7169363,
+    "seen": 1787519832.784839,
+    "ast_hash": "3de5a95985d212a258666d8a22ebab1e",
+    "semantic_hash": "3de5a95985d212a258666d8a22ebab1e"
   },
   "js/engine/calculator.js": {
-    "mtime": 1786897455.6961052,
-    "seen": 1787094303.3653483,
-    "ast_hash": "b09902d18e037404b47b1a7c44624557",
-    "semantic_hash": "b09902d18e037404b47b1a7c44624557"
+    "mtime": 1787139730.818699,
+    "seen": 1787519832.7848566,
+    "ast_hash": "03f2c32a1806a74065d9ba1bac980158",
+    "semantic_hash": "03f2c32a1806a74065d9ba1bac980158"
   },
   "js/engine/factoryViewer3D.js": {
-    "mtime": 1787088380.026119,
-    "seen": 1787094303.365349,
-    "ast_hash": "87e1595e8def5c20919cbe1979b125e1",
-    "semantic_hash": "87e1595e8def5c20919cbe1979b125e1"
+    "mtime": 1787105478.9510787,
+    "seen": 1787519832.7848604,
+    "ast_hash": "c5d93c850ca7b352699b8ed10407dc92",
+    "semantic_hash": "c5d93c850ca7b352699b8ed10407dc92"
   },
   "js/engine/mapEngine.js": {
-    "mtime": 1787071939.1762502,
-    "seen": 1787094303.3653505,
-    "ast_hash": "401de74003a7f52996a606a51501a3e0",
-    "semantic_hash": "401de74003a7f52996a606a51501a3e0"
+    "mtime": 1787516087.7113748,
+    "seen": 1787519832.7848678,
+    "ast_hash": "5b3d9beafb89e410ccbea2b7b77dd348",
+    "semantic_hash": "5b3d9beafb89e410ccbea2b7b77dd348"
   },
   "js/engine/saveParser.js": {
-    "mtime": 1786894436.5003414,
-    "seen": 1787094303.3653514,
-    "ast_hash": "11093a8daeaebc25c2d099426bd3173b",
-    "semantic_hash": "11093a8daeaebc25c2d099426bd3173b"
+    "mtime": 1787140823.922995,
+    "seen": 1787519832.784872,
+    "ast_hash": "36263473dd4c3a760ee1fe1d39aed4c3",
+    "semantic_hash": "36263473dd4c3a760ee1fe1d39aed4c3"
   },
   "js/jspdf.min.js": {
     "mtime": 1786891874.7093465,
-    "seen": 1787094303.3653524,
+    "seen": 1787519832.7848735,
     "ast_hash": "4b16d1b6023fa7271c62b3dee913c3ca",
     "semantic_hash": "4b16d1b6023fa7271c62b3dee913c3ca"
   },
   "sync_and_deploy.ps1": {
-    "mtime": 1787068042.2930858,
-    "seen": 1787094303.365353,
-    "ast_hash": "e5041ea17382d746891704cca6f86d1e",
-    "semantic_hash": "e5041ea17382d746891704cca6f86d1e"
+    "mtime": 1787233567.860907,
+    "seen": 1787519832.7848773,
+    "ast_hash": "e1f443849ace45acfc35343e1b2e5a05",
+    "semantic_hash": "e1f443849ace45acfc35343e1b2e5a05"
   },
   "test_bp.js": {
-    "mtime": 1786880084.246624,
-    "seen": 1787094303.365354,
+    "mtime": 1787351380.740999,
+    "seen": 1787519832.7848794,
     "ast_hash": "08fbb765d54aefafd15ba69a436e1709",
     "semantic_hash": "08fbb765d54aefafd15ba69a436e1709"
   },
   "README.md": {
-    "mtime": 1787078675.876889,
-    "seen": 1787094303.365355,
-    "ast_hash": "10cf8bafd503a6117a696e312a0790fc",
-    "semantic_hash": "10cf8bafd503a6117a696e312a0790fc"
+    "mtime": 1787144825.8783207,
+    "seen": 1787519832.7848809,
+    "ast_hash": "7477b82889ada009cf93c98602faeb6e",
+    "semantic_hash": "7477b82889ada009cf93c98602faeb6e"
+  },
+  "WorldResourceNodes.json": {
+    "mtime": 1787508887.5957928,
+    "seen": 1787519832.7847874,
+    "ast_hash": "ac7e5ef9d55b351d6f1c5b254a1647a2",
+    "semantic_hash": "ac7e5ef9d55b351d6f1c5b254a1647a2"
+  },
+  "creer_raccourcis_bureau.ps1": {
+    "mtime": 1787103431.704358,
+    "seen": 1787519832.7848074,
+    "ast_hash": "194da4178d0d55daa2f3b24ec6a55b74",
+    "semantic_hash": "194da4178d0d55daa2f3b24ec6a55b74"
+  },
+  "js/avatar.js": {
+    "mtime": 1787517024.9576535,
+    "seen": 1787519832.7848141,
+    "ast_hash": "5bccf03cb1464d6f084543c894ae078f",
+    "semantic_hash": "5bccf03cb1464d6f084543c894ae078f"
+  },
+  "js/data/logisticsData.js": {
+    "mtime": 1787141909.854373,
+    "seen": 1787519832.7848241,
+    "ast_hash": "b3bbabe69ffc9e3b42c95b8418bc9b7b",
+    "semantic_hash": "b3bbabe69ffc9e3b42c95b8418bc9b7b"
+  },
+  "js/data/mamData.js": {
+    "mtime": 1787142413.8041615,
+    "seen": 1787519832.7848258,
+    "ast_hash": "9fa4b7cfebdf1613ddabf01dd7ed2369",
+    "semantic_hash": "9fa4b7cfebdf1613ddabf01dd7ed2369"
+  },
+  "js/data/powerData.js": {
+    "mtime": 1787139276.8509324,
+    "seen": 1787519832.7848327,
+    "ast_hash": "0cd0c14ded01f13f5672fe785fd44b16",
+    "semantic_hash": "0cd0c14ded01f13f5672fe785fd44b16"
+  },
+  "js/engine/blueprintTemplates.json": {
+    "mtime": 1787100551.7248209,
+    "seen": 1787519832.7848527,
+    "ast_hash": "2a653116bf9370b595136dfae2efe429",
+    "semantic_hash": "2a653116bf9370b595136dfae2efe429"
+  },
+  "js/engine/buildingArchetypes.json": {
+    "mtime": 1787101528.3052144,
+    "seen": 1787519832.7848544,
+    "ast_hash": "05c7abf117cff239ed8970f74c072fe7",
+    "semantic_hash": "05c7abf117cff239ed8970f74c072fe7"
+  },
+  "js/engine/controlRoomEngine.js": {
+    "mtime": 1787516568.7023282,
+    "seen": 1787519832.7848577,
+    "ast_hash": "e11d3d5b531568e8f14a17ced2f5fa22",
+    "semantic_hash": "e11d3d5b531568e8f14a17ced2f5fa22"
+  },
+  "js/engine/logisticsEngine.js": {
+    "mtime": 1787141927.757795,
+    "seen": 1787519832.7848623,
+    "ast_hash": "78820024f80280f864ce4156dce52327",
+    "semantic_hash": "78820024f80280f864ce4156dce52327"
+  },
+  "js/engine/mamEngine.js": {
+    "mtime": 1787142420.9628608,
+    "seen": 1787519832.7848651,
+    "ast_hash": "9558fa4012bb9cc7455c475abc486caf",
+    "semantic_hash": "9558fa4012bb9cc7455c475abc486caf"
+  },
+  "js/engine/powerCalculator.js": {
+    "mtime": 1787138892.9497411,
+    "seen": 1787519832.7848694,
+    "ast_hash": "fdcfd29b17af16373cc433e0870b2b94",
+    "semantic_hash": "fdcfd29b17af16373cc433e0870b2b94"
+  },
+  "package.json": {
+    "mtime": 1787515713.3891227,
+    "seen": 1787519832.784875,
+    "ast_hash": "9eabe75d43af28fdf8f3e50fbd561211",
+    "semantic_hash": "9eabe75d43af28fdf8f3e50fbd561211"
+  },
+  "index.html": {
+    "mtime": 1787519322.0570679,
+    "seen": 1787519832.7848825,
+    "ast_hash": "8b841908404e52c493cb7607133bc8a9",
+    "semantic_hash": "8b841908404e52c493cb7607133bc8a9"
   }
 }

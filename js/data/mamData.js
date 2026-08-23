@@ -259,7 +259,7 @@ const MAM_DATA = {
       name: "Quartz",
       icon: "💎",
       color: "#e056fd",
-      description: "Étude des cristaux de quartz, fibres optiques, oscillateurs, Tours Radar et structures en verre.",
+// REMOVED_FEATURE:       description: "Étude des cristaux de quartz, fibres optiques, oscillateurs, Tours Radar et structures en verre.",
       nodes: [
         {
           id: "quartz_discovery",
@@ -292,14 +292,14 @@ const MAM_DATA = {
           unlocks: "Recette : Oscillateur à Cristal."
         },
         {
-          id: "quartz_radar_tower",
-          name: "Tour Radar",
+// REMOVED_FEATURE:           id: "quartz_radar_tower",
+// REMOVED_FEATURE:           name: "Tour Radar",
           icon: "📡",
           cost: { "crystal_oscillator": 10, "steel_beam": 50, "circuit_board": 20 },
           timeSec: 3,
           tierReq: 4,
           parents: ["quartz_oscillator"],
-          unlocks: "Bâtiment : Tour Radar (Révèle automatiquement les gisements et disques durs dans une zone de 3 km)."
+// REMOVED_FEATURE:           unlocks: "Bâtiment : Tour Radar (Révèle automatiquement les gisements et disques durs dans une zone de 3 km)."
         }
       ]
     },
