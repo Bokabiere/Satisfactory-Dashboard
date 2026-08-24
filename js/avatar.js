@@ -149,12 +149,22 @@ function initAvatar() {
 
   // Capture click event to prevent search modal if we dragged
   container.addEventListener('click', (e) => {
-    if (hasDragged) {
-      e.stopPropagation();
-      e.preventDefault();
-      hasDragged = false;
-    }
-  }, true);
+  // If a drag occurred, ignore the click
+  if (hasDragged) {
+    e.stopPropagation();
+    e.preventDefault();
+    hasDragged = false;
+    return;
+  }
+  // Open the FICSIT global search modal
+  const modal = document.getElementById('ficsit-global-search-modal');
+  const searchInput = document.getElementById('global-search-input');
+  if (modal) {
+    modal.style.display = 'block';
+    setTimeout(() => searchInput?.focus(), 50);
+  }
+}, false);
+
   // -------------------
 
   // Disable default CSS hover by overwriting event listeners
@@ -175,6 +185,7 @@ function initAvatar() {
 
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(width, height);
+  renderer.setClearColor(0x000000, 0); // transparent background
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.domElement.style.pointerEvents = 'none'; // Let events pass to container
   container.appendChild(renderer.domElement);
@@ -209,6 +220,9 @@ function initAvatar() {
     avatarModel.position.y = -(newSize.y / 2);
 
     scene.add(avatarModel);
+    // Remove fallback UI if it exists
+    const fallbackElem = container.querySelector('[data-fallback="true"]');
+    if (fallbackElem) fallbackElem.remove();
 
     mixer = new THREE.AnimationMixer(avatarModel);
     
@@ -226,8 +240,30 @@ function initAvatar() {
 
     animate();
 
+    // Fallback UI if model fails to load
+    const fallback = document.createElement('div');
+    fallback.textContent = 'FICSIT';
+    fallback.setAttribute('data-fallback', 'true');
+    fallback.style.position = 'absolute';
+    fallback.style.top = '50%';
+    fallback.style.left = '50%';
+    fallback.style.transform = 'translate(-50%, -50%)';
+    fallback.style.fontSize = '24px';
+    fallback.style.color = 'var(--ficsit-orange)';
+    container.appendChild(fallback);
   }, undefined, (error) => {
     console.error("FBX Load Error: ", error);
+    // Show fallback UI
+    const fallback = document.createElement('div');
+    fallback.textContent = 'FICSIT';
+    fallback.setAttribute('data-fallback', 'true');
+    fallback.style.position = 'absolute';
+    fallback.style.top = '50%';
+    fallback.style.left = '50%';
+    fallback.style.transform = 'translate(-50%, -50%)';
+    fallback.style.fontSize = '24px';
+    fallback.style.color = 'var(--ficsit-orange)';
+    container.appendChild(fallback);
   });
 }
 

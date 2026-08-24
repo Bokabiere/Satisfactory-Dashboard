@@ -3,7 +3,10 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   // Instances des moteurs
-  const calculator = new ProductionCalculator(RECIPES, BUILDINGS);
+  function safeLower(str) {
+  return typeof str === 'string' ? str.toLowerCase() : '';
+}
+
 
   // État local persistant
   const STATE = {
@@ -827,7 +830,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <button type="button" class="btn-outline btn-synth-nav" data-tab="map" style="text-align: left; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.05); cursor: pointer; border-radius: var(--radius-sm);">
               <div>
                 <strong style="color: #a855f7; font-size: 13px;">🗺️ Carte des Ressources</strong>
-// REMOVED_FEATURE:                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Visualiseur satellite, radar et injection dans le calculateur</div>
+
               </div>
               <span style="font-size: 14px; color: #a855f7;">➔</span>
             </button>
@@ -948,8 +951,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadMilestoneIntoCalculator(milestone, timeMinutes = 15) {
-    const msId = (milestone.id || "").toLowerCase();
-    const msName = (milestone.name || "").toLowerCase();
+    const msId = safeLower(milestone.id);
+    const msName = safeLower(milestone.name);
 
     // Redirection intelligente si le jalon concerne l'énergie/centrales
     if (msId.includes("coal_power") || msName.includes("charbon")) {
@@ -6912,7 +6915,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (searchInput) {
         searchInput.addEventListener("input", (e) => {
-          this.searchQuery = e.target.value.toLowerCase().trim();
+          this.searchQuery = safeLower(e.target.value).trim();
           this.render();
         });
       }
@@ -7057,10 +7060,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (this.searchQuery) {
         const q = this.searchQuery;
         candidateItems = candidateItems.filter(itemId => {
-          const itemName = (ITEM_NAMES[itemId] || itemId).toLowerCase();
+          const itemName = safeLower(ITEM_NAMES[itemId] || itemId);
           const recipes = calculator.getRecipesForItem(itemId);
-          const recipeNames = recipes.map(r => r.name.toLowerCase()).join(" ");
-          const ingredients = recipes.flatMap(r => r.ingredients.map(i => (ITEM_NAMES[i.item] || i.item).toLowerCase())).join(" ");
+          const recipeNames = recipes.map(r => safeLower(r.name)).join(" ");
+          const ingredients = recipes.flatMap(r => r.ingredients.map(i => safeLower(ITEM_NAMES[i.item] || i.item))).join(" ");
           return itemName.includes(q) || recipeNames.includes(q) || ingredients.includes(q);
         });
       }
@@ -7847,8 +7850,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (checklistFilter === "todo" && isChecked) return;
       if (checklistFilter === "done" && !isChecked) return;
       if (checklistSearchQuery) {
-        const q = checklistSearchQuery.toLowerCase();
-        const text = `${item.title} ${item.subtitle || ""} ${item.qty || ""}`.toLowerCase();
+        const q = safeLower(checklistSearchQuery);
+        const text = safeLower(`${item.title} ${item.subtitle || ""} ${item.qty || ""}`);
         if (!text.includes(q)) return;
       }
       filteredIndices.push(idx);
@@ -8813,11 +8816,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.upstreamMachines && res.upstreamMachines.length > 0) {
         res.upstreamMachines.forEach((m, idx) => {
           productionSteps.push({
-            recipeId: `upstream_${idx}_${m.outputItem.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+            recipeId: `upstream_${idx}_${safeLower(m.outputItem).replace(/[^a-z0-9]/g, '_')}`,
             recipeName: `${m.building} (${m.outputItem})`,
             itemId: m.outputItem,
             rateProduced: res.totalFuelRate,
-            building: { id: m.building.toLowerCase().replace(/[^a-z0-9]/g, '_'), name: m.building, icon: "🏭" },
+            building: { id: safeLower(m.building).replace(/[^a-z0-9]/g, '_'), name: m.building, icon: "🏭" },
             physicalMachines: m.count,
             machinesCount: m.count,
             overclock: res.overclockPercent,
@@ -9623,9 +9626,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // REMOVED_FEATURE:       radarDistSlider.addEventListener("input", () => {
 // REMOVED_FEATURE:         const val = parseInt(radarDistSlider.value, 10);
 // REMOVED_FEATURE:         if (radarDistLabel) radarDistLabel.textContent = `${(val * 10).toLocaleString()} m`;
-        if (mapEngineInstance) mapEngineInstance.setRadiusDistance(val);
-      });
-    }
+// REMOVED_FEATURE:         if (mapEngineInstance) mapEngineInstance.setRadiusDistance(val);
+// REMOVED_FEATURE:       });
+// REMOVED_FEATURE:     }
 
     // Close Inspector Button
     const closeInspBtn = document.getElementById("btn-close-node-inspector");
@@ -10700,7 +10703,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ev.choices.forEach(ch => {
         const isRec = ev.winner && ev.winner.id === ch.id;
-        const tierClass = `tier-${ch.tier.toLowerCase()}`;
+        const tierClass = `tier-${safeLower(ch.tier)}`;
 
         cardsHtml += `
           <div class="hard-drive-card ${isRec ? 'recommended' : ''}">
@@ -10785,7 +10788,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let rowsHtml = "";
     recipes.forEach(r => {
-      const tierClass = `tier-${r.tier.toLowerCase()}`;
+      const tierClass = `tier-${safeLower(r.tier)}`;
       const isUnlocked = STATE.unlockedAltRecipes.has(r.id);
 
       rowsHtml += `
@@ -10863,7 +10866,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. Headings avec IDs d'ancres
       html = html.replace(/^# (.*$)/gim, '<h1 id="readme-sec-intro">$1</h1>');
       html = html.replace(/^## (.*$)/gim, (match, title) => {
-        let secId = "sec-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        let secId = "sec-" + safeLower(title).replace(/[^a-z0-9]+/g, "-");
         if (/module|fonctionnalit/i.test(title)) secId = "readme-sec-modules";
         else if (/blueprint/i.test(title)) secId = "readme-sec-blueprints";
         else if (/stack|architecture|structure/i.test(title)) secId = "readme-sec-stack";
@@ -11021,7 +11024,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const nodesToReplace = [];
           let node;
           while ((node = walker.nextNode())) {
-            if (node.nodeValue.toLowerCase().includes(query) && node.parentNode.nodeName !== "CODE" && node.parentNode.nodeName !== "SCRIPT") {
+            if (safeLower(node.nodeValue).includes(query) && node.parentNode.nodeName !== "CODE" && node.parentNode.nodeName !== "SCRIPT") {
               nodesToReplace.push(node);
             }
           }
@@ -11295,14 +11298,14 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1. Recettes et Produits (Recipes & Items)
       if (typeof RECIPES !== 'undefined' && typeof ITEM_NAMES !== 'undefined') {
         RECIPES.forEach(recipe => {
-          const isNameMatch = recipe.name.toLowerCase().includes(q);
+          const isNameMatch = typeof recipe.name === 'string' && recipe.name.toLowerCase().includes(q);
           const hasMatchedIngredients = recipe.ingredients.some(ing => {
             const ingName = ITEM_NAMES[ing.item] || ing.item;
-            return ingName.toLowerCase().includes(q);
+            return typeof ingName === 'string' && ingName.toLowerCase().includes(q);
           });
           const hasMatchedProducts = recipe.products.some(p => {
             const prodName = ITEM_NAMES[p.item] || p.item;
-            return prodName.toLowerCase().includes(q);
+            return typeof prodName === 'string' && prodName.toLowerCase().includes(q);
           });
 
           if (isNameMatch || hasMatchedIngredients || hasMatchedProducts) {
@@ -11329,7 +11332,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. Bâtiments (Buildings)
       if (typeof BUILDINGS !== 'undefined') {
         Object.entries(BUILDINGS).forEach(([bId, building]) => {
-          if (building.name.toLowerCase().includes(q)) {
+          if ((building.name || '').toLowerCase().includes(q)) {
             results.push({
               category: "Bâtiment",
               badgeClass: "badge-building",
@@ -11351,7 +11354,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 3. Carte, Ressources & Biomes
       if (typeof RESOURCE_TYPES !== 'undefined') {
         Object.entries(RESOURCE_TYPES).forEach(([resId, resType]) => {
-          if (resType.name.toLowerCase().includes(q)) {
+          if ((resType.name || '').toLowerCase().includes(q)) {
             results.push({
               category: "Carte (Gisements)",
               badgeClass: "badge-map",
@@ -11382,7 +11385,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (typeof BIOMES !== 'undefined') {
         BIOMES.forEach(biome => {
-          if (biome.name.toLowerCase().includes(q) || (biome.desc && biome.desc.toLowerCase().includes(q))) {
+          if ((biome.name || '').toLowerCase().includes(q) || (biome.desc && (biome.desc || '').toLowerCase().includes(q))) {
             results.push({
               category: "Carte (Biome)",
               badgeClass: "badge-biome",
@@ -11404,6 +11407,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 4. Jalons du HUB & Ascenseur Spatial
       if (typeof MILESTONES_DATA !== 'undefined') {
+          // HUB milestones
+          MILESTONES_DATA.tiers.forEach(t => {
+            t.milestones.forEach(m => {
+              const unlocksMatch = m.unlockedItems && m.unlockedItems.some(item => safeLower(item).includes(q));
+              if (safeLower(m.name).includes(q) || unlocksMatch) {
+                results.push({
+                  category: "Jalon du HUB",
+                  badgeClass: "badge-milestone",
+                  title: m.name,
+                  subtitle: `${t.name} • Débloque : ${m.unlockedItems ? m.unlockedItems.join(', ') : 'Technologies'}`,
+                  icon: "📋",
+                  action: () => {
+                    switchTab("milestones");
+                    const targetBlock = document.getElementById(`tier-block-${t.tier}`);
+                    if (targetBlock) {
+                      targetBlock.classList.add("open");
+                      setTimeout(() => {
+                        const target = document.getElementById(`milestone-${m.id}`);
+                        if (target) {
+                          target.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
+                      }, 200);
+                    }
+                  }
+                });
+              }
+            });
+          });
+
+          // Spatial Elevator phases
+          MILESTONES_DATA.phases.forEach(p => {
+            if (safeLower(p.name).includes(q) || safeLower(p.description).includes(q)) {
+              results.push({
+                category: "Ascenseur Spatial",
+                badgeClass: "badge-phase",
+                title: p.name,
+                subtitle: p.description,
+                icon: "🚀",
+                action: () => {
+                  switchTab("milestones");
+                  const target = document.getElementById(`phase-${p.id}`);
+                  if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              });
+            }
+          });
+        }
         MILESTONES_DATA.tiers.forEach(t => {
           t.milestones.forEach(m => {
             const unlocksMatch = m.unlockedItems && m.unlockedItems.some(item => item.toLowerCase().includes(q));
@@ -11550,7 +11600,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initPrintModal();
   initInteractiveMap();
   DisplayPreferencesManager.init();
+// Initialise la recherche globale après le chargement du DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGlobalSearch);
+} else {
   initGlobalSearch();
+}
   updateHUDStats();
 });
 

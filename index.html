@@ -48630,7 +48630,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 5. Recherche MAM
       if (typeof MAM_DATA !== 'undefined') {
         Object.entries(MAM_DATA.trees).forEach(([treeId, tree]) => {
-          if (tree.name.toLowerCase().includes(q) || tree.description.toLowerCase().includes(q)) {
+          if ((tree?.name?.toLowerCase().includes(q)) || (tree?.description?.toLowerCase().includes(q))) {
             results.push({
               category: "Arbre MAM",
               badgeClass: "badge-mam",
@@ -48649,8 +48649,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           tree.nodes.forEach(node => {
-            const unlocksMatch = node.unlocks && node.unlocks.toLowerCase().includes(q);
-            if (node.name.toLowerCase().includes(q) || unlocksMatch) {
+            const unlocksMatch = node.unlocks?.toLowerCase().includes(q);
+if ((node.name?.toLowerCase().includes(q)) || unlocksMatch) {
               results.push({
                 category: "Recherche MAM",
                 badgeClass: "badge-mam-node",

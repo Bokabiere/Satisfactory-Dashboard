@@ -1,0 +1,4 @@
+name: Run Context Mapper on file change
+trigger: on_file_change
+actions:
+  - run: .agents/skills/repo_mapper/generate_context.sh

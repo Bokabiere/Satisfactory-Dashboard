@@ -1,0 +1,4 @@
+﻿name: Run Context Mapper on start
+trigger: on_start
+actions:
+  - run: .agents/skills/repo_mapper/generate_context.sh
