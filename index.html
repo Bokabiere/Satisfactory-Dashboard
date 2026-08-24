@@ -36785,7 +36785,7 @@ window.ControlRoomEngine = (function() {
 
 // REMOVED_FEATURE:     if (radarAnimId) cancelAnimationFrame(radarAnimId);
 // REMOVED_FEATURE:     animateRadar();
-  }
+//   }
 
 // REMOVED_FEATURE:   function animateRadar() {
 // REMOVED_FEATURE:     if (!radarCanvas || !radarCtx) return;
@@ -37156,14 +37156,14 @@ window.ControlRoomEngine = (function() {
     }
 
 // REMOVED_FEATURE:     const pingBtn = document.getElementById('btn-radar-ping');
-    if (pingBtn) {
-      pingBtn.onclick = () => {
+//     if (pingBtn) {
+//       pingBtn.onclick = () => {
 // REMOVED_FEATURE:         addTelexMessage(`[${new Date().toLocaleTimeString('fr-FR')}] RADAR: Balayage haute fréquence déclenché. 7 balises actualisées.`, 'warn');
 // REMOVED_FEATURE:         if (radarBlips) {
 // REMOVED_FEATURE:           radarBlips.forEach(b => b.pulse = 15);
-        }
-      };
-    }
+//         }
+//       };
+//     }
   }
 
   return {
@@ -46803,9 +46803,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // REMOVED_FEATURE:       radarDistSlider.addEventListener("input", () => {
 // REMOVED_FEATURE:         const val = parseInt(radarDistSlider.value, 10);
 // REMOVED_FEATURE:         if (radarDistLabel) radarDistLabel.textContent = `${(val * 10).toLocaleString()} m`;
-        if (mapEngineInstance) mapEngineInstance.setRadiusDistance(val);
-      });
-    }
+//         if (mapEngineInstance) mapEngineInstance.setRadiusDistance(val);
+//       });
+//     }
 
     // Close Inspector Button
     const closeInspBtn = document.getElementById("btn-close-node-inspector");
