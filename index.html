@@ -36791,30 +36791,30 @@ window.ControlRoomEngine = (function() {
 // REMOVED_FEATURE:     if (!radarCanvas || !radarCtx) return;
 // REMOVED_FEATURE:     const w = radarCanvas.width;
 // REMOVED_FEATURE:     const h = radarCanvas.height;
-    const cx = w / 2;
-    const cy = h / 2;
-    const maxRadius = Math.min(cx, cy) - 15;
-
+//     const cx = w / 2;
+//     const cy = h / 2;
+//     const maxRadius = Math.min(cx, cy) - 15;
+// 
 // REMOVED_FEATURE:     radarCtx.clearRect(0, 0, w, h);
-
+// 
 // REMOVED_FEATURE:     // Fond radar
 // REMOVED_FEATURE:     const bgGrad = radarCtx.createRadialGradient(cx, cy, 5, cx, cy, maxRadius);
-    bgGrad.addColorStop(0, 'rgba(10, 25, 20, 0.95)');
-    bgGrad.addColorStop(1, 'rgba(4, 12, 10, 0.98)');
+//     bgGrad.addColorStop(0, 'rgba(10, 25, 20, 0.95)');
+//     bgGrad.addColorStop(1, 'rgba(4, 12, 10, 0.98)');
 // REMOVED_FEATURE:     radarCtx.fillStyle = bgGrad;
 // REMOVED_FEATURE:     radarCtx.beginPath();
 // REMOVED_FEATURE:     radarCtx.arc(cx, cy, maxRadius, 0, Math.PI * 2);
 // REMOVED_FEATURE:     radarCtx.fill();
-
+// 
     // Cercles concentriques
 // REMOVED_FEATURE:     radarCtx.strokeStyle = 'rgba(46, 204, 113, 0.25)';
 // REMOVED_FEATURE:     radarCtx.lineWidth = 1;
-    for (let r = maxRadius / 4; r <= maxRadius; r += maxRadius / 4) {
+//     for (let r = maxRadius / 4; r <= maxRadius; r += maxRadius / 4) {
 // REMOVED_FEATURE:       radarCtx.beginPath();
 // REMOVED_FEATURE:       radarCtx.arc(cx, cy, r, 0, Math.PI * 2);
 // REMOVED_FEATURE:       radarCtx.stroke();
-    }
-
+//     }
+// 
     // Axes
 // REMOVED_FEATURE:     radarCtx.beginPath();
 // REMOVED_FEATURE:     radarCtx.moveTo(cx - maxRadius, cy);
@@ -36822,25 +36822,25 @@ window.ControlRoomEngine = (function() {
 // REMOVED_FEATURE:     radarCtx.moveTo(cx, cy - maxRadius);
 // REMOVED_FEATURE:     radarCtx.lineTo(cx, cy + maxRadius);
 // REMOVED_FEATURE:     radarCtx.stroke();
-
+// 
     // Balayage conique fluorescent
 // REMOVED_FEATURE:     radarAngle = (radarAngle + 0.025) % (Math.PI * 2);
-
+// 
 // REMOVED_FEATURE:     radarCtx.save();
 // REMOVED_FEATURE:     radarCtx.translate(cx, cy);
 // REMOVED_FEATURE:     radarCtx.rotate(radarAngle);
-
+// 
     // Faisceau
 // REMOVED_FEATURE:     radarCtx.beginPath();
 // REMOVED_FEATURE:     radarCtx.moveTo(0, 0);
 // REMOVED_FEATURE:     radarCtx.arc(0, 0, maxRadius, 0, 0.45);
 // REMOVED_FEATURE:     radarCtx.closePath();
 // REMOVED_FEATURE:     const beamGrad = radarCtx.createRadialGradient(0, 0, 0, 0, 0, maxRadius);
-    beamGrad.addColorStop(0, 'rgba(46, 204, 113, 0.5)');
-    beamGrad.addColorStop(1, 'rgba(46, 204, 113, 0.0)');
+//     beamGrad.addColorStop(0, 'rgba(46, 204, 113, 0.5)');
+//     beamGrad.addColorStop(1, 'rgba(46, 204, 113, 0.0)');
 // REMOVED_FEATURE:     radarCtx.fillStyle = beamGrad;
 // REMOVED_FEATURE:     radarCtx.fill();
-
+// 
     // Ligne frontale lumineuse
 // REMOVED_FEATURE:     radarCtx.beginPath();
 // REMOVED_FEATURE:     radarCtx.moveTo(0, 0);
@@ -36851,39 +36851,39 @@ window.ControlRoomEngine = (function() {
 // REMOVED_FEATURE:     radarCtx.shadowBlur = 10;
 // REMOVED_FEATURE:     radarCtx.stroke();
 // REMOVED_FEATURE:     radarCtx.restore();
-
+// 
     // Dessiner les Blips
 // REMOVED_FEATURE:     radarBlips.forEach(blip => {
-      const bx = cx + Math.cos(blip.angle) * (blip.r * (maxRadius / 180));
-      const by = cy + Math.sin(blip.angle) * (blip.r * (maxRadius / 180));
-
+//       const bx = cx + Math.cos(blip.angle) * (blip.r * (maxRadius / 180));
+//       const by = cy + Math.sin(blip.angle) * (blip.r * (maxRadius / 180));
+// 
 // REMOVED_FEATURE:       let diff = (radarAngle - blip.angle) % (Math.PI * 2);
-      if (diff < 0) diff += Math.PI * 2;
-
-      let alpha = 0.2;
-      if (diff < 0.8) {
-        alpha = 1.0 - (diff / 0.8) * 0.7;
-        blip.pulse = Math.min(15, blip.pulse + 0.8);
-      } else {
-        blip.pulse = Math.max(0, blip.pulse - 0.2);
-      }
-
+//       if (diff < 0) diff += Math.PI * 2;
+// 
+//       let alpha = 0.2;
+//       if (diff < 0.8) {
+//         alpha = 1.0 - (diff / 0.8) * 0.7;
+//         blip.pulse = Math.min(15, blip.pulse + 0.8);
+//       } else {
+//         blip.pulse = Math.max(0, blip.pulse - 0.2);
+//       }
+// 
 // REMOVED_FEATURE:       radarCtx.beginPath();
 // REMOVED_FEATURE:       radarCtx.arc(bx, by, 3 + blip.pulse * 0.3, 0, Math.PI * 2);
 // REMOVED_FEATURE:       radarCtx.fillStyle = `rgba(250, 149, 73, ${alpha})`;
 // REMOVED_FEATURE:       radarCtx.shadowColor = '#fa9549';
 // REMOVED_FEATURE:       radarCtx.shadowBlur = alpha > 0.6 ? 8 : 0;
 // REMOVED_FEATURE:       radarCtx.fill();
-
-      if (alpha > 0.5) {
+// 
+//       if (alpha > 0.5) {
 // REMOVED_FEATURE:         radarCtx.fillStyle = `rgba(240, 244, 248, ${alpha})`;
 // REMOVED_FEATURE:         radarCtx.font = '9px Chakra Petch';
 // REMOVED_FEATURE:         radarCtx.fillText(blip.name, bx + 6, by - 4);
-      }
-    });
-
+//       }
+//     });
+// 
 // REMOVED_FEATURE:     radarAnimId = requestAnimationFrame(animateRadar);
-  }
+//   }
 
   /* -------------------------------------------------------------
      2. JAUGES NÉON & SCORE D'EFFICACITÉ
